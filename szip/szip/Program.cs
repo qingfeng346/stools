@@ -7,9 +7,10 @@ namespace szip
     {
         static void Main(string[] args)
         {
-            System.IO.Compression.
-            GZipStream stream;
-            Console.WriteLine("Hello World!");
+            CommandLine command = CommandLine.Parse(args);
+            //System.IO.Compression.
+            //GZipStream stream;
+            //Console.WriteLine("Hello World!");
         }
     }
 }
