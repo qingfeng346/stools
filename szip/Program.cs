@@ -13,7 +13,7 @@ namespace szip {
             zip,
             gzip,
         }
-        private const string HintString = @"-optype [zip压缩(默认) unzip解压]
+        private const string HintString = @"-op [zip压缩(默认) unzip解压]
 -zip 类型 [lz4 zip gzip] (必须)
 -input 文件路径 (必须)
 -output 导出文件路径 (必须)
@@ -37,9 +37,11 @@ namespace szip {
                 }
                 long inputLength = new FileInfo(input).Length;
                 if (zip == ZipType.lz4) {
-                    lz4(op, input, output);
+                    lz4_exec(op, input, output);
                 } else if (zip == ZipType.gzip) {
-                    gzip(op, input, output);
+                    gzip_exec(op, input, output);
+                } else if (zip == ZipType.zip) {
+                    zip_exec(op, input, output);
                 }
                 long outputLength = new FileInfo(output).Length;
                 if (op == OpType.zip) {
@@ -51,8 +53,8 @@ namespace szip {
                 Console.WriteLine(e.ToString());
                 Console.WriteLine(HintString);
             }
-            Console.WriteLine("执行完成");
 #if DEBUG
+            Console.WriteLine("执行完成");
             Console.ReadKey();
 #endif
         }
@@ -67,7 +69,7 @@ namespace szip {
                 return (length / 1024 / 1024 / 1024) + " GB";
             }
         }
-        static void lz4(OpType type, string input, string output) {
+        static void lz4_exec(OpType type, string input, string output) {
             if (type == OpType.zip) {
                 using (var inputStream = new FileStream(input, FileMode.Open)) {
                     using (var outputStream = new FileStream(output, FileMode.Create)) {
@@ -90,7 +92,7 @@ namespace szip {
                 }
             }
         }
-        static void gzip(OpType type, string input, string output) {
+        static void gzip_exec(OpType type, string input, string output) {
             if (type == OpType.zip) {
                 using (var inputStream = new FileStream(input, FileMode.Open)) {
                     using (var outputStream = new FileStream(output, FileMode.Create)) {
@@ -107,6 +109,35 @@ namespace szip {
                         using (var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress)) {
                             while ((readed = gzipStream.Read(bytes, 0, Length)) > 0) {
                                 outputStream.Write(bytes, 0, readed);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        static void zip_exec(OpType type, string input, string output) {
+            if (type == OpType.zip) {
+                using (var inputStream = new FileStream(input, FileMode.Open)) {
+                    using (var outputStream = new FileStream(output, FileMode.Create)) {
+                        using (var zipStream = new ZipArchive(outputStream, ZipArchiveMode.Create)) {
+                            var zipEntry = zipStream.CreateEntry("0");
+                            using (var entryStream = zipEntry.Open()) {
+                                while ((readed = inputStream.Read(bytes, 0, Length)) > 0) {
+                                    entryStream.Write(bytes, 0, readed);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (type == OpType.unzip) {
+                using (var inputStream = new FileStream(input, FileMode.Open)) {
+                    using (var outputStream = new FileStream(output, FileMode.Create)) {
+                        using (var zipStream = new ZipArchive(inputStream, ZipArchiveMode.Read)) {
+                            var zipEntry = zipStream.Entries[0];
+                            using (var entryStream = zipEntry.Open()) {
+                                while ((readed = entryStream.Read(bytes, 0, Length)) > 0) {
+                                    outputStream.Write(bytes, 0, readed);
+                                }
                             }
                         }
                     }

@@ -19,6 +19,16 @@
       "commandName": "Project",
       "commandLineArgs": "-op unzip -zip gzip -input .\\test.gzip -output .\\test.log",
       "workingDirectory": "E:\\szip\\test"
+    },
+    "zipzip": {
+      "commandName": "Project",
+      "commandLineArgs": "-zip zip -input .\\test.txt -output .\\test.zip",
+      "workingDirectory": "E:\\szip\\test"
+    },
+    "zipunzip": {
+      "commandName": "Project",
+      "commandLineArgs": "-op unzip -zip zip -input .\\test.zip -output .\\test.log",
+      "workingDirectory": "E:\\szip\\test"
     }
   }
 }
