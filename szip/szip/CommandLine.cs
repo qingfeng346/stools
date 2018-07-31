@@ -17,10 +17,13 @@ public class CommandLineArgument {
 }
 public class CommandLine {
     public static CommandLine Parse(string[] args) {
-        return new CommandLine(args);
+        return new CommandLine().Parser(args);
     }
     private Dictionary<string, CommandLineArgument> arguments = new Dictionary<string, CommandLineArgument>();
-    public CommandLine(string[] args) {
+    public CommandLine() {
+    }
+    public CommandLine Parser(string[] args) {
+        arguments.Clear();
         CommandLineArgument argument = null;
         for (int i = 0; i < args.Length; ++i) {
             string arg = args[i];
@@ -35,6 +38,7 @@ public class CommandLine {
                 argument.Add(arg);
             }
         }
+        return this;
     }
     public bool HadValue(string key) {
         return arguments.ContainsKey(key);
