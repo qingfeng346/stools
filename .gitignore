@@ -2,3 +2,5 @@
 /szip/bin
 /szip/obj
 /szip/szip.csproj.user
+/.vs
+/test

@@ -1,0 +1,24 @@
+{
+  "profiles": {
+    "lz4zip": {
+      "commandName": "Project",
+      "commandLineArgs": "-zip lz4 -input .\\test.txt -output .\\test.lz4",
+      "workingDirectory": "E:\\szip\\test"
+    },
+    "lz4unzip": {
+      "commandName": "Project",
+      "commandLineArgs": "-op unzip -zip lz4 -input .\\test.lz4 -output .\\test.log",
+      "workingDirectory": "E:\\szip\\test"
+    },
+    "gzipzip": {
+      "commandName": "Project",
+      "commandLineArgs": "-zip gzip -input .\\test.txt -output .\\test.gzip",
+      "workingDirectory": "E:\\szip\\test"
+    },
+    "gzipunzip": {
+      "commandName": "Project",
+      "commandLineArgs": "-op unzip -zip gzip -input .\\test.gzip -output .\\test.log",
+      "workingDirectory": "E:\\szip\\test"
+    }
+  }
+}
