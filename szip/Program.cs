@@ -14,9 +14,9 @@ namespace szip {
             gzip,
         }
         private const string HintString = @"-op [zip压缩(默认) unzip解压]
--zip 类型 [lz4 zip gzip] (必须)
--input 文件路径 (必须)
--output 导出文件路径 (必须)
+-zip [类型 (lz4 zip gzip) (必须)]
+-input [文件路径 (必须)]
+-output [导出文件路径 (必须)]
 ";
         private const int Length = 8192;
         private static byte[] bytes = new byte[Length];
