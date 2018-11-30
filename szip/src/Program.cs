@@ -25,6 +25,10 @@ namespace szip {
             try {
                 Console.WriteLine("当前版本 : " + Version.version);
                 Console.WriteLine("编译日期 : " + Version.date);
+                if (args.Length <= 0) {
+                    Console.WriteLine(HintString);
+                    return;
+                }
                 CommandLine command = CommandLine.Parse(args);
                 var op = (OpType)Enum.Parse(typeof(OpType), command.GetValue("-op") ?? "zip");
                 var zip = (ZipType)Enum.Parse(typeof(ZipType), command.GetValue("-zip"));
