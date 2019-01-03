@@ -2,6 +2,7 @@
 using System.IO;
 using System.IO.Compression;
 using LZ4;
+using Scorpio.Commons;
 namespace szip {
     class Program {
         enum OpType {
