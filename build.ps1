@@ -1,6 +1,4 @@
-$version = "1.0.1"
-
-
+$version = "1.0.0"
 
 $today = Get-Date
 $date = $today.ToString('yyyy-MM-dd')
