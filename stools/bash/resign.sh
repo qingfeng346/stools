@@ -1,1 +1,1 @@
-sh ios_resign_with_ipa $1 $2 $3 $4
+sh ios_resign_with_ipa.sh $1 $2 $3 $4
