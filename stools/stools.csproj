@@ -8,8 +8,12 @@
   <ItemGroup>
     <PackageReference Include="Google.Apis.AndroidPublisher.v3" Version="1.55.0.2582" />
     <PackageReference Include="Scorpio-CSharp" Version="2.3.6" />
-    <PackageReference Include="Scorpio.Commons" Version="1.1.12" />
+    <PackageReference Include="Scorpio.Commons" Version="1.1.13" />
     <PackageReference Include="Tomlyn" Version="0.10.2" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy /Y bash\* $(TargetDir)" />
+  </Target>
 
 </Project>

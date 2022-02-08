@@ -18,10 +18,14 @@ namespace stools {
         private readonly static string[] ParameterApk = new[] { "--apk", "-apk" };
         private readonly static string[] ParameterObb = new[] { "--obb", "-obb" };
         private readonly static string[] ParameterReleasenote = { "--releasenote", "-releasenote" };
+        private readonly static string[] ParameterUsername = { "--username", "-username", "-u" };
+        private readonly static string[] ParameterPassword = { "--password", "-password", "-p" };
+        private readonly static string[] ParameterAppleid = { "--appleid", "-appleid", "--apple_id", "-apple_id", "-id" };
+        private readonly static string[] ParameterOutput = { "--output", "-output", "-o" };
         static void Main(string[] args) {
             var perform = new Perform();
             perform.AddExecute("androidpublisher", "", Androidpublisher);
-            perform.AddExecute("uploadipa", "", UploadIpa);
+            perform.AddExecute("lookupMetadata", "", LookupMetadata);
             try {
                 perform.Start(args, null, null);
             } catch (System.Exception e) {
@@ -96,8 +100,23 @@ namespace stools {
                 release.VersionCodes = new List<long?>() { versionCode };
             });
         }
-        static void UploadIpa(Perform perform, CommandLine commandLine, string[] args) {
-
+        static void ExecuteTMSTransporter(string username, string password, IEnumerable<string> args) {
+            var argList = new List<string>() {
+                "iTMSTransporter",
+                "-u",
+                username,
+                "-p",
+                password
+            };
+            argList.AddRange(args);
+            Console.WriteLine(ScorpioUtil.StartProcess("xrun", null, argList));
+        }
+        static void LookupMetadata(Perform perform, CommandLine commandLine, string[] args) {
+            var username = commandLine.GetValue(ParameterUsername);
+            var password = commandLine.GetValue(ParameterPassword);
+            var id = commandLine.GetValue(ParameterAppleid);
+            var output = commandLine.GetValue(ParameterOutput);
+            ExecuteTMSTransporter(username, password, new[] { "-m", "lookupMetadata", "-destination", output, "-apple_id", id });
         }
     }
 }
