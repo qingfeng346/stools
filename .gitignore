@@ -5,3 +5,6 @@
 /.vs
 /test
 /bin
+/obj
+/stools/obj
+/stools/bin
