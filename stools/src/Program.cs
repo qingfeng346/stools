@@ -22,10 +22,12 @@ namespace stools {
         private readonly static string[] ParameterPassword = { "--password", "-password", "-p" };
         private readonly static string[] ParameterAppleid = { "--appleid", "-appleid", "--apple_id", "-apple_id", "-id" };
         private readonly static string[] ParameterOutput = { "--output", "-output", "-o" };
+        private readonly static string[] ParameterFile = { "--file", "-file", "-f" };
         static void Main(string[] args) {
             var perform = new Perform();
             perform.AddExecute("androidpublisher", "", Androidpublisher);
             perform.AddExecute("lookupMetadata", "", LookupMetadata);
+            perform.AddExecute("uploadMetadata", "", UploadMetadata);
             try {
                 perform.Start(args, null, null);
             } catch (System.Exception e) {
@@ -116,7 +118,13 @@ namespace stools {
             var password = commandLine.GetValue(ParameterPassword);
             var id = commandLine.GetValue(ParameterAppleid);
             var output = commandLine.GetValue(ParameterOutput);
-            ExecuteTMSTransporter(username, password, new[] { "-m", "lookupMetadata", "-destination", output, "-apple_id", id });
+            ExecuteTMSTransporter(username, password, new[] { "-m", "lookupMetadata", "-apple_id", id, "-destination", output });
+        }
+        static void UploadMetadata(Perform perform, CommandLine commandLine, string[] args) {
+            var username = commandLine.GetValue(ParameterUsername);
+            var password = commandLine.GetValue(ParameterPassword);
+            var file = commandLine.GetValue(ParameterFile);
+            ExecuteTMSTransporter(username,password, new[] { "-m", "upload", "-f", file });
         }
     }
 }
