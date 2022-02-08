@@ -22,6 +22,7 @@ foreach ($platform in $platforms) {
     Write-Host "正在打包 $platform 版本..."
     $pathName = "$name-$platform"
     dotnet publish ../stools/stools/stools.csproj -c release -o ../bin/$pathName -r $platform --self-contained -p:AssemblyVersion=$version | Out-Null
+    Copy-Item -Path "../stools/stools/bash/*" -Destination ../bin/$pathName/
     Write-Host "正在压缩 $platform ..."
     $fileName = "$name-$version-$platform"
     Compress-Archive ../bin/$pathName/* ../bin/$fileName.zip -Force
