@@ -6,16 +6,16 @@
     <ROW Property="ALLUSERS" Value="1"/>
     <ROW Property="ARPCOMMENTS" Value="此 Installer 数据库包含了安装 [|ProductName] 所需的逻辑和数据。" ValueLocId="*"/>
     <ROW Property="ARPCONTACT" Value="qingfeng346@fengyuezhu.com"/>
-    <ROW Property="ARPHELPLINK" Value="https://github.com/qingfeng346/ScorpioConversion"/>
-    <ROW Property="ARPURLINFOABOUT" Value="https://github.com/qingfeng346/ScorpioConversion"/>
-    <ROW Property="ARPURLUPDATEINFO" Value="https://github.com/qingfeng346/ScorpioConversion"/>
+    <ROW Property="ARPHELPLINK" Value="https://github.com/qingfeng346/stools"/>
+    <ROW Property="ARPURLINFOABOUT" Value="https://github.com/qingfeng346/stools"/>
+    <ROW Property="ARPURLUPDATEINFO" Value="https://github.com/qingfeng346/stools"/>
     <ROW Property="Manufacturer" Value="Scorpio"/>
-    <ROW Property="ProductCode" Value="2052:{927E42C2-82D8-4F72-9E40-FC93321B0880} " Type="16"/>
+    <ROW Property="ProductCode" Value="2052:{9CF6A373-F46A-4312-9D49-EE75E0818839} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
-    <ROW Property="ProductName" Value="scov"/>
+    <ROW Property="ProductName" Value="stools"/>
     <ROW Property="ProductVersion" Value="1.0.0" Type="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
-    <ROW Property="UpgradeCode" Value="{41198D62-5038-4708-9B3C-4FB4022AB331}"/>
+    <ROW Property="UpgradeCode" Value="{A4E95E02-0B7E-456C-B2B5-541860070FB6}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
     <ROW Property="WindowsType9XDisplay" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
     <ROW Property="WindowsTypeNT40" MultiBuildValue="DefaultBuild:Windows NT 4.0" ValueLocId="-"/>
