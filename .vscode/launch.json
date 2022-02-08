@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/stools/bin/Debug/net6.0/stools.dll",
-            "args": ["lookupMetadata", "-u", "linyuan.yang", "-p", "wahq-zjkx-aqrs-oead", "-id", "1515511378", "-output", "./"],
+            "args": ["lookupMetadata", "-u", "linyuan.yang@centurygame.com", "-p", "wahq-zjkx-aqrs-oead", "-id", "1515511378", "-output", "./"],
             "cwd": "${workspaceFolder}/stools",
             "console": "internalConsole",
             "stopAtEntry": false

@@ -109,7 +109,7 @@ namespace stools {
                 password
             };
             argList.AddRange(args);
-            Console.WriteLine(ScorpioUtil.StartProcess("xrun", null, argList));
+            Console.WriteLine(ScorpioUtil.StartProcess("xcrun", null, argList));
         }
         static void LookupMetadata(Perform perform, CommandLine commandLine, string[] args) {
             var username = commandLine.GetValue(ParameterUsername);
