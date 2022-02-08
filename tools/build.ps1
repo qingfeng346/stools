@@ -1,30 +1,27 @@
 $version="1.0.0"
-$name="scov"
+$name="stools"
 
 
 $today = Get-Date
 $date=$today.ToString('yyyy-MM-dd')
 $fileData=@"
-namespace Scorpio.Conversion {
+namespace Scorpio.stools {
     public static class Version {
         public const string version = "$version";
         public const string date = "$date";
     }
 }
 "@
-$fileData | Out-File -Encoding utf8 ../ScorpioConversion/Scorpio.Conversion.Engine/src/Version.cs
+$fileData | Out-File -Encoding utf8 ../stools/stools/src/Version.cs
 
 Remove-Item ../bin/* -Force -Recurse
-# Write-Host "正在生成Scorpio.Conversion.Engine.nupkg..."
-# dotnet pack ../ScorpioConversion/Scorpio.Conversion.Engine/Scorpio.Conversion.Engine.csproj -p:PackageVersion=$version -o ../bin/ /p:AssemblyVersion=$version | Out-Null
-
 $platforms = @("win-x86", "win-x64", "win-arm", "win-arm64", "linux-x64", "linux-musl-x64", "linux-arm", "linux-arm64", "osx-x64", "osx-arm64")
 # $platforms = @()
 $aipPath = ".\Install.aip"
 foreach ($platform in $platforms) {
     Write-Host "正在打包 $platform 版本..."
     $pathName = "$name-$platform"
-    dotnet publish ../ScorpioConversion/ScorpioConversion/Scorpio.Conversion.csproj -c release -o ../bin/$pathName -r $platform --self-contained -p:AssemblyVersion=$version | Out-Null
+    dotnet publish ../stools/stools/stools.csproj -c release -o ../bin/$pathName -r $platform --self-contained -p:AssemblyVersion=$version | Out-Null
     Write-Host "正在压缩 $platform ..."
     $fileName = "$name-$version-$platform"
     Compress-Archive ../bin/$pathName/* ../bin/$fileName.zip -Force
@@ -47,18 +44,4 @@ foreach ($platform in $platforms) {
         git checkout $aipPath
     }
 }
-$cur = Get-Location
-Write-Host "正在生成Scorpio.Conversion.Runtime.nupkg..."
-dotnet pack ../ScorpioProto/CSharp/Scorpio.Conversion.Runtime/Scorpio.Conversion.Runtime.csproj -p:PackageVersion=$version -o ../bin/ /p:AssemblyVersion=$version | Out-Null
-Write-Host "正在生成Scorpio.Conversion.Runtime.jar..."
-
-Set-Location ../ScorpioProto/Java/Scorpio.Conversion.Runtime
-./gradlew release "-PVERSION=$version"
-Copy-Item -Path app/build/libs/*.jar -Destination ../../../bin/
-Set-Location $cur
-
-$packageJson = "../ScorpioProto/Javascript/Scorpio.Conversion.Runtime/package.json"
-$packageData = Get-Content -Path $packageJson -Raw | ConvertFrom-Json
-$packageData.version = $version
-$packageData | ConvertTo-Json | Set-Content -Path $packageJson
 

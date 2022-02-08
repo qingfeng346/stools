@@ -7,9 +7,8 @@ using Google.Apis.AndroidPublisher.v3.Data;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using Tomlyn;
-namespace stools {
+namespace Scorpio.stools {
     class Program {
         private readonly static string[] ParameterAuth = new[] { "--auth", "-auth" };
         private readonly static string[] ParameterPackageName = new[] { "--packageName", "-packageName" };
