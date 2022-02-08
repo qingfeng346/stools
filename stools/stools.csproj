@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy /Y bash\* $(TargetDir)" />
+    <Exec Command="pwsh -Command Copy-Item bash/* $(TargetDir)/" />
   </Target>
 
 </Project>
