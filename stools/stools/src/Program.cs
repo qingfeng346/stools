@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using Tomlyn;
 namespace Scorpio.stools {
     class Program {
+        private readonly static string HelpAndroidpublisher = @"
+";
         private readonly static string[] ParameterAuth = new[] { "--auth", "-auth" };
         private readonly static string[] ParameterPackageName = new[] { "--packageName", "-packageName" };
         private readonly static string[] ParameterVersion = new[] { "--version", "-version" };
@@ -24,7 +26,7 @@ namespace Scorpio.stools {
         private readonly static string[] ParameterFile = { "--file", "-file", "-f" };
         static void Main(string[] args) {
             var perform = new Perform();
-            perform.AddExecute("androidpublisher", "", Androidpublisher);
+            perform.AddExecute("androidpublisher", HelpAndroidpublisher, Androidpublisher);
             perform.AddExecute("lookupMetadata", "", LookupMetadata);
             perform.AddExecute("uploadMetadata", "", UploadMetadata);
             try {
@@ -102,15 +104,26 @@ namespace Scorpio.stools {
             });
         }
         static void ExecuteTMSTransporter(string username, string password, IEnumerable<string> args) {
-            var argList = new List<string>() {
-                "iTMSTransporter",
-                "-u",
-                username,
-                "-p",
-                password
-            };
-            argList.AddRange(args);
-            Console.WriteLine(ScorpioUtil.StartProcess("xcrun", null, argList));
+            if (ScorpioUtil.IsMacOS()) {
+                var argList = new List<string>() {
+                    "iTMSTransporter",
+                    "-u",
+                    username,
+                    "-p",
+                    password
+                };
+                argList.AddRange(args);
+                Console.WriteLine(ScorpioUtil.StartProcess("xcrun", null, argList));
+            } else {
+                var argList = new List<string>() {
+                    "-u",
+                    username,
+                    "-p",
+                    password
+                };
+                argList.AddRange(args);
+                Console.WriteLine(ScorpioUtil.StartProcess("iTMSTransporter", null, argList));
+            }
         }
         static void LookupMetadata(Perform perform, CommandLine commandLine, string[] args) {
             var username = commandLine.GetValue(ParameterUsername);
