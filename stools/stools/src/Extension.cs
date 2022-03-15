@@ -1,4 +1,5 @@
-﻿public static class Extension {
+﻿using System.Collections.Generic;
+public static class Extension {
     public static string GetMemory(this long length) {
         if (length < 1024) {
             return length + " B";
@@ -9,5 +10,8 @@
         } else {
             return (length / 1024 / 1024 / 1024) + " GB";
         }
+    }
+    public static string GetSingers(this List<string> value) {
+        return string.Join("&", value);
     }
 }

@@ -7,10 +7,37 @@ using Google.Apis.AndroidPublisher.v3.Data;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
-using Tomlyn;
+using System.Text;
+using System.Threading.Tasks;
 namespace Scorpio.stools {
     class Program {
         private readonly static string HelpAndroidpublisher = @"
+更新Google Play信息
+    --auth|-auth                (必填)服务账号json文件
+    --packageName|-packageName  (必填)App PackageName
+    --version|-version          版本VersionCode
+    --name|-name                轨道的名字
+    --apk|-apk                  apk文件
+    --obb|-obb                  obb文件,必须和apk一起上传
+    --releasenote|-releasenote  ReleaseNote文件
+";      private readonly static string HelpLookupMetadata = @"
+获取AppStore Metadata文件
+    --username|-username|-u     (必填)服务账号
+    --password|-password|-p     (必填)服务账号密码
+    --appleid|-appleid|-id      (必填)AppID
+    --output|-output|-o         导出目录,默认当前目录
+";
+        private readonly static string HelpUploadMetadata = @"
+更新AppStore Metadata文件
+    --username|-username|-u     (必填)服务账号
+    --password|-password|-p     (必填)服务账号密码
+    --file|-file|-f             (必填)Metadata所在目录
+";
+        private readonly static string HelpDownloadMusic = @"
+下载音乐
+    --id|-id                    (必填)音乐ID
+    --type|-type|-t             类型,默认kuwo 列表 kuwo(酷我)
+    --output|-output|-o         导出目录,默认当前目录
 ";
         private readonly static string[] ParameterAuth = new[] { "--auth", "-auth" };
         private readonly static string[] ParameterPackageName = new[] { "--packageName", "-packageName" };
@@ -24,11 +51,15 @@ namespace Scorpio.stools {
         private readonly static string[] ParameterAppleid = { "--appleid", "-appleid", "--apple_id", "-apple_id", "-id" };
         private readonly static string[] ParameterOutput = { "--output", "-output", "-o" };
         private readonly static string[] ParameterFile = { "--file", "-file", "-f" };
+        private readonly static string[] ParameterType = { "--type", "-type", "-t" };
+        private readonly static string[] ParameterID = { "--id", "-id" };
         static void Main(string[] args) {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var perform = new Perform();
             perform.AddExecute("androidpublisher", HelpAndroidpublisher, Androidpublisher);
-            perform.AddExecute("lookupMetadata", "", LookupMetadata);
-            perform.AddExecute("uploadMetadata", "", UploadMetadata);
+            perform.AddExecute("lookupMetadata", HelpLookupMetadata, LookupMetadata);
+            perform.AddExecute("uploadMetadata", HelpUploadMetadata, UploadMetadata);
+            perform.AddExecute("downloadMusic", HelpDownloadMusic, DownloadMusic);
             try {
                 perform.Start(args, null, null);
             } catch (System.Exception e) {
@@ -92,13 +123,13 @@ namespace Scorpio.stools {
                 if (!string.IsNullOrWhiteSpace(name)) { release.Name = name; }
                 if (!string.IsNullOrWhiteSpace(releaseNote)) {
                     release.ReleaseNotes = new List<LocalizedText>();
-                    var model = Toml.ToModel(FileUtil.GetFileString(releaseNote));
-                    foreach (var pair in model) {
-                        release.ReleaseNotes.Add(new LocalizedText() {
-                            Language = pair.Key,
-                            Text = (string)pair.Value
-                        });
-                    }
+                    //var model = Toml.ToModel(FileUtil.GetFileString(releaseNote));
+                    //foreach (var pair in model) {
+                    //    release.ReleaseNotes.Add(new LocalizedText() {
+                    //        Language = pair.Key,
+                    //        Text = (string)pair.Value
+                    //    });
+                    //}
                 }
                 release.VersionCodes = new List<long?>() { versionCode };
             });
@@ -113,8 +144,8 @@ namespace Scorpio.stools {
                     password
                 };
                 argList.AddRange(args);
-                Console.WriteLine(ScorpioUtil.StartProcess("xcrun", null, argList));
-            } else {
+                ScorpioUtil.StartProcess("xcrun", null, argList);
+            } else if (ScorpioUtil.IsWindows()) {
                 var argList = new List<string>() {
                     "-u",
                     username,
@@ -122,21 +153,37 @@ namespace Scorpio.stools {
                     password
                 };
                 argList.AddRange(args);
-                Console.WriteLine(ScorpioUtil.StartProcess("iTMSTransporter", null, argList));
+                ScorpioUtil.StartCwd("iTMSTransporter.cmd", null, argList);
+            } else if (ScorpioUtil.IsLinux()) {
+                var argList = new List<string>() {
+                    "-u",
+                    username,
+                    "-p",
+                    password
+                };
+                argList.AddRange(args);
+                ScorpioUtil.StartProcess("iTMSTransporter", null, argList);
             }
         }
         static void LookupMetadata(Perform perform, CommandLine commandLine, string[] args) {
             var username = commandLine.GetValue(ParameterUsername);
             var password = commandLine.GetValue(ParameterPassword);
             var id = commandLine.GetValue(ParameterAppleid);
-            var output = commandLine.GetValue(ParameterOutput);
+            var output = commandLine.GetValueDefault(ParameterOutput, "./");
             ExecuteTMSTransporter(username, password, new[] { "-m", "lookupMetadata", "-apple_id", id, "-destination", output });
         }
         static void UploadMetadata(Perform perform, CommandLine commandLine, string[] args) {
             var username = commandLine.GetValue(ParameterUsername);
             var password = commandLine.GetValue(ParameterPassword);
             var file = commandLine.GetValue(ParameterFile);
-            ExecuteTMSTransporter(username,password, new[] { "-m", "upload", "-f", file });
+            ExecuteTMSTransporter(username, password, new[] { "-m", "upload", "-f", file });
+        }
+        static void DownloadMusic(Perform perform, CommandLine commandLine, string[] args) {
+            Task.Run(async () => {
+                var music = MusicFactory.Create(commandLine.GetValueDefault(ParameterType, ""));
+                var output = commandLine.GetValueDefault(ParameterOutput, "./");
+                await music.Download(commandLine.GetValue(ParameterID), output);
+            }).Wait();
         }
     }
 }

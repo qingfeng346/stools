@@ -1,8 +1,25 @@
 {
   "profiles": {
-    "resign": {
+    "WSL": {
+      "commandName": "WSL2",
+      "environmentVariables": {},
+      "distributionName": ""
+    },
+    "lookupmetadata": {
       "commandName": "Project",
-      "commandLineArgs": "resign "
+      "commandLineArgs": "lookupmetadata -u linyuan.yang@centurygame.com -p wahq-zjkx-aqrs-oead -id 1515511378"
+    },
+    "kuwo": {
+      "commandName": "Project",
+      "commandLineArgs": "downloadmusic -id 324244"
+    },
+    "kugou": {
+      "commandName": "Project",
+      "commandLineArgs": "downloadmusic -type kugou -id 4EC10B1B7B9BEB2F0ADB89BBEC5F664B"
+    },
+    "cloud": {
+      "commandName": "Project",
+      "commandLineArgs": "downloadmusic -type cloud -id 5280145"
     }
   }
 }

@@ -6,14 +6,32 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Apis.AndroidPublisher.v3" Version="1.55.0.2582" />
+    <PackageReference Include="Google.Apis.AndroidPublisher.v3" Version="1.56.0.2617" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.42" />
     <PackageReference Include="Scorpio-CSharp" Version="2.3.6" />
-    <PackageReference Include="Scorpio.Commons" Version="1.1.13" />
-    <PackageReference Include="Tomlyn" Version="0.10.2" />
+    <PackageReference Include="Scorpio.Commons" Version="1.1.16" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.0.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
+    <PackageReference Include="TagLibSharp" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command='pwsh -Command Copy-Item -Path "./bash/*" -Destination "$(TargetDir)/"' />
+    <Exec Command="pwsh -Command Copy-Item -Path &quot;./bash/*&quot; -Destination &quot;$(TargetDir)/&quot;" />
   </Target>
 
 </Project>
