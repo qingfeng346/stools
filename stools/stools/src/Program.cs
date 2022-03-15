@@ -182,7 +182,10 @@ namespace Scorpio.stools {
             Task.Run(async () => {
                 var music = MusicFactory.Create(commandLine.GetValueDefault(ParameterType, ""));
                 var output = commandLine.GetValueDefault(ParameterOutput, "./");
-                await music.Download(commandLine.GetValue(ParameterID), output);
+                var ids = commandLine.GetValues(ParameterID);
+                foreach (var id in ids) {
+                    await music.Download(id, output);
+                }
             }).Wait();
         }
     }
