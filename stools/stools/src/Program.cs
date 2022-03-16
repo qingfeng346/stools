@@ -9,6 +9,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 namespace Scorpio.stools {
     class Program {
         private readonly static string HelpAndroidpublisher = @"
@@ -35,8 +36,9 @@ namespace Scorpio.stools {
 ";
         private readonly static string HelpDownloadMusic = @"
 下载音乐
-    --id|-id                    (必填)音乐ID
-    --type|-type|-t             类型,默认kuwo 列表 kuwo(酷我)
+    --url|-url                  音乐详情链接,有id参数时 此参数无效
+    --id|-id                    音乐ID
+    --type|-type|-t             类型,默认kuwo 列表 kuwo(酷我) kugou(酷狗) cloud(网易云音乐)
     --output|-output|-o         导出目录,默认当前目录
 ";
         private readonly static string[] ParameterAuth = new[] { "--auth", "-auth" };
@@ -53,6 +55,7 @@ namespace Scorpio.stools {
         private readonly static string[] ParameterFile = { "--file", "-file", "-f" };
         private readonly static string[] ParameterType = { "--type", "-type", "-t" };
         private readonly static string[] ParameterID = { "--id", "-id" };
+        private readonly static string[] ParameterUrl = { "--url", "-url" };
         static void Main(string[] args) {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var perform = new Perform();
@@ -180,11 +183,41 @@ namespace Scorpio.stools {
         }
         static void DownloadMusic(Perform perform, CommandLine commandLine, string[] args) {
             Task.Run(async () => {
-                var music = MusicFactory.Create(commandLine.GetValueDefault(ParameterType, ""));
-                var output = commandLine.GetValueDefault(ParameterOutput, "./");
                 var ids = commandLine.GetValues(ParameterID);
-                foreach (var id in ids) {
-                    await music.Download(id, output);
+                if (ids.Length > 0) {
+                    var music = MusicFactory.Create(commandLine.GetValueDefault(ParameterType, ""));
+                    var output = commandLine.GetValueDefault(ParameterOutput, "./");
+                    foreach (var id in ids) {
+                        await music.Download(id, output);
+                    }
+                } else {
+                    var output = commandLine.GetValueDefault(ParameterOutput, "./");
+                    var urls = commandLine.GetValues(ParameterUrl);
+                    foreach (var url in urls) {
+                        var uri = new Uri(url);
+                        var type = "";
+                        var id = "";
+                        if (uri.Host.Contains("kuwo")) {
+                            type = MusicFactory.Kuwo;
+                            id = url.Substring(url.LastIndexOf("/") + 1);
+                        } else if (uri.Host.Contains("kugou")) {
+                            type = MusicFactory.Kugou;
+                            id = Regex.Match(url, "hash=\\w+(&|$)").ToString().Substring(5);
+                            if (id.EndsWith("&")) {
+                                id = id.Substring(0, id.Length - 1);
+                            }
+                        } else if (uri.Host.Contains("163")) {
+                            type = MusicFactory.Cloud;
+                            id = Regex.Match(url, "id=\\w+(&|$)").ToString().Substring(3);
+                            if (id.EndsWith("&")) {
+                                id = id.Substring(0, id.Length - 1);
+                            }
+                        } else {
+                            throw new System.Exception($"不支持的源数据:{url}");
+                        }
+                        var music = MusicFactory.Create(type);
+                        await music.Download(id, output);
+                    }
                 }
             }).Wait();
         }

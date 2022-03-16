@@ -1,9 +1,12 @@
 ﻿public class MusicFactory {
+    public const string Kuwo = "kuwo";
+    public const string Kugou = "kugou";
+    public const string Cloud = "cloud";
     public static MusicBase Create(string type) {
         switch (type.ToLower()) {
-            case "kuwo": return new MusicKuwo();
-            case "kugou": return new MusicKugou();
-            case "cloud": return new MusicCloud();
+            case Kuwo: return new MusicKuwo();
+            case Kugou: return new MusicKugou();
+            case Cloud: return new MusicCloud();
             default: return new MusicKuwo();
         }
     }

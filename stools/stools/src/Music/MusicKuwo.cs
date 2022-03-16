@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Newtonsoft.Json;
 public class MusicKuwo : MusicBase {
+    public override string Source => "酷我";
     public class MusicInfo {
         public int code;
         public MusicData data;

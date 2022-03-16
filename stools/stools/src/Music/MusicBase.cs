@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 using Scorpio.Commons;
 using System;
 using System.IO;
@@ -8,6 +9,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 
 public abstract class MusicBase {
+    public abstract string Source { get; }
     /// <summary> 歌曲ID, 不同音乐平台的ID可能相同 </summary>
     public string ID { get; private set; }
     /// <summary> 歌曲名字 </summary>
@@ -27,7 +29,16 @@ public abstract class MusicBase {
     //下载文件
     public async Task Download(string id, string path) {
         ID = id;
-        await ParseInfo(id);
+        Logger.info($"开始解析数据  来源:{Source} ID:{id}");
+        for (var i = 0; i < 5; ++i) {
+            try {
+                await ParseInfo(id);
+                break;
+            } catch (Exception ex) {
+                Logger.error($"解析数据出错,一秒后重试 {i+1}/3 : {ex}");
+                Thread.Sleep(1000);
+            }
+        }
         await DownloadFile(path);
     }
     
@@ -66,7 +77,11 @@ public abstract class MusicBase {
             }
         }
         file.Save();
-        Logger.info("写入封面完成 文件名:{0}  文件大小:{1}", fileName, new FileInfo(filePath).Length.GetMemory());
+        var old = Console.ForegroundColor;
+        Console.ForegroundColor = ConsoleColor.Green;
+        Logger.info("下载音乐完成 文件名:{0}  文件大小:{1}", Path.GetFullPath(filePath), new FileInfo(filePath).Length.GetMemory());
+        Console.ForegroundColor = old;
+        Logger.info("-------------------------------------------------------------------");
     }
     //重置封面大小
     void ResizeImage(string filePath, int size) {

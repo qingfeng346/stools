@@ -20,6 +20,10 @@
     "cloud": {
       "commandName": "Project",
       "commandLineArgs": "downloadmusic -type cloud -id 5280145"
+    },
+    "downloadurls": {
+      "commandName": "Project",
+      "commandLineArgs": "downloadmusic -url https://www.kuwo.cn/play_detail/440616 https://music.163.com/#/song?id=5272611&userid=30671613 https://www.kugou.com/song/#hash=4EC10B1B7B9BEB2F0ADB89BBEC5F664B&album_id=960399"
     }
   }
 }

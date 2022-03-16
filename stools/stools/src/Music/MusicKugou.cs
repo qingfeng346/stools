@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Newtonsoft.Json;
 public class MusicKugou : MusicBase {
+    public override string Source => "酷狗";
     public class MusicInfo {
         public int err_code;
         public MusicData data;

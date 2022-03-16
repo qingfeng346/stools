@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 
 public class MusicCloud : MusicBase {
+    public override string Source => "网易云音乐";
     public class Songs {
         public List<MusicInfo> songs;
     }
