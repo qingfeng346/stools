@@ -23,7 +23,6 @@ public class HttpUtil {
         return await response.Content.ReadAsStringAsync();
     }
     public static async Task Download(string url, string file) {
-        FileUtil.CreateDirectoryByFile(file);
         var client = new HttpClient();
         var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
         var bytes = new byte[READ_LENGTH];
@@ -41,7 +40,7 @@ public class HttpUtil {
                     long now = DateTime.UtcNow.Ticks;
                     if (now - update > 20000000) {
                         update = now;
-                        Console.WriteLine($"下载进度 {readed.GetMemory()}/{length.GetMemory()}");
+                        Console.WriteLine($"{file} 进度: {readed.GetMemory()}/{length.GetMemory()}");
                     }
                 }
             }

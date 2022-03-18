@@ -41,6 +41,11 @@ IOS ipa文件重签名
     --developer|-developer|-d   (必填)开发者名称
     --output|-output|-o         (必填)导出文件
 ";
+        private readonly static string HelpWget = @"
+下载文件
+    --url|-url                  (必填)下载链接
+    --output|-output|-o         (必填)输出文件
+";
         private readonly static string HelpDownloadMusic = @"
 下载音乐
     --url|-url                  音乐详情链接,有id参数时 此参数无效
@@ -73,6 +78,7 @@ IOS ipa文件重签名
             perform.AddExecute("lookupMetadata", HelpLookupMetadata, LookupMetadata);
             perform.AddExecute("uploadMetadata", HelpUploadMetadata, UploadMetadata);
             perform.AddExecute("resign", HelpResign, Resign);
+            perform.AddExecute("wget", HelpWget, Wget);
             perform.AddExecute("downloadMusic", HelpDownloadMusic, DownloadMusic);
             try {
                 perform.Start(args, null, null);
@@ -202,6 +208,23 @@ IOS ipa文件重签名
                 commandLine.GetValue(ParameterProvision),
                 commandLine.GetValue(ParameterOutput)});
             FileUtil.DeleteFile(resign);
+        }
+        static void Wget(Perform perform, CommandLine commandLine, string[] args) {
+            var urls = new List<string>();
+            urls.AddRange(commandLine.Args);
+            urls.AddRange(commandLine.GetValues(ParameterUrl));
+            var outputs = commandLine.GetValues(ParameterOutput);
+            var tasks = new List<Task>();
+            for (var i = 0; i < urls.Count; i++) {
+                var url = urls[i];
+                var output = outputs.Length > i ? outputs[i] : url.Substring(url.LastIndexOf("/") + 1);
+                tasks.Add(Task.Run(async () => {
+                    Logger.info($"开始下载 : {url}");
+                    await HttpUtil.Download(url, output);
+                    Logger.info($"下载完成 : {url}");
+                }));
+            }
+            Task.WaitAll(tasks.ToArray());
         }
         static void DownloadMusic(Perform perform, CommandLine commandLine, string[] args) {
             Task.Run(async () => {
