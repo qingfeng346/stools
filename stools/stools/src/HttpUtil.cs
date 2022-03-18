@@ -5,6 +5,7 @@ using Scorpio.Commons;
 using System.Net;
 using System;
 public class HttpUtil {
+    private const int READ_LENGTH = 8192;
     public static async Task<string> Get(string url, Action<HttpRequestMessage> preRequest = null) {
         var handler = new HttpClientHandler();
         handler.AllowAutoRedirect = true;
@@ -24,15 +25,24 @@ public class HttpUtil {
     public static async Task Download(string url, string file) {
         FileUtil.CreateDirectoryByFile(file);
         var client = new HttpClient();
-        var response = await client.GetAsync(url);
-        var bytes = new byte[8192];
+        var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+        var bytes = new byte[READ_LENGTH];
         using (var responseStream = await response.Content.ReadAsStreamAsync()) {
+            long length = (response.Content.Headers?.ContentLength ?? 0);
+            long readed = 0;
+            long update = DateTime.UtcNow.Ticks;
             FileUtil.DeleteFile(file);
             using (var fileStream = new FileStream(file, FileMode.Create)) {
                 while (true) {
-                    var size = await responseStream.ReadAsync(bytes, 0, 8192);
+                    var size = await responseStream.ReadAsync(bytes, 0, READ_LENGTH);
                     if (size <= 0) { break; }
+                    readed += size;
                     fileStream.Write(bytes, 0, size);
+                    long now = DateTime.UtcNow.Ticks;
+                    if (now - update > 20000000) {
+                        update = now;
+                        Console.WriteLine($"下载进度 {readed.GetMemory()}/{length.GetMemory()}");
+                    }
                 }
             }
         }
