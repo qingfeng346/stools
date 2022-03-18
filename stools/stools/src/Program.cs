@@ -34,6 +34,13 @@ namespace Scorpio.stools {
     --password|-password|-p     (必填)服务账号密码
     --file|-file|-f             (必填)Metadata所在目录
 ";
+        private readonly static string HelpResign = @"
+IOS ipa文件重签名
+    --ipa|-ipa                  (必填)ipa原文件
+    --provision|-provision|-p   (必填)符号文件
+    --developer|-developer|-d   (必填)开发者名称
+    --output|-output|-o         (必填)导出文件
+";
         private readonly static string HelpDownloadMusic = @"
 下载音乐
     --url|-url                  音乐详情链接,有id参数时 此参数无效
@@ -56,12 +63,16 @@ namespace Scorpio.stools {
         private readonly static string[] ParameterType = { "--type", "-type", "-t" };
         private readonly static string[] ParameterID = { "--id", "-id" };
         private readonly static string[] ParameterUrl = { "--url", "-url" };
+        private readonly static string[] ParameterIpa = { "--ipa", "-ipa" };
+        private readonly static string[] ParameterProvision = { "--provision", "-provision", "-p" };
+        private readonly static string[] ParameterDeveloper = { "--developer", "-developer", "-d" };
         static void Main(string[] args) {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var perform = new Perform();
             perform.AddExecute("androidpublisher", HelpAndroidpublisher, Androidpublisher);
             perform.AddExecute("lookupMetadata", HelpLookupMetadata, LookupMetadata);
             perform.AddExecute("uploadMetadata", HelpUploadMetadata, UploadMetadata);
+            perform.AddExecute("resign", HelpResign, Resign);
             perform.AddExecute("downloadMusic", HelpDownloadMusic, DownloadMusic);
             try {
                 perform.Start(args, null, null);
@@ -180,6 +191,17 @@ namespace Scorpio.stools {
             var password = commandLine.GetValue(ParameterPassword);
             var file = commandLine.GetValue(ParameterFile);
             ExecuteTMSTransporter(username, password, new[] { "-m", "upload", "-f", file });
+        }
+        static void Resign(Perform perform, CommandLine commandLine, string[] args) {
+            var resign = "ios_resign_with_ipa.sh";
+            FileUtil.CopyFile($"{ScorpioUtil.BaseDirectory}/{resign}", resign, true);
+            ScorpioUtil.StartProcess("sh", null, new string[] {
+                resign,
+                commandLine.GetValue(ParameterIpa),
+                commandLine.GetValue(ParameterDeveloper),
+                commandLine.GetValue(ParameterProvision),
+                commandLine.GetValue(ParameterOutput)});
+            FileUtil.DeleteFile(resign);
         }
         static void DownloadMusic(Perform perform, CommandLine commandLine, string[] args) {
             Task.Run(async () => {
