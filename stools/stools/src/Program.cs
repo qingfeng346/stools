@@ -227,44 +227,48 @@ IOS ipa文件重签名
             Task.WaitAll(tasks.ToArray());
         }
         static void DownloadMusic(Perform perform, CommandLine commandLine, string[] args) {
-            Task.Run(async () => {
-                var ids = commandLine.GetValues(ParameterID);
-                if (ids.Length > 0) {
-                    var music = MusicFactory.Create(commandLine.GetValueDefault(ParameterType, ""));
-                    var output = commandLine.GetValueDefault(ParameterOutput, "./");
-                    foreach (var id in ids) {
+            var tasks = new List<Task>();
+            var output = commandLine.GetValueDefault(ParameterOutput, "./");
+            var urls = new List<string>();
+            urls.AddRange(commandLine.Args);
+            urls.AddRange(commandLine.GetValues(ParameterUrl));
+            var ids = commandLine.GetValues(ParameterID);
+            if (ids.Length > 0) {
+                var music = MusicFactory.Create(commandLine.GetValueDefault(ParameterType, ""));
+                foreach (var id in ids) {
+                    tasks.Add(Task.Run(async () => {
                         await music.Download(id, output);
-                    }
-                } else {
-                    var output = commandLine.GetValueDefault(ParameterOutput, "./");
-                    var urls = commandLine.GetValues(ParameterUrl);
-                    foreach (var url in urls) {
-                        var uri = new Uri(url);
-                        var type = "";
-                        var id = "";
-                        if (uri.Host.Contains("kuwo")) {
-                            type = MusicFactory.Kuwo;
-                            id = url.Substring(url.LastIndexOf("/") + 1);
-                        } else if (uri.Host.Contains("kugou")) {
-                            type = MusicFactory.Kugou;
-                            id = Regex.Match(url, "hash=\\w+(&|$)").ToString().Substring(5);
-                            if (id.EndsWith("&")) {
-                                id = id.Substring(0, id.Length - 1);
-                            }
-                        } else if (uri.Host.Contains("163")) {
-                            type = MusicFactory.Cloud;
-                            id = Regex.Match(url, "id=\\w+(&|$)").ToString().Substring(3);
-                            if (id.EndsWith("&")) {
-                                id = id.Substring(0, id.Length - 1);
-                            }
-                        } else {
-                            throw new System.Exception($"不支持的源数据:{url}");
-                        }
-                        var music = MusicFactory.Create(type);
-                        await music.Download(id, output);
-                    }
+                    }));
                 }
-            }).Wait();
+            }
+            foreach (var url in urls) {
+                tasks.Add(Task.Run(async () => {
+                    var uri = new Uri(url);
+                    var type = "";
+                    var id = "";
+                    if (uri.Host.Contains("kuwo")) {
+                        type = MusicFactory.Kuwo;
+                        id = url.Substring(url.LastIndexOf("/") + 1);
+                    } else if (uri.Host.Contains("kugou")) {
+                        type = MusicFactory.Kugou;
+                        id = Regex.Match(url, "hash=\\w+(&|$)").ToString().Substring(5);
+                        if (id.EndsWith("&")) {
+                            id = id.Substring(0, id.Length - 1);
+                        }
+                    } else if (uri.Host.Contains("163")) {
+                        type = MusicFactory.Cloud;
+                        id = Regex.Match(url, "id=\\w+(&|$)").ToString().Substring(3);
+                        if (id.EndsWith("&")) {
+                            id = id.Substring(0, id.Length - 1);
+                        }
+                    } else {
+                        throw new System.Exception($"不支持的源数据:{url}");
+                    }
+                    var music = MusicFactory.Create(type);
+                    await music.Download(id, output);
+                }));
+            }
+            Task.WaitAll(tasks.ToArray());
         }
     }
 }
