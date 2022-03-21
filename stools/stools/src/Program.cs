@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Xml;
 namespace Scorpio.stools {
     class Program {
         private readonly static string HelpAndroidpublisher = @"
@@ -20,7 +21,7 @@ namespace Scorpio.stools {
     --name|-name                轨道的名字
     --apk|-apk                  apk文件
     --obb|-obb                  obb文件,必须和apk一起上传
-    --releasenote|-releasenote  ReleaseNote文件
+    --releasenote|-releasenote  ReleaseNote文件,xml文件
 ";      private readonly static string HelpLookupMetadata = @"
 获取AppStore Metadata文件
     --username|-username|-u     (必填)服务账号
@@ -143,13 +144,14 @@ IOS ipa文件重签名
                 if (!string.IsNullOrWhiteSpace(name)) { release.Name = name; }
                 if (!string.IsNullOrWhiteSpace(releaseNote)) {
                     release.ReleaseNotes = new List<LocalizedText>();
-                    //var model = Toml.ToModel(FileUtil.GetFileString(releaseNote));
-                    //foreach (var pair in model) {
-                    //    release.ReleaseNotes.Add(new LocalizedText() {
-                    //        Language = pair.Key,
-                    //        Text = (string)pair.Value
-                    //    });
-                    //}
+                    var xmlDoc = new XmlDocument();
+                    xmlDoc.LoadXml(releaseNote);
+                    foreach (XmlNode language in xmlDoc.DocumentElement) {
+                        release.ReleaseNotes.Add(new LocalizedText() {
+                            Language = language.Name,
+                            Text = language.InnerText.Trim()
+                        });
+                    }
                 }
                 release.VersionCodes = new List<long?>() { versionCode };
             });
