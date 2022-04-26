@@ -106,6 +106,18 @@ IOS ipa文件重签名
             commit.ChangesNotSentForReview = false;
             commit.Execute();
         }
+        static string GetMobileprovisionInfo(string file) {
+            var info = "";
+            ScorpioUtil.StartProcess("security", null, new string[] {
+                "cms",
+                "-D",
+                "-i",
+                file}, null, (process) => {
+                    info = process.StandardOutput.ReadToEnd();
+                }
+            );
+            return info;
+        }
         static void Androidpublisher(Perform perform, CommandLine commandLine, string[] args) {
             var authFile = commandLine.GetValue(ParameterAuth);
             var packageName = commandLine.GetValue(ParameterPackageName);
@@ -202,13 +214,16 @@ IOS ipa文件重签名
         }
         static void Resign(Perform perform, CommandLine commandLine, string[] args) {
             var resign = "ios_resign_with_ipa.sh";
+            var output = commandLine.GetValueDefault(ParameterOutput, "./");
+            var developer = commandLine.GetValue(ParameterDeveloper);
+
             FileUtil.CopyFile($"{ScorpioUtil.BaseDirectory}/{resign}", resign, true);
             ScorpioUtil.StartProcess("sh", null, new string[] {
                 resign,
                 commandLine.GetValue(ParameterIpa),
-                commandLine.GetValue(ParameterDeveloper),
+                developer,
                 commandLine.GetValue(ParameterProvision),
-                commandLine.GetValue(ParameterOutput)});
+                output});
             FileUtil.DeleteFile(resign);
         }
         static void Wget(Perform perform, CommandLine commandLine, string[] args) {
