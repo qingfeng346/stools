@@ -5,6 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "lookupMobileprovision",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/stools/bin/Debug/net6.0/stools.dll",
+            "args": ["lookupMobileprovision", "-f", "${workspaceFolder}/test.mobileprovision"],
+            "cwd": "${workspaceFolder}/stools",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
             "name": "lookupMetadata",
             "type": "coreclr",
             "request": "launch",
@@ -16,9 +27,15 @@
             "stopAtEntry": false
         },
         {
-            "name": ".NET Core Attach",
+            "name": "resign",
             "type": "coreclr",
-            "request": "attach"
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/stools/bin/Debug/net6.0/stools.dll",
+            "args": ["resign", "-ipa", "${workspaceFolder}/test.ipa", "-p", "${workspaceFolder}/test.mobileprovision", "-output", "${workspaceFolder}/"],
+            "cwd": "${workspaceFolder}/stools",
+            "console": "internalConsole",
+            "stopAtEntry": false
         }
     ]
 }
