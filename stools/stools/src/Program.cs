@@ -78,6 +78,7 @@ IOS ipa文件重签名
             perform.AddExecute("androidpublisher", HelpAndroidpublisher, Androidpublisher);
             perform.AddExecute("lookupMetadata", HelpLookupMetadata, LookupMetadata);
             perform.AddExecute("uploadMetadata", HelpUploadMetadata, UploadMetadata);
+            perform.AddExecute("lookupMobileprovision", "", LookupMobileprovision);
             perform.AddExecute("resign", HelpResign, Resign);
             perform.AddExecute("wget", HelpWget, Wget);
             perform.AddExecute("downloadMusic", HelpDownloadMusic, DownloadMusic);
@@ -211,6 +212,9 @@ IOS ipa文件重签名
             var password = commandLine.GetValue(ParameterPassword);
             var file = commandLine.GetValue(ParameterFile);
             ExecuteTMSTransporter(username, password, new[] { "-m", "upload", "-f", file });
+        }
+        static void LookupMobileprovision(Perform perform, CommandLine commandLine, string[] args) {
+            Console.WriteLine(GetMobileprovisionInfo(commandLine.GetValue(ParameterFile)));
         }
         static void Resign(Perform perform, CommandLine commandLine, string[] args) {
             var resign = "ios_resign_with_ipa.sh";
