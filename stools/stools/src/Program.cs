@@ -158,7 +158,7 @@ IOS ipa文件重签名
                 if (!string.IsNullOrWhiteSpace(releaseNote)) {
                     release.ReleaseNotes = new List<LocalizedText>();
                     var xmlDoc = new XmlDocument();
-                    xmlDoc.LoadXml(releaseNote);
+                    xmlDoc.Load(releaseNote);
                     foreach (XmlNode language in xmlDoc.DocumentElement) {
                         release.ReleaseNotes.Add(new LocalizedText() {
                             Language = language.Name,
@@ -219,14 +219,26 @@ IOS ipa文件重签名
         static void Resign(Perform perform, CommandLine commandLine, string[] args) {
             var resign = "ios_resign_with_ipa.sh";
             var output = commandLine.GetValueDefault(ParameterOutput, "./");
+            var provision = commandLine.GetValue(ParameterProvision);
             var developer = commandLine.GetValue(ParameterDeveloper);
-
+            if (string.IsNullOrEmpty(developer)) {
+                var mobileprovisionInfo = GetMobileprovisionInfo(provision);
+                var xmlDoc = new XmlDocument();
+                xmlDoc.LoadXml(mobileprovisionInfo);
+                var element = xmlDoc.DocumentElement["TeamName"];
+                // foreach (XmlNode language in xmlDoc.DocumentElement) {
+                //     // release.ReleaseNotes.Add(new LocalizedText() {
+                //     //     Language = language.Name,
+                //     //     Text = language.InnerText.Trim()
+                //     // });
+                // }
+            }
             FileUtil.CopyFile($"{ScorpioUtil.BaseDirectory}/{resign}", resign, true);
             ScorpioUtil.StartProcess("sh", null, new string[] {
                 resign,
                 commandLine.GetValue(ParameterIpa),
                 developer,
-                commandLine.GetValue(ParameterProvision),
+                provision,
                 output});
             FileUtil.DeleteFile(resign);
         }
