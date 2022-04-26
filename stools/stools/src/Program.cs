@@ -225,13 +225,13 @@ IOS ipa文件重签名
                 var mobileprovisionInfo = GetMobileprovisionInfo(provision);
                 var xmlDoc = new XmlDocument();
                 xmlDoc.LoadXml(mobileprovisionInfo);
-                var element = xmlDoc.DocumentElement["TeamName"];
-                // foreach (XmlNode language in xmlDoc.DocumentElement) {
-                //     // release.ReleaseNotes.Add(new LocalizedText() {
-                //     //     Language = language.Name,
-                //     //     Text = language.InnerText.Trim()
-                //     // });
-                // }
+                var dict = xmlDoc.DocumentElement["dict"];
+                foreach (XmlNode node in dict) {
+                    if (node.Name == "key" && node.InnerText == "TeamName") {
+                        developer = $"iPhone Distribution: {node.NextSibling.InnerText}";
+                        break;
+                    }
+                }
             }
             FileUtil.CopyFile($"{ScorpioUtil.BaseDirectory}/{resign}", resign, true);
             ScorpioUtil.StartProcess("sh", null, new string[] {
