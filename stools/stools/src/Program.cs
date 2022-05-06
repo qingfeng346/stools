@@ -82,6 +82,7 @@ IOS ipa文件重签名
             perform.AddExecute("resign", HelpResign, Resign);
             perform.AddExecute("wget", HelpWget, Wget);
             perform.AddExecute("downloadMusic", HelpDownloadMusic, DownloadMusic);
+            perform.AddExecute("downloadM3u8", "", DownloadM3u8());
             try {
                 perform.Start(args, null, null);
             } catch (System.Exception e) {
@@ -302,6 +303,9 @@ IOS ipa文件重签名
                 }));
             }
             Task.WaitAll(tasks.ToArray());
+        }
+        static void DownloadM3u8(Perform perform, CommandLine commandLine, string[] args) {
+
         }
     }
 }
