@@ -45,4 +45,6 @@ foreach ($platform in $platforms) {
         git checkout $aipPath
     }
 }
+Write-Host "生成完成"
 
+Write-Host "更新winget命令 wingetcreate update --urls https://github.com/qingfeng346/stools/releases/download/v$version/stools-$version-win-x64.msi --version $version Scorpio.stools"
