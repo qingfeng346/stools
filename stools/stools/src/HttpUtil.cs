@@ -23,13 +23,20 @@ public class HttpUtil {
         return await response.Content.ReadAsStringAsync();
     }
     public static async Task Download(string url, string file) {
+        await Download(url, file, true, false);
+    }
+    public static async Task Download(string url, string file, bool progress, bool checkSize) {
         var client = new HttpClient();
         var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
         var bytes = new byte[READ_LENGTH];
         using (var responseStream = await response.Content.ReadAsStreamAsync()) {
-            long length = (response.Content.Headers?.ContentLength ?? 0);
+            long? contentLength = response.Content.Headers?.ContentLength;
             long readed = 0;
             long update = DateTime.UtcNow.Ticks;
+            if (checkSize && contentLength != null && File.Exists(file) && new FileInfo(file).Length == contentLength) {
+                return;
+            }
+            long length = contentLength ?? 0;
             FileUtil.DeleteFile(file);
             using (var fileStream = new FileStream(file, FileMode.Create)) {
                 while (true) {
@@ -38,7 +45,7 @@ public class HttpUtil {
                     readed += size;
                     fileStream.Write(bytes, 0, size);
                     long now = DateTime.UtcNow.Ticks;
-                    if (now - update > 20000000) {
+                    if (now - update > 20000000 && progress) {
                         update = now;
                         Console.WriteLine($"{file} 进度: {readed.GetMemory()}/{length.GetMemory()}");
                     }

@@ -73,6 +73,10 @@ IOS ipa文件重签名
         private readonly static string[] ParameterIpa = { "--ipa", "-ipa" };
         private readonly static string[] ParameterProvision = { "--provision", "-provision", "-p" };
         private readonly static string[] ParameterDeveloper = { "--developer", "-developer", "-d" };
+        public class TSData {
+            public string url;
+            public int index;
+        }
         static void Main (string[] args) {
             Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
             var perform = new Perform ();
@@ -83,6 +87,7 @@ IOS ipa文件重签名
             perform.AddExecute ("resign", HelpResign, Resign);
             perform.AddExecute ("wget", HelpWget, Wget);
             perform.AddExecute ("downloadMusic", HelpDownloadMusic, DownloadMusic);
+            perform.AddExecute ("downloadM3u8", HelpDownloadMusic, DownloadM3u8);
             try {
                 perform.Start (args, null, null);
             } catch (System.Exception e) {
@@ -201,6 +206,17 @@ IOS ipa文件重签名
                 ScorpioUtil.StartProcess ("iTMSTransporter", null, argList);
             }
         }
+        static void ExecuteFFmpeg(params string[] args) {
+            if (ScorpioUtil.IsMacOS()) {
+                ScorpioUtil.StartProcess("ffmpeg", null, args);
+            } else if (ScorpioUtil.IsWindows()) {
+                ScorpioUtil.StartProcess("ffmpeg.exe", null, args, (process) => {
+                    process.StartInfo.CreateNoWindow = false;
+                });
+            } else if (ScorpioUtil.IsLinux()) {
+                ScorpioUtil.StartProcess("ffmpeg", null, args);
+            }
+        }
         static void LookupMetadata (Perform perform, CommandLine commandLine, string[] args) {
             var username = commandLine.GetValue (ParameterUsername);
             var password = commandLine.GetValue (ParameterPassword);
@@ -245,6 +261,14 @@ IOS ipa文件重签名
             });
             FileUtil.DeleteFile (resign);
         }
+        static string GetFilenameByUrl(string url) {
+            url = url.Substring(url.LastIndexOf("/") + 1);
+            var index = url.IndexOf("?");
+            if (index >= 0) {
+                return url.Substring(0, index);
+            }
+            return url;
+        }
         static void Wget (Perform perform, CommandLine commandLine, string[] args) {
             var urls = new List<string> ();
             urls.AddRange (commandLine.Args);
@@ -253,7 +277,7 @@ IOS ipa文件重签名
             var tasks = new List<Task> ();
             for (var i = 0; i < urls.Count; i++) {
                 var url = urls[i];
-                var output = outputs.Length > i ? outputs[i] : url.Substring (url.LastIndexOf ("/") + 1);
+                var output = outputs.Length > i ? outputs[i] : GetFilenameByUrl(url);
                 tasks.Add (Task.Run (async () => {
                     Logger.info ($"开始下载 : {url}");
                     await HttpUtil.Download (url, output);
@@ -305,6 +329,60 @@ IOS ipa文件重签名
                 }));
             }
             Task.WaitAll (tasks.ToArray ());
+        }
+        static void DownloadM3u8 (Perform perform, CommandLine commandLine, string[] args) {
+            var url = commandLine.Args.Count > 0 ? commandLine.Args[0] : null;
+            if (string.IsNullOrEmpty(url)) {
+                url = commandLine.GetValue(ParameterUrl);
+            }
+            var output = Path.GetFullPath(commandLine.GetValue(ParameterOutput));
+            string result = "";
+            Task.WaitAll(Task.Run(async () => { result = await HttpUtil.Get(url); }));
+            var baseUrl = url.Substring(0, url.LastIndexOf("/") + 1);
+            var lines = result.Split("\n");
+            var index = 1;
+            var tasks = new List<Task>();
+            var tsBase = output + ".ts";
+            FileUtil.CreateDirectory(tsBase);
+            var tsCount = 0;
+            var tsList = new Queue<TSData>();
+            for (var i = 0; i < lines.Length; i++) {
+                var line = lines[i];
+                if (line.StartsWith("#EXTINF")) {
+                    var tsUrl = lines[i + 1];
+                    i++;
+                    tsList.Enqueue(new TSData() { url = tsUrl.StartsWith("http") ? tsUrl : baseUrl + tsUrl, index = index++ });
+                }
+            }
+            var sync = new object();
+            var tsTotal = tsList.Count;
+            //开启16个线程同时下载
+            for (var i = 0; i < 16; i++) {
+                var task = Task.Run(async () => {
+                Start:
+                    TSData data = null;
+                    lock (sync) {
+                        if (tsList.Count > 0) {
+                            data = tsList.Dequeue();
+                        }
+                    }
+                    if (data == null) { return; }
+                    await HttpUtil.Download(data.url, String.Format("{0}/{1:00000}.ts", tsBase, data.index), false, true);
+                    Logger.info($"下载片段完成,进度 {++tsCount}/{tsTotal}");
+                    goto Start;
+                });
+                tasks.Add(task);
+            }
+            Task.WaitAll(tasks.ToArray());
+            var fileList = new List<string>();
+            for (var i = 0; i < tsTotal; i++) {
+                fileList.Add(string.Format("file '{0}'", Path.GetFullPath(string.Format("{0}/{1:00000}.ts", tsBase, i + 1))));
+            }
+            File.WriteAllLines($"{tsBase}/file.txt", fileList.ToArray());
+            FileUtil.DeleteFile(output);
+            FileUtil.DeleteFolder(output, null, true);
+            Logger.info("合并ts文件...");
+            ExecuteFFmpeg("-f", "concat", "-safe", "0", "-i", $"{tsBase}/file.txt", "-c", "copy", output);
         }
     }
 }

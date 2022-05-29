@@ -21,9 +21,13 @@
       "commandName": "Project",
       "commandLineArgs": "downloadmusic -type cloud -id 5280145"
     },
-    "downloadurls": {
+    "downloadmusic": {
       "commandName": "Project",
       "commandLineArgs": "downloadmusic -url https://www.kuwo.cn/play_detail/440616 https://music.163.com/#/song?id=5272611&userid=30671613 https://www.kugou.com/song/#hash=4EC10B1B7B9BEB2F0ADB89BBEC5F664B&album_id=960399"
+    },
+    "downloadm3u8": {
+      "commandName": "Project",
+      "commandLineArgs": "downloadm3u8 https://pcvideoctyunott.titan.mgtv.com/c1/internettv/2022/04/22_0/F3BE8058AF5CB7C24B8873CB691340A2_20220426_1_1_2866_ts/6F53E30874EC8B865735D712744CC6EC.m3u8?arange=0&pm=5EcvpDPJjYV3FI0Nassuiej1BKGcFzJel1vlT5i0tixTJgRy9T86NwZ9sFOh3E23WQWoMos5Zo~fcJvlad8MQ0TOkl8H3gjEtGQC0ASd68~YzF1kbnPBKJwMBgPUFtPZtrBkl5nB~obJzwWcqQJyy9jfPw_6RoROiMZ_fdyD51iYkdrAdyXLcwwYPUCJIVoEe~GD9C2yLB39EdO4twMWGmE_jhLYMbonkgclWrk72yOa4v9YkQ3mTPnEzVbNWsm1UVPVwFj9~ufBvVakPRbvxQ7AWamWDEGJmt~kPxdVsnYv3QtHwtXEbdWqhYMVp232~1584w7CCrg_0Gz97wP76_sCQlNAWfWbJLhVU0ryvFZjM27Ju6K3CaST60psDrG1psuYStr3D94-&mr=FJMUsV25nPuFci7haYTNK_nnqJOaqhh2Fgi5EINr1ADfkW0UZff1RwXB94XfqxDCVk8PQGUagSmP5DzWHhIr8qJbRXjRSCwAACu8h7eyZyHJ1saEnyuXiy4XkCvkbhqhgIs~ffYZAyP5qqV4MvJot~HqHg_LKjL3t2gEoIuQzrA5maem2t2edA--&mac_id=6A-A8-2E-44-A1-FB&version=6.0.403.383.3.YEF_TVAPP.0.0_Release&scid=25124&cpno=6y17vy&ruid=e9a7bec2afaa498d&sh=1 -output C:/Users/while/Desktop/aaa.mp4"
     }
   }
 }
