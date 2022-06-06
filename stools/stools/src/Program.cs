@@ -55,6 +55,12 @@ IOS ipa文件重签名
     --type|-type|-t             类型,默认kuwo 列表 kuwo(酷我) kugou(酷狗) cloud(网易云音乐)
     --output|-output|-o         导出目录,默认当前目录
 ";
+        private readonly static string HelpDownloadM3u8 = @"
+下载M3U8文件
+    --url|-url                  (必填)M3U8地址
+    --output|-output|-o         导出文件,具体文件路径
+    --queue|-queue|-q           同时下载队列数量,默认16
+";
         private readonly static string[] ParameterAuth = new [] { "--auth", "-auth" };
         private readonly static string[] ParameterPackageName = new [] { "--packageName", "-packageName" };
         private readonly static string[] ParameterVersion = new [] { "--version", "-version" };
@@ -73,6 +79,7 @@ IOS ipa文件重签名
         private readonly static string[] ParameterIpa = { "--ipa", "-ipa" };
         private readonly static string[] ParameterProvision = { "--provision", "-provision", "-p" };
         private readonly static string[] ParameterDeveloper = { "--developer", "-developer", "-d" };
+        private readonly static string[] ParameterQueue = { "--queue", "-queue", "-q" };
         public class TSData {
             public string url;
             public int index;
@@ -87,7 +94,7 @@ IOS ipa文件重签名
             perform.AddExecute ("resign", HelpResign, Resign);
             perform.AddExecute ("wget", HelpWget, Wget);
             perform.AddExecute ("downloadMusic", HelpDownloadMusic, DownloadMusic);
-            perform.AddExecute ("downloadM3u8", HelpDownloadMusic, DownloadM3u8);
+            perform.AddExecute ("downloadM3u8", HelpDownloadM3u8, DownloadM3u8);
             try {
                 perform.Start (args, null, null);
             } catch (System.Exception e) {
@@ -335,7 +342,11 @@ IOS ipa文件重签名
             if (string.IsNullOrEmpty(url)) {
                 url = commandLine.GetValue(ParameterUrl);
             }
-            var output = Path.GetFullPath(commandLine.GetValue(ParameterOutput));
+            var output = Path.GetFullPath(commandLine.GetValueDefault(ParameterOutput, Environment.TickCount64 + ".mp4"));
+            int queueCount = 16;
+            if (int.TryParse(commandLine.GetValue(ParameterQueue), out var queuePar)) {
+                queueCount = Math.Max(1, queuePar);
+            }
             string result = "";
             Task.WaitAll(Task.Run(async () => { result = await HttpUtil.Get(url); }));
             var baseUrl = url.Substring(0, url.LastIndexOf("/") + 1);
@@ -357,7 +368,7 @@ IOS ipa文件重签名
             var sync = new object();
             var tsTotal = tsList.Count;
             //开启16个线程同时下载
-            for (var i = 0; i < 16; i++) {
+            for (var i = 0; i < queueCount; i++) {
                 var task = Task.Run(async () => {
                 Start:
                     TSData data = null;
