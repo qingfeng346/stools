@@ -36,6 +36,10 @@ namespace Scorpio.stools {
     --password|-password|-p     (必填)服务账号密码
     --file|-file|-f             (必填)Metadata所在目录
 ";
+        private readonly static string HelpLookupMobileprovision = @"
+查看mobileprovision文件
+    --file|-file|-f             (必填)Mobileprovision文件路径
+";
         private readonly static string HelpResign = @"
 IOS ipa文件重签名
     --ipa|-ipa                  (必填)ipa原文件
@@ -90,7 +94,7 @@ IOS ipa文件重签名
             perform.AddExecute ("androidpublisher", HelpAndroidpublisher, Androidpublisher);
             perform.AddExecute ("lookupMetadata", HelpLookupMetadata, LookupMetadata);
             perform.AddExecute ("uploadMetadata", HelpUploadMetadata, UploadMetadata);
-            perform.AddExecute ("lookupMobileprovision", "", LookupMobileprovision);
+            perform.AddExecute ("lookupMobileprovision", HelpLookupMobileprovision, LookupMobileprovision);
             perform.AddExecute ("resign", HelpResign, Resign);
             perform.AddExecute ("wget", HelpWget, Wget);
             perform.AddExecute ("downloadMusic", HelpDownloadMusic, DownloadMusic);
