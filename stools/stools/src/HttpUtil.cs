@@ -22,10 +22,10 @@ public class HttpUtil {
         var response = await client.SendAsync(message);
         return await response.Content.ReadAsStringAsync();
     }
-    public static async Task Download(string url, string file) {
-        await Download(url, file, true, false);
+    public static async Task<long> Download(string url, string file) {
+        return await Download(url, file, true, false);
     }
-    public static async Task Download(string url, string file, bool progress, bool checkSize) {
+    public static async Task<long> Download(string url, string file, bool progress, bool checkSize) {
         var client = new HttpClient();
         var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
         var bytes = new byte[READ_LENGTH];
@@ -34,7 +34,7 @@ public class HttpUtil {
             long readed = 0;
             long update = DateTime.UtcNow.Ticks;
             if (checkSize && contentLength != null && File.Exists(file) && new FileInfo(file).Length == contentLength) {
-                return;
+                return contentLength ?? 0;
             }
             long length = contentLength ?? 0;
             FileUtil.DeleteFile(file);
@@ -51,6 +51,7 @@ public class HttpUtil {
                     }
                 }
             }
+            return readed;
         }
     }
 }

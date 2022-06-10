@@ -217,16 +217,17 @@ IOS ipa文件重签名
                 ScorpioUtil.StartProcess ("iTMSTransporter", null, argList);
             }
         }
-        static void ExecuteFFmpeg(params string[] args) {
+        static int ExecuteFFmpeg(params string[] args) {
             if (ScorpioUtil.IsMacOS()) {
-                ScorpioUtil.StartProcess("ffmpeg", null, args);
+                return ScorpioUtil.StartProcess("ffmpeg", null, args);
             } else if (ScorpioUtil.IsWindows()) {
-                ScorpioUtil.StartProcess("ffmpeg.exe", null, args, (process) => {
+                return ScorpioUtil.StartProcess("ffmpeg.exe", null, args, (process) => {
                     process.StartInfo.CreateNoWindow = false;
                 });
             } else if (ScorpioUtil.IsLinux()) {
-                ScorpioUtil.StartProcess("ffmpeg", null, args);
+                return ScorpioUtil.StartProcess("ffmpeg", null, args);
             }
+            return -1;
         }
         static void LookupMetadata (Perform perform, CommandLine commandLine, string[] args) {
             var username = commandLine.GetValue (ParameterUsername);
@@ -371,6 +372,7 @@ IOS ipa文件重签名
             }
             var sync = new object();
             var tsTotal = tsList.Count;
+            var downloaded = 0L;
             //开启16个线程同时下载
             for (var i = 0; i < queueCount; i++) {
                 var task = Task.Run(async () => {
@@ -382,8 +384,9 @@ IOS ipa文件重签名
                         }
                     }
                     if (data == null) { return; }
-                    await HttpUtil.Download(data.url, String.Format("{0}/{1:00000}.ts", tsBase, data.index), false, true);
-                    Logger.info($"下载片段完成,进度 {++tsCount}/{tsTotal}");
+                    var length = await HttpUtil.Download(data.url, String.Format("{0}/{1:00000}.ts", tsBase, data.index), false, true);
+                    downloaded += length;
+                    Logger.info($"下载进度:{++tsCount}/{tsTotal}  已下载:{downloaded.GetMemory()}");
                     goto Start;
                 });
                 tasks.Add(task);
@@ -397,7 +400,12 @@ IOS ipa文件重签名
             FileUtil.DeleteFile(output);
             FileUtil.DeleteFolder(output, null, true);
             Logger.info("合并ts文件...");
-            ExecuteFFmpeg("-f", "concat", "-safe", "0", "-i", $"{tsBase}/file.txt", "-c", "copy", output);
+            var exitCode = ExecuteFFmpeg("-f", "concat", "-safe", "0", "-i", $"{tsBase}/file.txt", "-c", "copy", output);
+            if (exitCode == 0) {
+                Logger.info($"下载完成:{output}");
+            } else {
+                Logger.error($"下载失败 ExitCode:{exitCode}");
+            }
         }
     }
 }
