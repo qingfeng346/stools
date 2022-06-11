@@ -400,7 +400,7 @@ IOS ipa文件重签名
             FileUtil.DeleteFile(output);
             FileUtil.DeleteFolder(output, null, true);
             Logger.info("合并ts文件...");
-            var exitCode = ExecuteFFmpeg("-f", "concat", "-safe", "0", "-i", $"{tsBase}/file.txt", "-c", "copy", output);
+            var exitCode = ExecuteFFmpeg("-f", "concat", "-safe", "0", "-i", $"{tsBase}/file.txt", "-vcodec", "copy", "-acodec", "copy", output);
             if (exitCode == 0) {
                 Logger.info($"下载完成:{output}");
             } else {
