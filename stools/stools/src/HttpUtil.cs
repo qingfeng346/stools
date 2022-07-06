@@ -14,7 +14,6 @@ public class HttpUtil {
         handler.ClientCertificateOptions = ClientCertificateOption.Automatic;
         var client = new HttpClient(handler);
         var message = new HttpRequestMessage(HttpMethod.Get, url);
-        //message.Headers.TryAddWithoutValidation("Content-Type", "application/json; charset=utf-8");
         preRequest?.Invoke(message);
 #if DEBUG
         Console.WriteLine($"Request Url : {url}");

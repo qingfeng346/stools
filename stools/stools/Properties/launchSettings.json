@@ -23,6 +23,11 @@
     "downloadm3u8": {
       "commandName": "Project",
       "commandLineArgs": "downloadm3u8 https://new.iskcd.com/20220422/x6wRl3BY/1100kb/hls/index.m3u8 -output aaa.mp4"
+    },
+    "downloadmusicfile": {
+      "commandName": "Project",
+      "commandLineArgs": "downloadmusic ../urls.txt",
+      "workingDirectory": "$(ProjectDir)"
     }
   }
 }

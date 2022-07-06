@@ -13,6 +13,7 @@ public class MusicKuwo : MusicBase {
         public string pic;
         public string pic120;
         public string releaseDate;
+        public int track;
     }
     protected override async Task ParseInfo(string id) {
         var musicInfo = JsonConvert.DeserializeObject<MusicInfo>(await HttpUtil.Get($"https://wapi.kuwo.cn/api/www/music/musicInfo?mid={id}"));
@@ -22,5 +23,12 @@ public class MusicKuwo : MusicBase {
         Singer.Add(musicInfo.data.artist);
         CoverUrls.Add(musicInfo.data.pic);
         Mp3Urls.Add(downloadUrl);
+        Track = (uint)musicInfo.data.track;
+        if (!string.IsNullOrEmpty(musicInfo.data.releaseDate)) {
+            var index = musicInfo.data.releaseDate.IndexOf("-");
+            if (index >= 0 && int.TryParse(musicInfo.data.releaseDate.Substring(0, index), out var year)) {
+                Year = (uint)year;
+            }
+        }
     }
 }

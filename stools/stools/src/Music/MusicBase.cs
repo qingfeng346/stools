@@ -16,6 +16,8 @@ public abstract class MusicBase {
     public string Name { get; protected set; }
     /// <summary> 专辑名字 </summary>
     public string Album { get; protected set; }
+    public uint Year { get; protected set; }
+    public uint Track { get; protected set; }
     /// <summary> 演唱者 </summary>
     public List<string> Singer { get; } = new List<string>();
     /// <summary> 封面图片地址,可能有多个地址,顺序尝试下载 </summary>
@@ -62,6 +64,8 @@ public abstract class MusicBase {
         file.Tag.Title = Name;
         file.Tag.Performers = Singer.ToArray();
         file.Tag.Album = Album;
+        file.Tag.Year = Year;
+        file.Tag.Track = Track;
         foreach (var coverUrl in CoverUrls) {
             try {
                 var imageName = $"{Singer.GetSingers()} - {Name}.jpg";
