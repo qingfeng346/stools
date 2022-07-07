@@ -316,7 +316,38 @@ IOS ipa文件重签名
                         }
                     }
                 }
+                foreach (var url in urls) {
+                    await DownloadAlbumUrl(url, output);
+                }
             }));
+        }
+        static async Task DownloadAlbumUrl(string url, string output) {
+            if (string.IsNullOrWhiteSpace(url)) { return; }
+            if (FileUtil.FileExist(url)) { url = Path.GetFullPath(url); }
+            var uri = new Uri(url);
+            if (uri.Scheme == Uri.UriSchemeFile) {
+                var lines = File.ReadAllLines(uri.LocalPath);
+                foreach (var line in lines) {
+                    await DownloadAlbumUrl(line, output);
+                }
+                return;
+            }
+            string type;
+            string id;
+            if (uri.Host.Contains("kuwo")) {
+                type = MusicFactory.Kuwo;
+                id = url.Substring(url.LastIndexOf("/") + 1);
+                if (id.IndexOf("?") >= 0) {
+                    id = id.Substring(0, id.IndexOf("?"));
+                }
+            } else {
+                throw new System.Exception($"不支持的源数据:{url}");
+            }
+            var music = MusicFactory.Create(type);
+            var musicList = await music.ParseAlbum(id);
+            foreach (var musicid in musicList) {
+                await music.Download(musicid, output);
+            }
         }
         static void DownloadMusic (Perform perform, CommandLine commandLine, string[] args) {
             var tasks = new List<Task> ();
