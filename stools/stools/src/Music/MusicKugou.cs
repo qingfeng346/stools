@@ -32,7 +32,7 @@ public class MusicKugou : MusicBase {
         Mp3Urls.Add(musicInfo.data.play_url);
         Mp3Urls.Add(musicInfo.data.play_backup_url);
     }
-    public override Task<List<string>> ParseAlbum(string id) {
+    public override Task<AlbumInfo> ParseAlbum(string id) {
         throw new System.NotImplementedException();
     }
 }

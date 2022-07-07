@@ -9,6 +9,10 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 
 public abstract class MusicBase {
+    public class AlbumInfo {
+        public string name;
+        public List<string> musicList;
+    }
     public abstract string Source { get; }
     /// <summary> 歌曲ID, 不同音乐平台的ID可能相同 </summary>
     public string ID { get; private set; }
@@ -29,7 +33,7 @@ public abstract class MusicBase {
     protected abstract Task ParseInfo(string id);
 
     //解析专辑
-    public abstract Task<List<string>> ParseAlbum(string id);
+    public abstract Task<AlbumInfo> ParseAlbum(string id);
 
     //下载文件
     public async Task Download(string id, string path) {

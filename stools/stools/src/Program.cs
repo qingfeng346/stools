@@ -80,6 +80,7 @@ IOS ipa文件重签名
         private readonly static string[] ParameterType = { "--type", "-type", "-t" };
         private readonly static string[] ParameterID = { "--id", "-id" };
         private readonly static string[] ParameterUrl = { "--url", "-url" };
+        private readonly static string[] ParameterNamePath = { "--namepath", "-namepath" };
         private readonly static string[] ParameterIpa = { "--ipa", "-ipa" };
         private readonly static string[] ParameterProvision = { "--provision", "-provision", "-p" };
         private readonly static string[] ParameterDeveloper = { "--developer", "-developer", "-d" };
@@ -305,30 +306,33 @@ IOS ipa文件重签名
             var urls = new List<string>();
             urls.AddRange(commandLine.Args);
             urls.AddRange(commandLine.GetValues(ParameterUrl));
+            var createPath = commandLine.HadValue(ParameterNamePath);
             var ids = commandLine.GetValues(ParameterID);
             Task.WaitAll(Task.Run(async () => {
                 if (ids.Length > 0) {
                     var music = MusicFactory.Create(commandLine.GetValueDefault(ParameterType, ""));
                     foreach (var id in ids) {
-                        var musicList = await music.ParseAlbum(id);
-                        foreach (var musicid in musicList) {
-                            await music.Download(musicid, output);
+                        var albumInfo = await music.ParseAlbum(id);
+                        var outputPath = createPath ? Path.Combine(output, albumInfo.name) : output;
+                        foreach (var musicid in albumInfo.musicList) {
+                            await music.Download(musicid, outputPath);
                         }
                     }
                 }
                 foreach (var url in urls) {
-                    await DownloadAlbumUrl(url, output);
+                    await DownloadAlbumUrl(url, output, createPath);
                 }
             }));
         }
-        static async Task DownloadAlbumUrl(string url, string output) {
+        static async Task DownloadAlbumUrl(string url, string output, bool createPath) {
             if (string.IsNullOrWhiteSpace(url)) { return; }
             if (FileUtil.FileExist(url)) { url = Path.GetFullPath(url); }
             var uri = new Uri(url);
             if (uri.Scheme == Uri.UriSchemeFile) {
                 var lines = File.ReadAllLines(uri.LocalPath);
                 foreach (var line in lines) {
-                    await DownloadAlbumUrl(line, output);
+                    if (line.StartsWith("#")) { continue; }
+                    await DownloadAlbumUrl(line, output, createPath);
                 }
                 return;
             }
@@ -344,9 +348,10 @@ IOS ipa文件重签名
                 throw new System.Exception($"不支持的源数据:{url}");
             }
             var music = MusicFactory.Create(type);
-            var musicList = await music.ParseAlbum(id);
-            foreach (var musicid in musicList) {
-                await music.Download(musicid, output);
+            var albumInfo = await music.ParseAlbum(id);
+            var outputPath = createPath ? Path.Combine(output, albumInfo.name) : output;
+            foreach (var musicid in albumInfo.musicList) {
+                await music.Download(musicid, outputPath);
             }
         }
         static void DownloadMusic (Perform perform, CommandLine commandLine, string[] args) {
@@ -375,6 +380,7 @@ IOS ipa文件重签名
             if (uri.Scheme == Uri.UriSchemeFile) {
                 var lines = File.ReadAllLines(uri.LocalPath);
                 foreach (var line in lines) {
+                    if (line.StartsWith("#")) { continue; }
                     await DownloadMusicUrl(line, output);
                 }
                 return;

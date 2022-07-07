@@ -16,11 +16,11 @@ public class MusicKuwo : MusicBase {
         public string releaseDate;
         public int track;
     }
-    public class AlbumInfo {
+    public class KuwoAlbumInfo {
         public int code;
-        public AlbumData data;
+        public KuwoAlbumData data;
     }
-    public class AlbumData {
+    public class KuwoAlbumData {
         public string artist;   //歌手
         public string releaseDate;
         public string album;
@@ -28,9 +28,9 @@ public class MusicKuwo : MusicBase {
         public string pic;
         public string albuminfo;
         public string lang;
-        public List<AlbumMusic> musicList;
+        public List<KuwoAlbumMusic> musicList;
     }
-    public class AlbumMusic {
+    public class KuwoAlbumMusic {
         public int rid;
         public string name;
         public int track;
@@ -51,8 +51,8 @@ public class MusicKuwo : MusicBase {
             }
         }
     }
-    public override async Task<List<string>> ParseAlbum(string id) {
-        var albumInfo = JsonConvert.DeserializeObject<AlbumInfo>(await HttpUtil.Get($"https://wapi.kuwo.cn/api/www/album/albumInfo?albumId={id}"));
-        return albumInfo.data.musicList.ConvertAll(_ => _.rid.ToString());
+    public override async Task<AlbumInfo> ParseAlbum(string id) {
+        var albumInfo = JsonConvert.DeserializeObject<KuwoAlbumInfo>(await HttpUtil.Get($"https://wapi.kuwo.cn/api/www/album/albumInfo?albumId={id}"));
+        return new AlbumInfo() { name = albumInfo.data.album, musicList = albumInfo.data.musicList.ConvertAll(_ => _.rid.ToString()) };
     }
 }
