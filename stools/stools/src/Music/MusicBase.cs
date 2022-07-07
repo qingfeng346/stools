@@ -28,18 +28,34 @@ public abstract class MusicBase {
     //解析信息
     protected abstract Task ParseInfo(string id);
 
+    //解析专辑
+    public abstract Task<List<string>> ParseAlbum(string id);
+
     //下载文件
     public async Task Download(string id, string path) {
         ID = id;
         Logger.info($"开始解析数据  来源:{Source} ID:{id}");
-        for (var i = 0; i < 5; ++i) {
+        Name = "";
+        Album = "";
+        Year = 0;
+        Track = 0;
+        Singer.Clear();
+        CoverUrls.Clear();
+        Mp3Urls.Clear();
+        var count = 5;
+        var success = false;
+        for (var i = 0; i < count; ++i) {
             try {
                 await ParseInfo(id);
+                success = true;
                 break;
             } catch (Exception ex) {
-                Logger.error($"解析数据出错,一秒后重试 {i+1}/3 : {ex}");
-                Thread.Sleep(1000);
+                Logger.error($"解析数据出错,一秒后重试 {i+1}/{count} : {ex}");
+                Thread.Sleep(1500);
             }
+        }
+        if (!success) {
+            throw new Exception("解析音乐数据出错");
         }
         await DownloadFile(path);
     }
@@ -68,8 +84,7 @@ public abstract class MusicBase {
         file.Tag.Track = Track;
         foreach (var coverUrl in CoverUrls) {
             try {
-                var imageName = $"{Singer.GetSingers()} - {Name}.jpg";
-                var imagePath = Path.Combine(savePath, imageName);
+                var imagePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.png");
                 Logger.info($"尝试下载封面 : {coverUrl}");
                 await HttpUtil.Download(coverUrl, imagePath);
                 ResizeImage(imagePath, 512);

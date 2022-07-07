@@ -26,7 +26,12 @@
     },
     "downloadmusicfile": {
       "commandName": "Project",
-      "commandLineArgs": "downloadmusic ../urls.txt",
+      "commandLineArgs": "downloadmusic C:\\Users\\qingf\\Desktop\\音乐\\乐行者\\urls.txt",
+      "workingDirectory": "$(ProjectDir)"
+    },
+    "downloadalbum": {
+      "commandName": "Project",
+      "commandLineArgs": "downloadalbum -type kuwo -id 4533",
       "workingDirectory": "$(ProjectDir)"
     }
   }

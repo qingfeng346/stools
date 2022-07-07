@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 public class MusicKugou : MusicBase {
     public override string Source => "酷狗";
     public class MusicInfo {
@@ -30,5 +31,8 @@ public class MusicKugou : MusicBase {
         CoverUrls.Add(musicInfo.data.img);
         Mp3Urls.Add(musicInfo.data.play_url);
         Mp3Urls.Add(musicInfo.data.play_backup_url);
+    }
+    public override Task<List<string>> ParseAlbum(string id) {
+        throw new System.NotImplementedException();
     }
 }

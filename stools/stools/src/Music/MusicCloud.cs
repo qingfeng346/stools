@@ -37,4 +37,7 @@ public class MusicCloud : MusicBase {
         }
         Mp3Urls.Add($"http://music.163.com/song/media/outer/url?id={id}.mp3");
     }
+    public override Task<List<string>> ParseAlbum(string id) {
+        throw new System.NotImplementedException();
+    }
 }

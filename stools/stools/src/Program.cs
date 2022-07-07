@@ -97,6 +97,7 @@ IOS ipa文件重签名
             perform.AddExecute ("lookupMobileprovision", HelpLookupMobileprovision, LookupMobileprovision);
             perform.AddExecute ("resign", HelpResign, Resign);
             perform.AddExecute ("wget", HelpWget, Wget);
+            perform.AddExecute ("downloadAlbum", HelpDownloadMusic, DownloadAlbum);
             perform.AddExecute ("downloadMusic", HelpDownloadMusic, DownloadMusic);
             perform.AddExecute ("downloadM3u8", HelpDownloadM3u8, DownloadM3u8);
             try {
@@ -298,6 +299,25 @@ IOS ipa文件重签名
             }
             Task.WaitAll (tasks.ToArray ());
         }
+        static void DownloadAlbum(Perform perform, CommandLine commandLine, string[] args) {
+            var tasks = new List<Task>();
+            var output = commandLine.GetValueDefault(ParameterOutput, "./");
+            var urls = new List<string>();
+            urls.AddRange(commandLine.Args);
+            urls.AddRange(commandLine.GetValues(ParameterUrl));
+            var ids = commandLine.GetValues(ParameterID);
+            Task.WaitAll(Task.Run(async () => {
+                if (ids.Length > 0) {
+                    var music = MusicFactory.Create(commandLine.GetValueDefault(ParameterType, ""));
+                    foreach (var id in ids) {
+                        var musicList = await music.ParseAlbum(id);
+                        foreach (var musicid in musicList) {
+                            await music.Download(musicid, output);
+                        }
+                    }
+                }
+            }));
+        }
         static void DownloadMusic (Perform perform, CommandLine commandLine, string[] args) {
             var tasks = new List<Task> ();
             var output = commandLine.GetValueDefault (ParameterOutput, "./");
@@ -305,24 +325,24 @@ IOS ipa文件重签名
             urls.AddRange (commandLine.Args);
             urls.AddRange (commandLine.GetValues (ParameterUrl));
             var ids = commandLine.GetValues (ParameterID);
-            if (ids.Length > 0) {
-                var music = MusicFactory.Create (commandLine.GetValueDefault (ParameterType, ""));
-                foreach (var id in ids) {
-                    tasks.Add (Task.Run (async () => {
-                        await music.Download (id, output);
-                    }));
+            Task.WaitAll(Task.Run(async () => {
+                if (ids.Length > 0) {
+                    var music = MusicFactory.Create(commandLine.GetValueDefault(ParameterType, ""));
+                    foreach (var id in ids) {
+                        await music.Download(id, output);
+                    }
                 }
-            }
-            foreach (var url in urls) {
-                tasks.Add (Task.Run (async () => { await DownloadMusicUrl(url, output); }));
-            }
-            Task.WaitAll (tasks.ToArray ());
+                foreach (var url in urls) {
+                    await DownloadMusicUrl(url, output);
+                }
+            }));
         }
         static async Task DownloadMusicUrl(string url, string output) {
+            if (string.IsNullOrWhiteSpace(url)) { return; }
             if (FileUtil.FileExist(url)) { url = Path.GetFullPath(url); }
             var uri = new Uri(url);
             if (uri.Scheme == Uri.UriSchemeFile) {
-                var lines = File.ReadAllLines(uri.AbsolutePath);
+                var lines = File.ReadAllLines(uri.LocalPath);
                 foreach (var line in lines) {
                     await DownloadMusicUrl(line, output);
                 }
