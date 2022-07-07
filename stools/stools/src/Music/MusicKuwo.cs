@@ -36,7 +36,8 @@ public class MusicKuwo : MusicBase {
         public int track;
     }
     protected override async Task ParseInfo(string id) {
-        var musicInfo = JsonConvert.DeserializeObject<MusicInfo>(await HttpUtil.Get($"https://wapi.kuwo.cn/api/www/music/musicInfo?mid={id}"));
+        var result = await HttpUtil.Get($"https://wapi.kuwo.cn/api/www/music/musicInfo?mid={id}");
+        var musicInfo = JsonConvert.DeserializeObject<MusicInfo>(result);
         var downloadUrl = await HttpUtil.Get($"http://antiserver.kuwo.cn/anti.s?type=convert_url&rid={id}&format=mp3|aac&response=url");
         Name = musicInfo.data.name;
         Album = musicInfo.data.album;

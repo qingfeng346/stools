@@ -6,7 +6,7 @@
     },
     "kuwo": {
       "commandName": "Project",
-      "commandLineArgs": "downloadmusic -id 324244"
+      "commandLineArgs": "downloadmusic -id 215257"
     },
     "kugou": {
       "commandName": "Project",

@@ -9,7 +9,7 @@ public class HttpUtil {
     private const int READ_LENGTH = 8192;
     public static async Task<string> Get(string url, Action<HttpRequestMessage> preRequest = null) {
         using (var handler = new HttpClientHandler()) {
-            handler.AllowAutoRedirect = true;
+            handler.AllowAutoRedirect = false;
             handler.UseCookies = false;
             handler.Credentials = CredentialCache.DefaultCredentials;
             handler.ClientCertificateOptions = ClientCertificateOption.Automatic;

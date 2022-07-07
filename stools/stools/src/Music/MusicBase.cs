@@ -46,7 +46,7 @@ public abstract class MusicBase {
         Singer.Clear();
         CoverUrls.Clear();
         Mp3Urls.Clear();
-        var count = 5;
+        var count = 10;
         var success = false;
         for (var i = 0; i < count; ++i) {
             try {
@@ -55,7 +55,7 @@ public abstract class MusicBase {
                 break;
             } catch (Exception ex) {
                 Logger.error($"解析数据出错,一秒后重试 {i+1}/{count} : {ex}");
-                Thread.Sleep(1500);
+                await Task.Delay(1000);
             }
         }
         if (!success) {
