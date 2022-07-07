@@ -331,7 +331,7 @@ IOS ipa文件重签名
             if (uri.Scheme == Uri.UriSchemeFile) {
                 var lines = File.ReadAllLines(uri.LocalPath);
                 foreach (var line in lines) {
-                    if (line.StartsWith("#")) { continue; }
+                    if (line.StartsWith("#") || line.StartsWith(";")) { continue; }
                     await DownloadAlbumUrl(line, output, createPath);
                 }
                 return;
@@ -380,7 +380,7 @@ IOS ipa文件重签名
             if (uri.Scheme == Uri.UriSchemeFile) {
                 var lines = File.ReadAllLines(uri.LocalPath);
                 foreach (var line in lines) {
-                    if (line.StartsWith("#")) { continue; }
+                    if (line.StartsWith("#") || line.StartsWith(";")) { continue; }
                     await DownloadMusicUrl(line, output);
                 }
                 return;
