@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Threading;
 using Scorpio.Commons;
 using System;
 using System.IO;
@@ -9,6 +8,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 
 public abstract class MusicBase {
+    public const int RetryTotal = 10;
     public class AlbumInfo {
         public string name;
         public List<string> musicList;
@@ -29,12 +29,6 @@ public abstract class MusicBase {
     /// <summary> mp3下载地址,可能有多个地址,顺序尝试下载 </summary>
     public List<string> Mp3Urls { get; } = new List<string>();
 
-    //解析信息
-    protected abstract Task ParseInfo(string id);
-
-    //解析专辑
-    public abstract Task<AlbumInfo> ParseAlbum(string id);
-
     //下载文件
     public async Task Download(string id, string path) {
         ID = id;
@@ -46,15 +40,14 @@ public abstract class MusicBase {
         Singer.Clear();
         CoverUrls.Clear();
         Mp3Urls.Clear();
-        var count = 10;
         var success = false;
-        for (var i = 0; i < count; ++i) {
+        for (var i = 0; i < RetryTotal; ++i) {
             try {
                 await ParseInfo(id);
                 success = true;
                 break;
             } catch (Exception ex) {
-                Logger.error($"解析数据出错,一秒后重试 {i+1}/{count} : {ex}");
+                Logger.error($"解析数据出错,一秒后重试 {i + 1}/{RetryTotal} : {ex}");
                 await Task.Delay(1000);
             }
         }
@@ -63,7 +56,22 @@ public abstract class MusicBase {
         }
         await DownloadFile(path);
     }
-    
+    public async Task<AlbumInfo> ParseAlbum(string id) {
+        for (var i = 0; i < RetryTotal; ++i) {
+            try {
+                return await ParseAlbum_impl(id);
+            } catch (Exception ex) {
+                Logger.error($"解析专辑出错,一秒后重试 {i + 1}/{RetryTotal} : {ex}");
+                await Task.Delay(1000);
+            }
+        }
+        throw new Exception("解析专辑信息出错");
+    }
+
+    //解析信息
+    protected abstract Task ParseInfo(string id);
+    //解析专辑
+    protected abstract Task<AlbumInfo> ParseAlbum_impl(string id);
     async Task DownloadFile(string savePath) {
         FileUtil.CreateDirectory(savePath);
         Logger.info("解析完成,开始下载 id:{0} 名字:{1}  歌手:{2}  专辑:{3}", ID, Name, Singer.GetSingers(), Album);
