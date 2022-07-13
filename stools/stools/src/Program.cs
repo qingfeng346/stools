@@ -54,9 +54,17 @@ IOS ipa文件重签名
 ";
         private readonly static string HelpDownloadMusic = @"
 下载音乐
-    --url|-url                  音乐详情链接,有id参数时 此参数无效
+    --url|-url                  音乐详情链接
     --id|-id                    音乐ID
     --type|-type|-t             类型,默认kuwo 列表 kuwo(酷我) kugou(酷狗) cloud(网易云音乐)
+    --output|-output|-o         导出目录,默认当前目录
+";
+        private readonly static string HelpDownloadAlbum = @"
+下载专辑
+    --url|-url                  专辑详情链接
+    --id|-id                    专辑ID
+    --type|-type|-t             类型,默认kuwo 列表 kuwo(酷我) cloud(网易云音乐)
+    --namepath|-namepath        是否自动创建专辑文件夹
     --output|-output|-o         导出目录,默认当前目录
 ";
         private readonly static string HelpDownloadM3u8 = @"
@@ -98,7 +106,7 @@ IOS ipa文件重签名
             perform.AddExecute ("lookupMobileprovision", HelpLookupMobileprovision, LookupMobileprovision);
             perform.AddExecute ("resign", HelpResign, Resign);
             perform.AddExecute ("wget", HelpWget, Wget);
-            perform.AddExecute ("downloadAlbum", HelpDownloadMusic, DownloadAlbum);
+            perform.AddExecute ("downloadAlbum", HelpDownloadAlbum, DownloadAlbum);
             perform.AddExecute ("downloadMusic", HelpDownloadMusic, DownloadMusic);
             perform.AddExecute ("downloadM3u8", HelpDownloadM3u8, DownloadM3u8);
             try {
