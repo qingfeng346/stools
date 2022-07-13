@@ -352,6 +352,12 @@ IOS ipa文件重签名
                 if (id.IndexOf("?") >= 0) {
                     id = id.Substring(0, id.IndexOf("?"));
                 }
+            } else if (uri.Host.Contains("163")) {
+                type = MusicFactory.Cloud;
+                id = Regex.Match(url, "id=\\w+(&|$)").ToString().Substring(3);
+                if (id.EndsWith("&")) {
+                    id = id.Substring(0, id.Length - 1);
+                }
             } else {
                 throw new System.Exception($"不支持的源数据:{url}");
             }

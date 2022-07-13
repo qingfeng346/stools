@@ -31,7 +31,7 @@
     },
     "downloadalbum": {
       "commandName": "Project",
-      "commandLineArgs": "downloadalbum -type kuwo -id 4533",
+      "commandLineArgs": "downloadalbum https://music.163.com/#/album?id=8405",
       "workingDirectory": "$(ProjectDir)"
     }
   }
