@@ -38,6 +38,17 @@
             "stopAtEntry": false
         },
         {
+            "name": "downloadalbum",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/stools/bin/Debug/net6.0/stools.dll",
+            "args": ["downloadalbum", "http://kuwo.cn/album_detail/29593612", "-output", "~/"],
+            "cwd": "${workspaceFolder}/stools",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
             "name": "downloadm3u8",
             "type": "coreclr",
             "request": "launch",

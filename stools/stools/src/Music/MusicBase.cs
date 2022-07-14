@@ -42,12 +42,12 @@ public abstract class MusicBase {
         Album = "";
         Year = 0;
         Track = 0;
-        Singer.Clear();
-        CoverUrls.Clear();
-        Mp3Urls.Clear();
         var success = false;
         for (var i = 0; i < RetryTotal; ++i) {
             try {
+                Singer.Clear();
+                CoverUrls.Clear();
+                Mp3Urls.Clear();
                 await ParseInfo(id);
                 success = true;
                 break;

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Text;
+using System;
 public class MusicKuwo : MusicBase {
     public override string Source => MusicFactory.Kuwo;
     public class KuwoMusicInfo {
@@ -67,6 +68,13 @@ public class MusicKuwo : MusicBase {
         var lyric = JsonConvert.DeserializeObject<KuwoLyric>(await HttpUtil.Get($"http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId={id}"));
         if (lyric?.data != null) {
             var builder = new StringBuilder();
+            foreach (var lyc in lyric.data.lrclist) {
+                var time = float.Parse(lyc.time);
+                var min = Math.Floor(time / 60);
+                var sec = time % 60;
+                builder.AppendLine(string.Format("[{0:00}:{1:00.00}]{2}", min, sec, lyc.lineLyric));
+            }
+            Lyrics = builder.ToString();
         }
     }
     protected override async Task<AlbumInfo> ParseAlbum_impl(string id) {
