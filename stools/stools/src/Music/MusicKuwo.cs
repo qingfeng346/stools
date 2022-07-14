@@ -1,8 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Text;
 public class MusicKuwo : MusicBase {
-    public override string Source => "酷我";
+    public override string Source => MusicFactory.Kuwo;
     public class KuwoMusicInfo {
         public class Data {
             public string name;
@@ -35,6 +36,17 @@ public class MusicKuwo : MusicBase {
         public int code;
         public Data data;
     }
+    public class KuwoLyric {
+        public class Lrc {
+            public string lineLyric;
+            public string time;
+        }
+        public class Data {
+            public List<Lrc> lrclist;
+        }
+        public Data data;
+        public int status;
+    }
     
     protected override async Task ParseInfo(string id) {
         var result = await HttpUtil.Get($"https://wapi.kuwo.cn/api/www/music/musicInfo?mid={id}");
@@ -52,9 +64,16 @@ public class MusicKuwo : MusicBase {
                 Year = (uint)year;
             }
         }
+        var lyric = JsonConvert.DeserializeObject<KuwoLyric>(await HttpUtil.Get($"http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId={id}"));
+        if (lyric?.data != null) {
+            var builder = new StringBuilder();
+        }
     }
     protected override async Task<AlbumInfo> ParseAlbum_impl(string id) {
         var albumInfo = JsonConvert.DeserializeObject<KuwoAlbumInfo>(await HttpUtil.Get($"https://wapi.kuwo.cn/api/www/album/albumInfo?albumId={id}"));
         return new AlbumInfo() { name = albumInfo.data.album, musicList = albumInfo.data.musicList.ConvertAll(_ => _.rid.ToString()) };
     }
+    //void DownloadLyric(string id) {
+    //    http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=79479
+    //}
 }

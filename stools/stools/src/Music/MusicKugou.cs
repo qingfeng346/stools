@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 public class MusicKugou : MusicBase {
-    public override string Source => "酷狗";
+    public override string Source => MusicFactory.Kugou;
     public class MusicInfo {
         public int err_code;
         public MusicData data;

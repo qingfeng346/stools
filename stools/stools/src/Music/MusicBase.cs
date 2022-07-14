@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Scorpio.Commons;
 using System;
 using System.IO;
+using TagLib;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
@@ -20,8 +21,12 @@ public abstract class MusicBase {
     public string Name { get; protected set; }
     /// <summary> 专辑名字 </summary>
     public string Album { get; protected set; }
+    //年份
     public uint Year { get; protected set; }
+    //Track
     public uint Track { get; protected set; }
+    //歌词
+    public string Lyrics { get; protected set; } = "";
     /// <summary> 演唱者 </summary>
     public List<string> Singer { get; } = new List<string>();
     /// <summary> 封面图片地址,可能有多个地址,顺序尝试下载 </summary>
@@ -67,7 +72,6 @@ public abstract class MusicBase {
         }
         throw new Exception("解析专辑信息出错");
     }
-
     //解析信息
     protected abstract Task ParseInfo(string id);
     //解析专辑
@@ -86,7 +90,7 @@ public abstract class MusicBase {
                 Logger.error($"下载文件 {mp3Url} 失败 : {e}");
             }
         }
-        if (!File.Exists(filePath)) { throw new Exception("音频文件下载失败"); }
+        if (!System.IO.File.Exists(filePath)) { throw new Exception("音频文件下载失败"); }
         Logger.info("下载音频文件完成,文件大小:{1}", fileName, new FileInfo(filePath).Length.GetMemory());
         var file = TagLib.File.Create(filePath);
         file.Tag.Title = Name;
@@ -94,13 +98,30 @@ public abstract class MusicBase {
         file.Tag.Album = Album;
         file.Tag.Year = Year;
         file.Tag.Track = Track;
+        file.Tag.Publisher = $"{Source} - {ID}";
+        file.Tag.Lyrics = Lyrics;
         foreach (var coverUrl in CoverUrls) {
             try {
-                var imagePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.png");
-                Logger.info($"尝试下载封面 : {coverUrl}");
+                //var imagePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.png");
+                var imagePath = Path.Combine(savePath, $"{Guid.NewGuid()}.png");
+                Logger.info($"尝试下载封面 : {coverUrl} -> {imagePath}");
                 await HttpUtil.Download(coverUrl, imagePath);
                 ResizeImage(imagePath, 512);
-                file.Tag.Pictures = new TagLib.IPicture[] { new TagLib.Picture(imagePath) };
+                var pictures = new List<IPicture>();
+                {
+                    var picture = new TagLib.Id3v2.AttachmentFrame(new Picture(imagePath));
+                    picture.Type = PictureType.FrontCover;
+                    picture.Filename = "frontcover.png";
+                    picture.Description = "";
+                    picture.MimeType = Picture.GetMimeFromExtension(imagePath);
+                    picture.TextEncoding = StringType.Latin1;
+                    //var picture = new Picture(imagePath);
+                    //picture.Type = PictureType.FrontCover;
+                    //picture.Filename = "frontcover.png";
+                    //picture.Description = "";
+                    pictures.Add(picture);
+                }
+                file.Tag.Pictures = pictures.ToArray();
                 FileUtil.DeleteFile(imagePath);
                 break;
             } catch (Exception e) {
@@ -117,9 +138,7 @@ public abstract class MusicBase {
     //重置封面大小
     void ResizeImage(string filePath, int size) {
         using (Image<Rgba32> image = Image.Load<Rgba32>(filePath)) {
-            image.Mutate(x => x
-                .Resize(size, size)
-                .Grayscale());
+            image.Mutate(x => x.Resize(size, size));
             image.Save(filePath); // Automatic encoder selected based on extension.
         }
     }

@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 
 public class MusicCloud : MusicBase {
-    public override string Source => "网易云音乐";
+    public override string Source => MusicFactory.Cloud;
     public class CloudMusicInfos {
         public class Song {
             public class Artist {
@@ -35,7 +35,16 @@ public class MusicCloud : MusicBase {
         public int code;
         public Album album;
     }
-
+    public class CloudLyric {
+        public class Lyric {
+            public string version;
+            public string lyric;
+        }
+        public int code;
+        public Lyric lrc;
+        public Lyric klyric;
+        public Lyric tlyric;
+    }
     //歌曲下载地址 : http://music.163.com/song/media/outer/url?id=ID数字.mp3
     protected override async Task ParseInfo(string id) {
         var songs = JsonConvert.DeserializeObject<CloudMusicInfos>(await HttpUtil.Get($"http://music.163.com/api/song/detail/?ids=[{id}]"));
@@ -50,6 +59,14 @@ public class MusicCloud : MusicBase {
             CoverUrls.Add(artist.picUrl);
         }
         Mp3Urls.Add($"http://music.163.com/song/media/outer/url?id={id}.mp3");
+        var lyric = JsonConvert.DeserializeObject<CloudLyric>(await HttpUtil.Get($"http://music.163.com/api/song/lyric?os=pc&id={id}&lv=-1&kv=-1&tv=-1"));
+        if (!string.IsNullOrWhiteSpace(lyric?.lrc?.lyric)) {
+            Lyrics = lyric.lrc.lyric;
+        } else if (!string.IsNullOrWhiteSpace(lyric?.klyric?.lyric)) {
+            Lyrics = lyric.lrc.lyric;
+        } else if (!string.IsNullOrWhiteSpace(lyric?.tlyric?.lyric)) {
+            Lyrics = lyric.lrc.lyric;
+        }
     }
     protected override async Task<AlbumInfo> ParseAlbum_impl(string id) {
         var albumInfo = JsonConvert.DeserializeObject<CloudAlbumInfo>(await HttpUtil.Get($"http://music.163.com/api/album/{id}"));
