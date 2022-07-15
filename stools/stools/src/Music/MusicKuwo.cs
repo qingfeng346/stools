@@ -55,7 +55,7 @@ public class MusicKuwo : MusicBase {
         var downloadUrl = await HttpUtil.Get($"http://antiserver.kuwo.cn/anti.s?type=convert_url&rid={id}&format=mp3|aac&response=url");
         Name = musicInfo.data.name;
         Album = musicInfo.data.album;
-        Singer.Add(musicInfo.data.artist);
+        Singer.AddRange(musicInfo.data.artist.Split("&"));
         CoverUrls.Add(musicInfo.data.pic);
         Mp3Urls.Add(downloadUrl);
         Track = (uint)musicInfo.data.track;

@@ -100,6 +100,7 @@ public abstract class MusicBase {
         file.Tag.Track = Track;
         file.Tag.Publisher = $"{Source} - {ID}";
         file.Tag.Lyrics = Lyrics;
+        file.Tag.Genres = new string[0];
         foreach (var coverUrl in CoverUrls) {
             try {
                 //var imagePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.png");
