@@ -66,7 +66,7 @@ public class MusicKuwo : MusicBase {
             }
         }
         var lyric = JsonConvert.DeserializeObject<KuwoLyric>(await HttpUtil.Get($"http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId={id}"));
-        if (lyric?.data != null) {
+        if (lyric?.data?.lrclist != null) {
             var builder = new StringBuilder();
             foreach (var lyc in lyric.data.lrclist) {
                 var time = float.Parse(lyc.time);
