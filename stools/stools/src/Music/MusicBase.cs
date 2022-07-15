@@ -21,11 +21,11 @@ public abstract class MusicBase {
     public string Name { get; protected set; }
     /// <summary> 专辑名字 </summary>
     public string Album { get; protected set; }
-    //年份
+    /// <summary> 年份 </summary>
     public uint Year { get; protected set; }
-    //Track
+    /// <summary> Track </summary>
     public uint Track { get; protected set; }
-    //歌词
+    /// <summary> 歌词 </summary>
     public string Lyrics { get; protected set; } = "";
     /// <summary> 演唱者 </summary>
     public List<string> Singer { get; } = new List<string>();
@@ -78,7 +78,7 @@ public abstract class MusicBase {
     protected abstract Task<AlbumInfo> ParseAlbum_impl(string id);
     async Task DownloadFile(string savePath) {
         FileUtil.CreateDirectory(savePath);
-        Logger.info("解析完成,开始下载 id:{0} 名字:{1}  歌手:{2}  专辑:{3}", ID, Name, Singer.GetSingers(), Album);
+        Logger.info("解析完成,开始下载 id:{0} 名字:{1}  歌手:{2}  专辑:{3}  年份:{4}", ID, Name, Singer.GetSingers(), Album, Year);
         var fileName = $"{Singer.GetSingers()} - {Name}.mp3";
         var filePath = Path.Combine(savePath, fileName);
         foreach (var mp3Url in Mp3Urls) {
@@ -104,7 +104,7 @@ public abstract class MusicBase {
             try {
                 //var imagePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.png");
                 var imagePath = Path.Combine(savePath, $"{Guid.NewGuid()}.png");
-                Logger.info($"尝试下载封面 : {coverUrl} -> {imagePath}");
+                Logger.info($"尝试下载封面 : {coverUrl}");
                 await HttpUtil.Download(coverUrl, imagePath);
                 ResizeImage(imagePath, 512);
                 var pictures = new List<IPicture>();
