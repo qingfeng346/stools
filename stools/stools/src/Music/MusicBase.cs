@@ -11,8 +11,9 @@ using SixLabors.ImageSharp.PixelFormats;
 public abstract class MusicBase {
     public const int RetryTotal = 10;
     public class AlbumInfo {
-        public string name;
-        public List<string> musicList;
+        public string name;                 //专辑名字
+        public string artist;               //演唱者
+        public List<string> musicList;      //专辑歌曲列表
     }
     public abstract string Source { get; }
     /// <summary> 歌曲ID, 不同音乐平台的ID可能相同 </summary>

@@ -364,7 +364,7 @@ IOS ipa文件重签名
             }
             var music = MusicFactory.Create(type);
             var albumInfo = await music.ParseAlbum(id);
-            var outputPath = createPath ? Path.Combine(output, albumInfo.name) : output;
+            var outputPath = createPath ? Path.Combine(output, albumInfo.artist, albumInfo.name) : output;
             foreach (var musicid in albumInfo.musicList) {
                 await music.Download(musicid, outputPath);
             }

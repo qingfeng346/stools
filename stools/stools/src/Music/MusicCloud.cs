@@ -27,13 +27,17 @@ public class MusicCloud : MusicBase {
             public int id;
             public string name;
         }
+        public class Artist {
+            public string name;     //演唱者
+        }
         public class Album {
-            public string name;
-            public long publishTime;
-            public List<Song> songs;
+            public string name;         //专辑名字
+            public long publishTime;    //发行时间
+            public List<Song> songs;    //歌曲列表
         }
         public int code;
         public Album album;
+        public Artist artist;
     }
     public class CloudLyric {
         public class Lyric {
@@ -70,6 +74,9 @@ public class MusicCloud : MusicBase {
     }
     protected override async Task<AlbumInfo> ParseAlbum_impl(string id) {
         var albumInfo = JsonConvert.DeserializeObject<CloudAlbumInfo>(await HttpUtil.Get($"http://music.163.com/api/album/{id}"));
-        return new AlbumInfo() { name = albumInfo.album.name, musicList = albumInfo.album.songs.ConvertAll(_ => _.id.ToString()) };
+        return new AlbumInfo() { 
+            name = albumInfo.album.name,
+            artist = albumInfo.artist.name,
+            musicList = albumInfo.album.songs.ConvertAll(_ => _.id.ToString()) };
     }
 }

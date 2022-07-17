@@ -25,14 +25,14 @@ public class MusicKuwo : MusicBase {
             public int track;
         }
         public class Data {
-            public string artist;   //歌手
-            public string releaseDate;
-            public string album;
-            public int albumid;
-            public string pic;
-            public string albuminfo;
-            public string lang;
-            public List<Music> musicList;
+            public string artist;           //歌手
+            public string releaseDate;      //发行时间
+            public string album;            //专辑名字
+            public int albumid;             //专辑ID
+            public string pic;              //专辑封面
+            public string albuminfo;        //专辑介绍
+            public string lang;             //语言
+            public List<Music> musicList;   //歌曲列表
         }
         public int code;
         public Data data;
@@ -79,7 +79,10 @@ public class MusicKuwo : MusicBase {
     }
     protected override async Task<AlbumInfo> ParseAlbum_impl(string id) {
         var albumInfo = JsonConvert.DeserializeObject<KuwoAlbumInfo>(await HttpUtil.Get($"https://wapi.kuwo.cn/api/www/album/albumInfo?albumId={id}"));
-        return new AlbumInfo() { name = albumInfo.data.album, musicList = albumInfo.data.musicList.ConvertAll(_ => _.rid.ToString()) };
+        return new AlbumInfo() { 
+            name = albumInfo.data.album,
+            artist = albumInfo.data.artist,
+            musicList = albumInfo.data.musicList.ConvertAll(_ => _.rid.ToString()) };
     }
     //void DownloadLyric(string id) {
     //    http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=79479
