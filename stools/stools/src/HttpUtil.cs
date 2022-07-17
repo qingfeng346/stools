@@ -7,6 +7,11 @@ using System.Net.Http.Headers;
 using System;
 public class HttpUtil {
     private const int READ_LENGTH = 8192;
+    public class Response {
+        public bool IsSuccessStatusCode { get; set; }
+        public HttpStatusCode StatusCode { get; set; }
+        public long Length { get; set; }
+    }
     public static async Task<string> Get(string url, Action<HttpRequestMessage> preRequest = null) {
         using (var handler = new HttpClientHandler()) {
             handler.AllowAutoRedirect = false;
@@ -28,19 +33,22 @@ public class HttpUtil {
             }
         }
     }
-    public static async Task<long> Download(string url, string file) {
+    public static async Task<Response> Download(string url, string file) {
         return await Download(url, file, true, false);
     }
-    public static async Task<long> Download(string url, string file, bool progress, bool checkSize) {
+    public static async Task<Response> Download(string url, string file, bool progress, bool checkSize) {
         using (var client = new HttpClient()) {
             var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+            var result = new Response() { StatusCode = response.StatusCode, IsSuccessStatusCode = response.IsSuccessStatusCode };
+            if (!response.IsSuccessStatusCode) { return result; }
             var bytes = new byte[READ_LENGTH];
             using (var responseStream = await response.Content.ReadAsStreamAsync()) {
                 long? contentLength = response.Content.Headers?.ContentLength;
                 long readed = 0;
                 long update = DateTime.UtcNow.Ticks;
                 if (checkSize && contentLength != null && File.Exists(file) && new FileInfo(file).Length == contentLength) {
-                    return contentLength ?? 0;
+                    result.Length = contentLength ?? 0;
+                    return result;
                 }
                 long length = contentLength ?? 0;
                 FileUtil.DeleteFile(file);
@@ -57,7 +65,8 @@ public class HttpUtil {
                         }
                     }
                 }
-                return readed;
+                result.Length = readed;
+                return result;
             }
         } 
     }

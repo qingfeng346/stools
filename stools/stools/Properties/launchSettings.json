@@ -22,7 +22,7 @@
     },
     "downloadm3u8": {
       "commandName": "Project",
-      "commandLineArgs": "downloadm3u8 https://new.iskcd.com/20220422/x6wRl3BY/1100kb/hls/index.m3u8 -output aaa.mp4"
+      "commandLineArgs": "downloadm3u8 https://cache.m3u8.bdcdss.com/duoduo/20220710/6736ea18f2557b6f0fcc534cc9cb4651.m3u8?st=oVZ4kG6YZivjRRLbRVobwA&e=1657458676 -output aaa.mp4"
     },
     "downloadmusicfile": {
       "commandName": "Project",

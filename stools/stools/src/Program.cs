@@ -88,6 +88,7 @@ IOS ipa文件重签名
         public class TSData {
             public string url;
             public int index;
+            public string Name => string.Format("{0:00000}.mts", index);
         }
         static void Main (string[] args) {
             Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
@@ -433,16 +434,17 @@ IOS ipa文件重签名
             var lines = result.Split("\n");
             var index = 1;
             var tasks = new List<Task>();
-            var tsBase = output + ".ts";
+            var tsBase = $"{output}.ts";
             FileUtil.CreateDirectory(tsBase);
             var tsCount = 0;
             var tsList = new Queue<TSData>();
             for (var i = 0; i < lines.Length; i++) {
                 var line = lines[i];
                 if (line.StartsWith("#EXTINF")) {
-                    var tsUrl = lines[i + 1];
-                    i++;
-                    tsList.Enqueue(new TSData() { url = tsUrl.StartsWith("http") ? tsUrl : baseUrl + tsUrl, index = index++ });
+                    var tsUrl = lines[++i];
+                    var tsData = new TSData() { url = tsUrl.StartsWith("http") ? tsUrl : baseUrl + tsUrl, index = index++ };
+                    tsList.Enqueue(tsData);
+                    lines[i] = $"file {tsData.Name}";
                 }
             }
             var sync = new object();
@@ -459,23 +461,25 @@ IOS ipa文件重签名
                         }
                     }
                     if (data == null) { return; }
-                    var length = await HttpUtil.Download(data.url, String.Format("{0}/{1:00000}.ts", tsBase, data.index), false, true);
-                    downloaded += length;
+                    var result = await HttpUtil.Download(data.url, $"{tsBase}/{data.Name}", false, true);
+                    downloaded += result.Length;
                     Logger.info($"下载进度:{++tsCount}/{tsTotal}  已下载:{downloaded.GetMemory()}");
                     goto Start;
                 });
                 tasks.Add(task);
             }
+            File.WriteAllLines($"{tsBase}/file.m3u8", lines.ToArray());
             Task.WaitAll(tasks.ToArray());
-            var fileList = new List<string>();
-            for (var i = 0; i < tsTotal; i++) {
-                fileList.Add(string.Format("file '{0}'", Path.GetFullPath(string.Format("{0}/{1:00000}.ts", tsBase, i + 1))));
-            }
-            File.WriteAllLines($"{tsBase}/file.txt", fileList.ToArray());
+            //var fileList = new List<string>();
+            //for (var i = 0; i < tsTotal; i++) {
+            //    fileList.Add(string.Format("file '{0}'", Path.GetFullPath(string.Format("{0}/{1:00000}.ts", tsBase, i + 1))));
+            //}
+            //File.WriteAllLines($"{tsBase}/file.txt", fileList.ToArray());
+            
             FileUtil.DeleteFile(output);
             FileUtil.DeleteFolder(output, null, true);
             Logger.info("合并ts文件...");
-            var exitCode = ExecuteFFmpeg("-f", "concat", "-safe", "0", "-i", $"{tsBase}/file.txt", "-vcodec", "copy", "-acodec", "copy", output);
+            var exitCode = ExecuteFFmpeg("-f", "concat", "-safe", "0", "-i", $"{tsBase}/file.m3u8", "-vcodec", "copy", "-acodec", "copy", output);
             if (exitCode == 0) {
                 Logger.info($"下载完成:{output}");
             } else {
