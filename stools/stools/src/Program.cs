@@ -94,8 +94,8 @@ IOS ipa文件重签名
         private readonly static string[] ParameterDeveloper = { "--developer", "-developer", "-d" };
         private readonly static string[] ParameterQueue = { "--queue", "-queue", "-q" };
         public class TSData {
-            public string url;
             public int index;
+            public List<string> urls = new List<string>();
             public string Name => string.Format("{0:00000}.mts", index);
         }
         static void Main (string[] args) {
@@ -431,14 +431,18 @@ IOS ipa文件重签名
             if (string.IsNullOrEmpty(url)) {
                 url = commandLine.GetValue(ParameterUrl);
             }
-            var output = Path.GetFullPath(commandLine.GetValueDefault(ParameterOutput, Environment.TickCount64 + ".mp4"));
-            int queueCount = 16;
+            if (string.IsNullOrEmpty(url)) {
+                throw new System.Exception("m3u8 url 不能为空");
+            }
+            var output = Path.GetFullPath(commandLine.GetValueDefault(ParameterOutput, ScorpioUtil.GetMD5FromString(url) + ".mp4"));
+            int queueCount = 8;
             if (int.TryParse(commandLine.GetValue(ParameterQueue), out var queuePar)) {
                 queueCount = Math.Max(1, queuePar);
             }
             string result = "";
             Task.WaitAll(Task.Run(async () => { result = await HttpUtil.Get(url); }));
-            var baseUrl = url.Substring(0, url.LastIndexOf("/") + 1);
+            var baseUrl = url.Substring(0, url.IndexOf("/", url.StartsWith("http") ? 7 : 8));
+            var parentUrl = url.Substring(0, url.LastIndexOf("/") + 1);
             var lines = result.Split("\n");
             var index = 1;
             var tasks = new List<Task>();
@@ -450,7 +454,13 @@ IOS ipa文件重签名
                 var line = lines[i];
                 if (line.StartsWith("#EXTINF")) {
                     var tsUrl = lines[++i];
-                    var tsData = new TSData() { url = tsUrl.StartsWith("http") ? tsUrl : baseUrl + tsUrl, index = index++ };
+                    var tsData = new TSData() { index = index++ };
+                    if (tsUrl.StartsWith("http")) {
+                        tsData.urls.Add(tsUrl);
+                    } else {
+                        tsData.urls.Add(parentUrl + tsUrl);
+                        tsData.urls.Add(baseUrl + tsUrl);
+                    } 
                     tsList.Enqueue(tsData);
                     lines[i] = $"file {tsData.Name}";
                 }
@@ -469,9 +479,16 @@ IOS ipa文件重签名
                         }
                     }
                     if (data == null) { return; }
-                    var result = await HttpUtil.Download(data.url, $"{tsBase}/{data.Name}", false, true);
-                    downloaded += result.Length;
-                    Logger.info($"下载进度:{++tsCount}/{tsTotal}  已下载:{downloaded.GetMemory()}");
+                    var isSuccess = false;
+                    foreach (var url in data.urls) {
+                        var result = await HttpUtil.Download(url, $"{tsBase}/{data.Name}", false, true);
+                        if (result.IsSuccessStatusCode) {
+                            isSuccess = true;
+                            downloaded += result.Length;
+                            Logger.info($"下载进度:{++tsCount}/{tsTotal}  已下载:{downloaded.GetMemory()}");
+                            break;
+                        }
+                    }
                     goto Start;
                 });
                 tasks.Add(task);
@@ -483,7 +500,6 @@ IOS ipa文件重签名
             //    fileList.Add(string.Format("file '{0}'", Path.GetFullPath(string.Format("{0}/{1:00000}.ts", tsBase, i + 1))));
             //}
             //File.WriteAllLines($"{tsBase}/file.txt", fileList.ToArray());
-            
             FileUtil.DeleteFile(output);
             FileUtil.DeleteFolder(output, null, true);
             Logger.info("合并ts文件...");

@@ -73,7 +73,8 @@ public class MusicCloud : MusicBase {
         }
     }
     protected override async Task<AlbumInfo> ParseAlbum_impl(string id) {
-        var albumInfo = JsonConvert.DeserializeObject<CloudAlbumInfo>(await HttpUtil.Get($"http://music.163.com/api/album/{id}"));
+        var result = await HttpUtil.Get($"http://music.163.com/api/album/{id}");
+        var albumInfo = JsonConvert.DeserializeObject<CloudAlbumInfo>(result);
         return new AlbumInfo() { 
             name = albumInfo.album.name,
             artist = albumInfo.artist.name,

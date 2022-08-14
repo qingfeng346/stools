@@ -11,6 +11,7 @@ public class HttpUtil {
         public bool IsSuccessStatusCode { get; set; }
         public HttpStatusCode StatusCode { get; set; }
         public long Length { get; set; }
+        public bool Skip { get; set; }
     }
     public static async Task<string> Get(string url, Action<HttpRequestMessage> preRequest = null) {
         using (var handler = new HttpClientHandler()) {
@@ -47,6 +48,7 @@ public class HttpUtil {
                 long readed = 0;
                 long update = DateTime.UtcNow.Ticks;
                 if (checkSize && contentLength != null && File.Exists(file) && new FileInfo(file).Length == contentLength) {
+                    result.Skip = true;
                     result.Length = contentLength ?? 0;
                     return result;
                 }
@@ -65,6 +67,7 @@ public class HttpUtil {
                         }
                     }
                 }
+                result.Skip = false;
                 result.Length = readed;
                 return result;
             }
