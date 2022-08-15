@@ -38,7 +38,7 @@ public abstract class MusicBase {
     //下载文件
     public async Task Download(string id, string path) {
         ID = id;
-        Logger.info($"开始解析数据  来源:{Source} ID:{id}");
+        logger.info($"开始解析数据  来源:{Source} ID:{id}");
         Name = "";
         Album = "";
         Year = 0;
@@ -53,7 +53,7 @@ public abstract class MusicBase {
                 success = true;
                 break;
             } catch (Exception ex) {
-                Logger.error($"解析数据出错,一秒后重试 {i + 1}/{RetryTotal} : {ex}");
+                logger.error($"解析数据出错,一秒后重试 {i + 1}/{RetryTotal} : {ex}");
                 await Task.Delay(1000);
             }
         }
@@ -67,7 +67,7 @@ public abstract class MusicBase {
             try {
                 return await ParseAlbum_impl(id);
             } catch (Exception ex) {
-                Logger.error($"解析专辑出错,一秒后重试 {i + 1}/{RetryTotal} : {ex}");
+                logger.error($"解析专辑出错,一秒后重试 {i + 1}/{RetryTotal} : {ex}");
                 await Task.Delay(1000);
             }
         }
@@ -79,20 +79,20 @@ public abstract class MusicBase {
     protected abstract Task<AlbumInfo> ParseAlbum_impl(string id);
     async Task DownloadFile(string savePath) {
         FileUtil.CreateDirectory(savePath);
-        Logger.info("解析完成,开始下载 id:{0} 名字:{1}  歌手:{2}  专辑:{3}  年份:{4}", ID, Name, Singer.GetSingers(), Album, Year);
+        logger.info("解析完成,开始下载 id:{0} 名字:{1}  歌手:{2}  专辑:{3}  年份:{4}", ID, Name, Singer.GetSingers(), Album, Year);
         var fileName = $"{Singer.GetSingers()} - {Name}.mp3";
         var filePath = Path.Combine(savePath, fileName);
         foreach (var mp3Url in Mp3Urls) {
             try {
-                Logger.info($"尝试下载文件 : {mp3Url}");
+                logger.info($"尝试下载文件 : {mp3Url}");
                 await HttpUtil.Download(mp3Url, filePath);
                 break;
             } catch (Exception e) {
-                Logger.error($"下载文件 {mp3Url} 失败 : {e}");
+                logger.error($"下载文件 {mp3Url} 失败 : {e}");
             }
         }
         if (!System.IO.File.Exists(filePath)) { throw new Exception("音频文件下载失败"); }
-        Logger.info("下载音频文件完成,文件大小:{1}", fileName, new FileInfo(filePath).Length.GetMemory());
+        logger.info("下载音频文件完成,文件大小:{1}", fileName, new FileInfo(filePath).Length.GetMemory());
         var file = TagLib.File.Create(filePath);
         file.Tag.Title = Name;
         file.Tag.Performers = Singer.ToArray();
@@ -106,7 +106,7 @@ public abstract class MusicBase {
             try {
                 //var imagePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.png");
                 var imagePath = Path.Combine(savePath, $"{Guid.NewGuid()}.png");
-                Logger.info($"尝试下载封面 : {coverUrl}");
+                logger.info($"尝试下载封面 : {coverUrl}");
                 await HttpUtil.Download(coverUrl, imagePath);
                 ResizeImage(imagePath, 512);
                 var pictures = new List<IPicture>();
@@ -127,15 +127,15 @@ public abstract class MusicBase {
                 FileUtil.DeleteFile(imagePath);
                 break;
             } catch (Exception e) {
-                Logger.error($"下载封面 {coverUrl} 失败 : {e}");
+                logger.error($"下载封面 {coverUrl} 失败 : {e}");
             }
         }
         file.Save();
         var old = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Green;
-        Logger.info("下载音乐完成 文件名:{0}  文件大小:{1}", Path.GetFullPath(filePath), new FileInfo(filePath).Length.GetMemory());
+        logger.info("下载音乐完成 文件名:{0}  文件大小:{1}", Path.GetFullPath(filePath), new FileInfo(filePath).Length.GetMemory());
         Console.ForegroundColor = old;
-        Logger.info("-------------------------------------------------------------------");
+        logger.info("-------------------------------------------------------------------");
     }
     //重置封面大小
     void ResizeImage(string filePath, int size) {

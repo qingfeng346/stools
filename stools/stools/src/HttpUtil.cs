@@ -10,8 +10,10 @@ public class HttpUtil {
     public class Response {
         public bool IsSuccessStatusCode { get; set; }
         public HttpStatusCode StatusCode { get; set; }
+        public string Url { get; set; }
         public long Length { get; set; }
         public bool Skip { get; set; }
+        public string Error { get; set; }
     }
     public static async Task<string> Get(string url, Action<HttpRequestMessage> preRequest = null) {
         using (var handler = new HttpClientHandler()) {
@@ -41,7 +43,7 @@ public class HttpUtil {
         using (var client = new HttpClient()) {
             try {
                 var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-                var result = new Response() { StatusCode = response.StatusCode, IsSuccessStatusCode = response.IsSuccessStatusCode };
+                var result = new Response() { Url = url, StatusCode = response.StatusCode, IsSuccessStatusCode = response.IsSuccessStatusCode };
                 if (!response.IsSuccessStatusCode) { return result; }
                 var bytes = new byte[READ_LENGTH];
                 using (var responseStream = await response.Content.ReadAsStreamAsync()) {
@@ -73,7 +75,7 @@ public class HttpUtil {
                     return result;
                 }
             } catch (System.Exception e) {
-                return new Response() { StatusCode = 0, IsSuccessStatusCode = false };
+                return new Response() { Url = url, StatusCode = 0, IsSuccessStatusCode = false, Error = e.ToString() };
             }
         } 
     }

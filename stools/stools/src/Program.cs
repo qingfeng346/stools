@@ -11,10 +11,10 @@ using Google.Apis.AndroidPublisher.v3.Data;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Scorpio.Commons;
+using Exception = System.Exception;
 namespace Scorpio.stools {
     class Program {
         private readonly static string HelpAndroidpublisher = @"
-更新Google Play信息
     --auth|-auth                (必填)服务账号json文件
     --packageName|-packageName  (必填)App PackageName
     --version|-version          版本VersionCode
@@ -24,43 +24,36 @@ namespace Scorpio.stools {
     --releasenote|-releasenote  ReleaseNote文件,xml文件
 ";
         private readonly static string HelpLookupMetadata = @"
-获取AppStore Metadata文件
     --username|-username|-u     (必填)服务账号
     --password|-password|-p     (必填)服务账号密码
     --appleid|-appleid|-id      (必填)AppID
     --output|-output|-o         导出目录,默认当前目录
 ";
         private readonly static string HelpUploadMetadata = @"
-更新AppStore Metadata文件
     --username|-username|-u     (必填)服务账号
     --password|-password|-p     (必填)服务账号密码
     --file|-file|-f             (必填)Metadata所在目录
 ";
         private readonly static string HelpLookupMobileprovision = @"
-查看mobileprovision文件
     --file|-file|-f             (必填)Mobileprovision文件路径
 ";
         private readonly static string HelpResign = @"
-IOS ipa文件重签名
     --ipa|-ipa                  (必填)ipa原文件
     --provision|-provision|-p   (必填)符号文件
     --developer|-developer|-d   (必填)开发者名称
     --output|-output|-o         (必填)导出文件
 ";
         private readonly static string HelpWget = @"
-下载文件
     --url|-url                  (必填)下载链接
     --output|-output|-o         (必填)输出文件
 ";
         private readonly static string HelpDownloadMusic = @"
-下载音乐
     --url|-url                  音乐详情链接
     --id|-id                    音乐ID
     --type|-type|-t             类型,默认kuwo 列表 kuwo(酷我) kugou(酷狗) cloud(网易云音乐)
     --output|-output|-o         导出目录,默认当前目录
 ";
         private readonly static string HelpDownloadAlbum = @"
-下载专辑
     --url|-url                  专辑详情链接
     --id|-id                    专辑ID
     --type|-type|-t             类型,默认kuwo 列表 kuwo(酷我) cloud(网易云音乐)
@@ -68,7 +61,6 @@ IOS ipa文件重签名
     --output|-output|-o         导出目录,默认当前目录
 ";
         private readonly static string HelpDownloadM3u8 = @"
-下载M3U8文件
     --url|-url                  (必填)M3U8地址
     --output|-output|-o         导出文件,具体文件路径
     --queue|-queue|-q           同时下载队列数量,默认16
@@ -97,19 +89,20 @@ IOS ipa文件重签名
             public int index;
             public List<string> urls = new List<string>();
             public string Name => string.Format("{0:00000}.ts", index);
+            public string Urls => string.Join(";", urls);
         }
         static void Main (string[] args) {
             Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
             var perform = new Perform ();
-            perform.AddExecute ("androidpublisher", HelpAndroidpublisher, Androidpublisher);
-            perform.AddExecute ("lookupMetadata", HelpLookupMetadata, LookupMetadata);
-            perform.AddExecute ("uploadMetadata", HelpUploadMetadata, UploadMetadata);
-            perform.AddExecute ("lookupMobileprovision", HelpLookupMobileprovision, LookupMobileprovision);
-            perform.AddExecute ("resign", HelpResign, Resign);
-            perform.AddExecute ("wget", HelpWget, Wget);
-            perform.AddExecute ("downloadAlbum", HelpDownloadAlbum, DownloadAlbum);
-            perform.AddExecute ("downloadMusic", HelpDownloadMusic, DownloadMusic);
-            perform.AddExecute ("downloadM3u8", HelpDownloadM3u8, DownloadM3u8);
+            perform.AddExecute ("androidpublisher", "更新Google Play信息", HelpAndroidpublisher, Androidpublisher);
+            perform.AddExecute ("lookupMetadata", "获取AppStore Metadata文件", HelpLookupMetadata, LookupMetadata);
+            perform.AddExecute ("uploadMetadata", "更新AppStore Metadata文件", HelpUploadMetadata, UploadMetadata);
+            perform.AddExecute ("lookupMobileprovision", "查看mobileprovision文件", HelpLookupMobileprovision, LookupMobileprovision);
+            perform.AddExecute ("resign", "IOS ipa文件重签名", HelpResign, Resign);
+            perform.AddExecute ("wget", "下载文件", HelpWget, Wget);
+            perform.AddExecute ("downloadAlbum", "下载专辑", HelpDownloadAlbum, DownloadAlbum);
+            perform.AddExecute ("downloadMusic", "下载音乐", HelpDownloadMusic, DownloadMusic);
+            perform.AddExecute ("downloadM3u8", "下载M3U8文件", HelpDownloadM3u8, DownloadM3u8);
             try {
                 Console.WriteLine($"stools : {Version.version}");
                 perform.Start (args, null, null);
@@ -303,9 +296,9 @@ IOS ipa文件重签名
                 var url = urls[i];
                 var output = outputs.Length > i ? outputs[i] : GetFilenameByUrl(url);
                 tasks.Add (Task.Run (async () => {
-                    Logger.info ($"开始下载 : {url}");
+                    logger.info ($"开始下载 : {url}");
                     await HttpUtil.Download (url, output);
-                    Logger.info ($"下载完成 : {url}");
+                    logger.info ($"下载完成 : {url}");
                 }));
             }
             Task.WaitAll (tasks.ToArray ());
@@ -435,18 +428,18 @@ IOS ipa文件重签名
             if (string.IsNullOrEmpty(url)) {
                 throw new System.Exception("m3u8 url 不能为空");
             }
-            var output = Path.GetFullPath(commandLine.GetValueDefault(ParameterOutput, ScorpioUtil.GetMD5FromString(url) + ".mp4"));
-            int queueCount = 2;
+            var output = Path.GetFullPath(commandLine.GetValueDefault(ParameterOutput, FileUtil.GetMD5FromString(url) + ".mp4"));
+            int queueCount = 8;
             if (int.TryParse(commandLine.GetValue(ParameterQueue), out var queuePar)) {
                 queueCount = Math.Max(1, queuePar);
             }
-            string result = "";
-            Task.WaitAll(Task.Run(async () => { result = await HttpUtil.Get(url); }));
+            string m3u8Content = "";
+            Task.WaitAll(Task.Run(async () => { m3u8Content = await HttpUtil.Get(url); }));
             var baseUrl = url.Substring(0, url.IndexOf("/", url.StartsWith("http") ? 7 : 8));
             var parentUrl = url.Substring(0, url.LastIndexOf("/") + 1);
-            var lines = result.Split("\n");
+            var lines = m3u8Content.Split("\n");
             var index = 1;
-            var tasks = new List<Task>();
+            var tasks = new List<Task<string>>();
             var tsBase = $"{output}.ts";
             FileUtil.CreateDirectory(tsBase);
             var tsCount = 0;
@@ -473,37 +466,51 @@ IOS ipa文件重签名
             //开启16个线程同时下载
             for (var i = 0; i < queueCount; i++) {
                 var task = Task.Run(async () => {
-                Start:
-                    TSData data = null;
-                    lock (sync) {
-                        if (tsList.Count > 0) {
-                            data = tsList.Dequeue();
-                        }
-                    }
-                    if (data == null) { return; }
-                    var isSuccess = false;
-                    foreach (var url in data.urls) {
-                        var result = await HttpUtil.Download(url, $"{tsBase}/{data.Name}", false, true);
-                        if (result.IsSuccessStatusCode) {
-                            isSuccess = true;
-                            downloaded += result.Length;
-                            if (result.Skip) {
-                                Logger.info($"[跳过] 下载进度:{++tsCount}/{tsTotal} 已下载:{downloaded.GetMemory()} - {data.Name} {url}");
-                            } else {
-                                Logger.info($"下载进度:{++tsCount}/{tsTotal}  已下载:{downloaded.GetMemory()} - {data.Name} {url}");
+                    try {
+                    Start:
+                        TSData data = null;
+                        lock (sync) {
+                            if (tsList.Count > 0) {
+                                data = tsList.Dequeue();
                             }
-                            break;
                         }
+                        if (data == null) { 
+                            return "";
+                        }
+                        var isSuccess = false;
+                        foreach (var url in data.urls) {
+                            var result = await HttpUtil.Download(url, $"{tsBase}/{data.Name}", false, true);
+                            if (result.IsSuccessStatusCode) {
+                                isSuccess = true;
+                                downloaded += result.Length;
+                                if (result.Skip) {
+                                    logger.info($"[跳过] 下载进度:{++tsCount}/{tsTotal} 已下载:{downloaded.GetMemory()} - {data.Name} {url}");
+                                } else {
+                                    logger.info($"下载进度:{++tsCount}/{tsTotal}  已下载:{downloaded.GetMemory()} - {data.Name} {url}");
+                                }
+                                break;
+                            }
+                        }
+                        if (!isSuccess) {
+                            throw new System.Exception($"{data.Name} 下载失败 : {data.Urls}");
+                        }
+                        goto Start;
+                    } catch (System.Exception e) {
+                        return e.ToString();
                     }
-                    if (!isSuccess) {
-                        Console.WriteLine($"{data.Name} 下载失败 ");
-                    }
-                    goto Start;
                 });
                 tasks.Add(task);
             }
             File.WriteAllLines($"{tsBase}/file.m3u8", lines.ToArray());
-            Task.WaitAll(tasks.ToArray());
+            while (tasks.Count > 0) {
+                var taskIndex = Task.WaitAny(tasks.ToArray());
+                var taskResult = tasks[taskIndex].Result;
+                tasks.RemoveAt(taskIndex);
+                if (!string.IsNullOrEmpty(taskResult)) {
+                    throw new System.Exception(taskResult);
+                }
+            }
+            //Task.WaitAll(tasks.ToArray());
             //var fileList = new List<string>();
             //for (var i = 0; i < tsTotal; i++) {
             //    fileList.Add(string.Format("file '{0}'", Path.GetFullPath(string.Format("{0}/{1:00000}.ts", tsBase, i + 1))));
@@ -511,13 +518,12 @@ IOS ipa文件重签名
             //File.WriteAllLines($"{tsBase}/file.txt", fileList.ToArray());
             FileUtil.DeleteFile(output);
             FileUtil.DeleteFolder(output, null, true);
-            Logger.info("合并ts文件...");
+            logger.info("合并ts文件...");
             var exitCode = ExecuteFFmpeg("-f", "concat", "-safe", "0", "-i", $"{tsBase}/file.m3u8", "-vcodec", "copy", "-acodec", "copy", output);
-            if (exitCode == 0) {
-                Logger.info($"下载完成:{output}");
-            } else {
-                Logger.error($"下载失败 ExitCode:{exitCode}");
+            if (exitCode != 0) {
+                throw new System.Exception($"FFmpeg 合并 ts 文件出错 : {exitCode}");
             }
+            logger.info($"下载完成:{output}");
         }
     }
 }
