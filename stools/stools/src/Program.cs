@@ -96,7 +96,7 @@ IOS ipa文件重签名
         public class TSData {
             public int index;
             public List<string> urls = new List<string>();
-            public string Name => string.Format("{0:00000}.mts", index);
+            public string Name => string.Format("{0:00000}.ts", index);
         }
         static void Main (string[] args) {
             Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
@@ -111,6 +111,7 @@ IOS ipa文件重签名
             perform.AddExecute ("downloadMusic", HelpDownloadMusic, DownloadMusic);
             perform.AddExecute ("downloadM3u8", HelpDownloadM3u8, DownloadM3u8);
             try {
+                Console.WriteLine($"stools : {Version.version}");
                 perform.Start (args, null, null);
             } catch (System.Exception e) {
                 Console.Error.WriteLine (e);
@@ -435,7 +436,7 @@ IOS ipa文件重签名
                 throw new System.Exception("m3u8 url 不能为空");
             }
             var output = Path.GetFullPath(commandLine.GetValueDefault(ParameterOutput, ScorpioUtil.GetMD5FromString(url) + ".mp4"));
-            int queueCount = 8;
+            int queueCount = 2;
             if (int.TryParse(commandLine.GetValue(ParameterQueue), out var queuePar)) {
                 queueCount = Math.Max(1, queuePar);
             }
@@ -465,6 +466,7 @@ IOS ipa文件重签名
                     lines[i] = $"file {tsData.Name}";
                 }
             }
+            Console.WriteLine($"start download -> {output}");
             var sync = new object();
             var tsTotal = tsList.Count;
             var downloaded = 0L;
@@ -485,9 +487,16 @@ IOS ipa文件重签名
                         if (result.IsSuccessStatusCode) {
                             isSuccess = true;
                             downloaded += result.Length;
-                            Logger.info($"下载进度:{++tsCount}/{tsTotal}  已下载:{downloaded.GetMemory()}");
+                            if (result.Skip) {
+                                Logger.info($"[跳过] 下载进度:{++tsCount}/{tsTotal} 已下载:{downloaded.GetMemory()} - {data.Name} {url}");
+                            } else {
+                                Logger.info($"下载进度:{++tsCount}/{tsTotal}  已下载:{downloaded.GetMemory()} - {data.Name} {url}");
+                            }
                             break;
                         }
+                    }
+                    if (!isSuccess) {
+                        Console.WriteLine($"{data.Name} 下载失败 ");
                     }
                     goto Start;
                 });

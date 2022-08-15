@@ -15,8 +15,8 @@ namespace Scorpio.stools {
 $fileData | Out-File -Encoding utf8 ../stools/stools/src/Version.cs
 
 Remove-Item ../bin/* -Force -Recurse
-$platforms = @("win-x86", "win-x64", "win-arm", "win-arm64", "linux-x64", "linux-musl-x64", "linux-arm", "linux-arm64", "osx-x64", "osx-arm64")
-# $platforms = @()
+# $platforms = @("win-x86", "win-x64", "win-arm", "win-arm64", "linux-x64", "linux-musl-x64", "linux-arm", "linux-arm64", "osx-x64", "osx-arm64")
+$platforms = @("osx-x64")
 $aipPath = ".\Install.aip"
 foreach ($platform in $platforms) {
     Write-Host "正在打包 $platform 版本..."
