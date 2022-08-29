@@ -18,7 +18,7 @@
     },
     "downloadmusic": {
       "commandName": "Project",
-      "commandLineArgs": "downloadmusic -url https://www.kuwo.cn/play_detail/440616 https://music.163.com/#/song?id=5272611&userid=30671613 https://www.kugou.com/song/#hash=4EC10B1B7B9BEB2F0ADB89BBEC5F664B&album_id=960399"
+      "commandLineArgs": "downloadmusic -url https://www.kuwo.cn/play_detail/440616,https://music.163.com/#/song?id=5272611&userid=30671613 https://www.kugou.com/song/#hash=4EC10B1B7B9BEB2F0ADB89BBEC5F664B&album_id=960399"
     },
     "downloadm3u8": {
       "commandName": "Project",
@@ -33,6 +33,10 @@
       "commandName": "Project",
       "commandLineArgs": "downloadalbum https://music.163.com/album?id=38236&userid=30671613",
       "workingDirectory": "$(ProjectDir)"
+    },
+    "help": {
+      "commandName": "Project",
+      "commandLineArgs": "androidpublisher help"
     }
   }
 }
