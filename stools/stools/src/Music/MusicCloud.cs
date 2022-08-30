@@ -33,6 +33,7 @@ public class MusicCloud : MusicBase {
         public class Album {
             public string name;         //专辑名字
             public long publishTime;    //发行时间
+            public Artist artist;       //演唱者
             public List<Song> songs;    //歌曲列表
         }
         public int code;
@@ -62,7 +63,9 @@ public class MusicCloud : MusicBase {
             Singer.Add(artist.name);
             CoverUrls.Add(artist.picUrl);
         }
-        Mp3Urls.Add($"http://music.163.com/song/media/outer/url?id={id}.mp3");
+        //Mp3Urls.Add($"http://music.163.com/song/media/outer/url?id={id}.mp3");
+        var mp3url = await HttpUtil.Get($"http://v.api.aa1.cn/api/wymusic/index.php?id={id}");
+        Mp3Urls.Add(mp3url);
         var lyric = JsonConvert.DeserializeObject<CloudLyric>(await HttpUtil.Get($"http://music.163.com/api/song/lyric?os=pc&id={id}&lv=-1&kv=-1&tv=-1"));
         if (!string.IsNullOrWhiteSpace(lyric?.lrc?.lyric)) {
             Lyrics = lyric.lrc.lyric;
@@ -73,11 +76,12 @@ public class MusicCloud : MusicBase {
         }
     }
     protected override async Task<AlbumInfo> ParseAlbum_impl(string id) {
-        var result = await HttpUtil.Get($"http://music.163.com/api/album/{id}");
+        //http://music.163.com/api/album/14449?ext=true&id=14449&offset=0&total=true
+        var result = await HttpUtil.Get($"http://music.163.com/api/album/{id}?ext=true&id={id}&offset=0&total=true&limit=10");
         var albumInfo = JsonConvert.DeserializeObject<CloudAlbumInfo>(result);
         return new AlbumInfo() { 
             name = albumInfo.album.name,
-            artist = albumInfo.artist.name,
+            artist = albumInfo.artist?.name ?? albumInfo.album.artist?.name,
             musicList = albumInfo.album.songs.ConvertAll(_ => _.id.ToString()) };
     }
 }

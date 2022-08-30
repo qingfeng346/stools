@@ -27,6 +27,8 @@ public class HttpUtil {
                 cacheControl.NoStore = true;
                 client.DefaultRequestHeaders.CacheControl = cacheControl;
                 var message = new HttpRequestMessage(HttpMethod.Get, url);
+                message.Headers.Add("Cookie", "appver=1.5.0.75771");
+                message.Headers.Add("Referer", "http://music.163.com/");
                 preRequest?.Invoke(message);
 #if DEBUG
                 Console.WriteLine($"Request Url : {url}");

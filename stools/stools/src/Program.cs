@@ -232,11 +232,11 @@ namespace Scorpio.stools {
             return url;
         }
         static void Wget (CommandLine commandLine,
-                         [ParamterInfo("下载URL", ParameterUrl)] string[] url,
+                         [ParamterInfo("下载URL", ParameterUrl, false)] string[] url,
                          [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output) {
             var urls = new List<string> ();
             urls.AddRange (commandLine.Args);
-            urls.AddRange (url);
+            if (url != null) urls.AddRange(url);
             var tasks = new List<Task> ();
             for (var i = 0; i < urls.Count; i++) {
                 var uri = urls[i];
@@ -249,13 +249,13 @@ namespace Scorpio.stools {
             Task.WaitAll (tasks.ToArray ());
         }
         static void DownloadAlbum(CommandLine commandLine,
-                                  [ParamterInfo("专辑URL(酷我,网易云)", ParameterUrl)] string[] url,
+                                  [ParamterInfo("专辑URL(酷我,网易云)", ParameterUrl, false)] string[] url,
                                   [ParamterInfo("是否创建歌手专辑目录", ParameterNamePath, false)] bool namepath,
                                   [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output) {
             var tasks = new List<Task>();
             var urls = new List<string>();
             urls.AddRange(commandLine.Args);
-            urls.AddRange(url);
+            if (url != null) urls.AddRange(url);
             var ids = commandLine.GetValues(ParameterID);
             Task.WaitAll(Task.Run(async () => {
                 if (ids.Length > 0) {
@@ -310,12 +310,12 @@ namespace Scorpio.stools {
             }
         }
         static void DownloadMusic (CommandLine commandLine,
-                                  [ParamterInfo("音乐URL(酷我,网易云)", ParameterUrl)] string[] url,
+                                  [ParamterInfo("音乐URL(酷我,网易云)", ParameterUrl, false)] string[] url,
                                   [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output) {
             var tasks = new List<Task> ();
             var urls = new List<string> ();
             urls.AddRange (commandLine.Args);
-            urls.AddRange (url);
+            if (url != null) urls.AddRange(url);
             var ids = commandLine.GetValues (ParameterID);
             Task.WaitAll(Task.Run(async () => {
                 if (ids.Length > 0) {
@@ -368,7 +368,7 @@ namespace Scorpio.stools {
             await music.Download(id, output);
         }
         static void DownloadM3u8 (CommandLine commandLine,
-                                  [ParamterInfo("M3U8链接", ParameterUrl)] string url,
+                                  [ParamterInfo("M3U8链接", ParameterUrl, false)] string url,
                                   [ParamterInfo("下载队列数", ParameterQueue, "8", false)] int queue,
                                   [ParamterInfo("输出文件", ParameterOutput, false)] string output) {
             if (string.IsNullOrEmpty(url)) {

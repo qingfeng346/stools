@@ -31,7 +31,7 @@
     },
     "downloadalbum": {
       "commandName": "Project",
-      "commandLineArgs": "downloadalbum https://music.163.com/album?id=38236&userid=30671613",
+      "commandLineArgs": "downloadalbum https://music.163.com/#/album?id=14449",
       "workingDirectory": "$(ProjectDir)"
     },
     "help": {
