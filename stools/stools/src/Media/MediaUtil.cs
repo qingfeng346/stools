@@ -26,7 +26,7 @@ namespace Scorpio.stools {
                 var p = string.Format("{0:00.00}", (count * 100f) / total);
                 logger.info($"进度:{count}/{total}({p}%) {message}");
             };
-            Util.StartQueue(16, files, async (file) => {
+            Util.StartQueue(1, files, async (file) => {
                 var mediaInfo = Util.GetMediaInfo(file);
                 if (mediaInfo == null) {
                     progress($"{file} 文件不是有效的媒体文件");
@@ -68,7 +68,7 @@ namespace Scorpio.stools {
                 var p = string.Format("{0:00.00}", (count * 100f) / total);
                 logger.info($"进度:{count}/{total}({p}%) {message}");
             };
-            Util.StartQueue(16, files, async (file) => {
+            Util.StartQueue(1, files, async (file) => {
                 var mediaInfo = Util.GetMediaInfo(file);
                 if (mediaInfo == null) {
                     errorFiles.Add(file);
