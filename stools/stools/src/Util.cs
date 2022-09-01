@@ -1,0 +1,318 @@
+﻿using Google.Apis.AndroidPublisher.v3.Data;
+using Google.Apis.AndroidPublisher.v3;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
+using System;
+using System.Linq;
+using Scorpio.Commons;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using MetadataExtractor;
+using MetadataExtractor.Formats.FileType;
+using MetadataExtractor.Formats.Exif;
+using System.Globalization;
+using MetadataExtractor.Formats.QuickTime;
+using System.Collections;
+using Newtonsoft.Json;
+
+#if NET35
+using DirectoryList = System.Collections.Generic.IList<MetadataExtractor.Directory>;
+#else
+using DirectoryList = System.Collections.Generic.IReadOnlyList<MetadataExtractor.Directory>;
+#endif
+
+namespace Scorpio.stools {
+    public class TSData {
+        public int index;
+        public List<string> urls = new List<string>();
+        public string Name => string.Format("{0:00000}.ts", index);
+        public string Urls => string.Join(";", urls);
+    }
+    public class MediaInfo {
+        public string fileName;             //文件路径
+        public bool isImage;                //是否是图片
+        public string mediaType;            //媒体类型
+        public DateTime createTime;         //媒体创建时间
+        public decimal width;               //宽度
+        public decimal height;              //高度
+        public long size;                   //文件大小
+        public string targetFile;           //目标文件
+        public override int GetHashCode() {
+            var comparer = (IEqualityComparer)EqualityComparer<object>.Default;
+            return CombineHashCodes(comparer.GetHashCode(mediaType),
+                                    comparer.GetHashCode(size),
+                                    comparer.GetHashCode(width),
+                                    comparer.GetHashCode(height),
+                                    comparer.GetHashCode(createTime));
+        }
+        internal static int CombineHashCodes(int h1, int h2) {
+            return ((h1 << 5) + h1) ^ h2;
+        }
+        internal static int CombineHashCodes(int h1, int h2, int h3) {
+            return CombineHashCodes(CombineHashCodes(h1, h2), h3);
+        }
+        internal static int CombineHashCodes(int h1, int h2, int h3, int h4) {
+            return CombineHashCodes(CombineHashCodes(h1, h2), CombineHashCodes(h3, h4));
+        }
+        internal static int CombineHashCodes(int h1, int h2, int h3, int h4, int h5) {
+            return CombineHashCodes(CombineHashCodes(h1, h2, h3, h4), h5);
+        }
+        internal static int CombineHashCodes(int h1, int h2, int h3, int h4, int h5, int h6) {
+            return CombineHashCodes(CombineHashCodes(h1, h2, h3, h4), CombineHashCodes(h5, h6));
+        }
+        public override bool Equals(object obj) {
+            var other = obj as MediaInfo;
+            if (other == null) { return false; }
+            return mediaType == other.mediaType &&
+                   size == other.size &&
+                   width == other.width &&
+                   height == other.height &&
+                   createTime == other.createTime;
+        }
+        public override string ToString() {
+            return $"{mediaType}-{width}x{height}-{size}-{createTime}";
+        }
+    }
+    public static class Util {
+        public static void ExecuteAndroidpublisher(string authFile, string packageName, Action<AndroidPublisherService, string> action, Action<TrackRelease> trackAction) {
+            var service = new AndroidPublisherService(new BaseClientService.Initializer() {
+                HttpClientInitializer = GoogleCredential.FromFile(authFile).CreateScoped("https://www.googleapis.com/auth/androidpublisher"),
+                ApplicationName = packageName,
+            });
+            var editId = service.Edits.Insert(new AppEdit() { ExpiryTimeSeconds = "3600" }, packageName).Execute().Id;
+            action(service, editId);
+            var trackInfo = service.Edits.Tracks.Get(packageName, editId, "internal").Execute();
+            var release = trackInfo.Releases.SingleOrDefault(release => release?.Status == "draft", null);
+            if (release == null) {
+                release = new TrackRelease() { Status = "draft" };
+                trackInfo.Releases.Add(release);
+            }
+            trackAction(release);
+            service.Edits.Tracks.Update(trackInfo, packageName, editId, "internal").Execute();
+            var commit = service.Edits.Commit(packageName, editId);
+            commit.ChangesNotSentForReview = false;
+            commit.Execute();
+        }
+        public static string GetMobileprovisionInfo(string file) {
+            var info = "";
+            ScorpioUtil.StartProcess("security", null, new string[] {
+                "cms",
+                "-D",
+                "-i",
+                file
+            }, null, (process) => {
+                info = process.StandardOutput.ReadToEnd();
+            });
+            return info;
+        }
+        public static void ExecuteTMSTransporter(string username, string password, IEnumerable<string> args) {
+            if (ScorpioUtil.IsMacOS()) {
+                var argList = new List<string>() {
+                    "iTMSTransporter",
+                    "-u",
+                    username,
+                    "-p",
+                    password
+                };
+                argList.AddRange(args);
+                ScorpioUtil.StartProcess("xcrun", null, argList);
+            } else if (ScorpioUtil.IsWindows()) {
+                var argList = new List<string>() {
+                    "-u",
+                    username,
+                    "-p",
+                    password
+                };
+                argList.AddRange(args);
+                ScorpioUtil.StartCwd("iTMSTransporter.cmd", null, argList);
+            } else if (ScorpioUtil.IsLinux()) {
+                var argList = new List<string>() {
+                    "-u",
+                    username,
+                    "-p",
+                    password
+                };
+                argList.AddRange(args);
+                ScorpioUtil.StartProcess("iTMSTransporter", null, argList);
+            }
+        }
+        public static int ExecuteFFmpeg(params string[] args) {
+            if (ScorpioUtil.IsMacOS()) {
+                return ScorpioUtil.StartProcess("ffmpeg", null, args);
+            } else if (ScorpioUtil.IsWindows()) {
+                return ScorpioUtil.StartProcess("ffmpeg.exe", null, args, (process) => {
+                    process.StartInfo.CreateNoWindow = false;
+                });
+            } else if (ScorpioUtil.IsLinux()) {
+                return ScorpioUtil.StartProcess("ffmpeg", null, args);
+            }
+            return -1;
+        }
+        public static MediaInfo GetMediaInfo(string fileName) {
+            DirectoryList metadata;
+            try {
+                metadata = ImageMetadataReader.ReadMetadata(fileName);
+            } catch (System.Exception) {
+                //不是媒体类型
+                return null;
+            }
+            var mediaInfo = new MediaInfo();
+            mediaInfo.fileName = fileName;
+            var fileType = metadata.OfType<FileTypeDirectory>().FirstOrDefault().GetDescription(3);
+            mediaInfo.mediaType = fileType;
+            var fileInfo = new FileInfo(fileName);
+            if (fileType.Contains("image")) {
+                mediaInfo.isImage = true;
+                var info = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
+                if (info != null) {
+                    var time = info.GetDescription(36867);
+                    if (DateTime.TryParseExact(time, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var createTime)) {
+                        mediaInfo.createTime = createTime;
+                    } else {
+                        mediaInfo.createTime = fileInfo.LastWriteTime;
+                    }
+                    mediaInfo.width = Convert.ToDecimal(info.GetObject(40962));
+                    mediaInfo.height = Convert.ToDecimal(info.GetObject(40963));
+                } else {
+                    mediaInfo.createTime = fileInfo.LastWriteTime;
+                }
+            } else {
+                mediaInfo.isImage = false;
+                var info = metadata.OfType<QuickTimeTrackHeaderDirectory>().FirstOrDefault();
+                if (info != null) {
+                    var time = info.GetObject(3);
+                    if (time != null) {
+                        mediaInfo.createTime = (DateTime)time;
+                    } else {
+                        mediaInfo.createTime = fileInfo.LastWriteTime;
+                    }
+                    mediaInfo.width = Convert.ToDecimal(info.GetObject(10));
+                    mediaInfo.height = Convert.ToDecimal(info.GetObject(11));
+                } else {
+                    mediaInfo.createTime = fileInfo.LastWriteTime;
+                }
+            }
+            //把毫秒置0
+            mediaInfo.createTime = new DateTime(mediaInfo.createTime.Ticks / 10000000 * 10000000, DateTimeKind.Local);
+            mediaInfo.size = fileInfo.Length;
+            return mediaInfo;
+        }
+        public static string GetFilenameByUrl(string url) {
+            url = url.Substring(url.LastIndexOf("/") + 1);
+            var index = url.IndexOf("?");
+            if (index >= 0) {
+                return url.Substring(0, index);
+            }
+            return url;
+        }
+        public static async Task DownloadAlbumUrl(string url, string output, bool createPath) {
+            if (string.IsNullOrWhiteSpace(url)) { return; }
+            if (FileUtil.FileExist(url)) { url = Path.GetFullPath(url); }
+            var uri = new Uri(url);
+            if (uri.Scheme == Uri.UriSchemeFile) {
+                var lines = File.ReadAllLines(uri.LocalPath);
+                foreach (var line in lines) {
+                    if (line.StartsWith("#") || line.StartsWith(";") || line.StartsWith("!")) { continue; }
+                    await DownloadAlbumUrl(line, output, createPath);
+                }
+                return;
+            }
+            string type;
+            string id;
+            if (uri.Host.Contains("kuwo")) {
+                type = MusicFactory.Kuwo;
+                id = url.Substring(url.LastIndexOf("/") + 1);
+                if (id.IndexOf("?") >= 0) {
+                    id = id.Substring(0, id.IndexOf("?"));
+                }
+            } else if (uri.Host.Contains("163")) {
+                type = MusicFactory.Cloud;
+                id = Regex.Match(url, "id=\\w+(&|$)").ToString().Substring(3);
+                if (id.EndsWith("&")) {
+                    id = id.Substring(0, id.Length - 1);
+                }
+            } else {
+                throw new System.Exception($"不支持的源数据:{url}");
+            }
+            var music = MusicFactory.Create(type);
+            var albumInfo = await music.ParseAlbum(id);
+            var outputPath = createPath ? Path.Combine(output, albumInfo.artist, albumInfo.name) : output;
+            foreach (var musicid in albumInfo.musicList) {
+                await music.Download(musicid, outputPath);
+            }
+        }
+        public static async Task DownloadMusicUrl(string url, string output) {
+            if (string.IsNullOrWhiteSpace(url)) { return; }
+            if (FileUtil.FileExist(url)) { url = Path.GetFullPath(url); }
+            var uri = new Uri(url);
+            if (uri.Scheme == Uri.UriSchemeFile) {
+                var lines = File.ReadAllLines(uri.LocalPath);
+                foreach (var line in lines) {
+                    if (line.StartsWith("#") || line.StartsWith(";")) { continue; }
+                    await DownloadMusicUrl(line, output);
+                }
+                return;
+            }
+            string type;
+            string id;
+            if (uri.Host.Contains("kuwo")) {
+                type = MusicFactory.Kuwo;
+                id = url.Substring(url.LastIndexOf("/") + 1);
+                if (id.IndexOf("?") >= 0) {
+                    id = id.Substring(0, id.IndexOf("?"));
+                }
+            } else if (uri.Host.Contains("kugou")) {
+                type = MusicFactory.Kugou;
+                id = Regex.Match(url, "hash=\\w+(&|$)").ToString().Substring(5);
+                if (id.EndsWith("&")) {
+                    id = id.Substring(0, id.Length - 1);
+                }
+            } else if (uri.Host.Contains("163")) {
+                type = MusicFactory.Cloud;
+                id = Regex.Match(url, "id=\\w+(&|$)").ToString().Substring(3);
+                if (id.EndsWith("&")) {
+                    id = id.Substring(0, id.Length - 1);
+                }
+            } else {
+                throw new System.Exception($"不支持的源数据:{url}");
+            }
+            var music = MusicFactory.Create(type);
+            await music.Download(id, output);
+        }
+        public static void StartQueue<T>(int queue, Queue<T> datas, Func<T, Task> action) {
+            var sync = new object();
+            var tasks = new List<Task<string>>();
+            for (var i = 0; i < queue; i++) {
+                var task = Task.Run(async () => {
+                    try {
+                    Start:
+                        T data = default;
+                        lock (sync) {
+                            if (datas.Count > 0) {
+                                data = datas.Dequeue();
+                            }
+                        }
+                        if (data == null) {
+                            return "";
+                        }
+                        await action(data);
+                        goto Start;
+                    } catch (System.Exception e) {
+                        return e.ToString();
+                    }
+                });
+                tasks.Add(task);
+            }
+            while (tasks.Count > 0) {
+                var taskIndex = Task.WaitAny(tasks.ToArray());
+                var taskResult = tasks[taskIndex].Result;
+                tasks.RemoveAt(taskIndex);
+                if (!string.IsNullOrEmpty(taskResult)) {
+                    throw new System.Exception(taskResult);
+                }
+            }
+        }
+    }
+}

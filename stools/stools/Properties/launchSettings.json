@@ -37,6 +37,11 @@
     "help": {
       "commandName": "Project",
       "commandLineArgs": "androidpublisher help"
+    },
+    "sortmedia": {
+      "commandName": "Project",
+      "commandLineArgs": "sortmedia -type 1 -source F:\\照片整理 -target F:\\重复文件",
+      "workingDirectory": "$(ProjectDir)"
     }
   }
 }
