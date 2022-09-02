@@ -38,7 +38,6 @@ namespace Scorpio.stools {
         public decimal width;               //宽度
         public decimal height;              //高度
         public long size;                   //文件大小
-        public string targetFile;           //目标文件
         public override int GetHashCode() {
             var comparer = (IEqualityComparer)EqualityComparer<object>.Default;
             return CombineHashCodes(comparer.GetHashCode(mediaType),

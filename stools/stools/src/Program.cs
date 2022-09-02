@@ -274,23 +274,11 @@ namespace Scorpio.stools {
         static void SortMedia([ParamterInfo("类型,0 同步 1 去重", ParameterType, "0", false)] int type,
                               [ParamterInfo("其实目录", "--source|-source")] string source,
                               [ParamterInfo("目标目录", "--target|-target")] string target) {
-            var dirs = Directory.GetDirectories("F:\\重复文件", "*", SearchOption.TopDirectoryOnly);
-            var index = 0;
-            foreach (var dir in dirs) {
-                logger.info($"{++index}/{dirs.Length}");
-                var files = Directory.GetFiles(dir, "*", SearchOption.TopDirectoryOnly);
-                for (var i = 0; i < files.Length; ++i) {
-                    if (i == 0) { continue; }
-                    FileUtil.DeleteFile(files[i]);
-                }
+            if (type == 0) {
+                MediaUtil.Sync(source, target);
+            } else if (type == 1) {
+                MediaUtil.Distinct(source, target);
             }
-            //if (type == 0) {
-            //    MediaUtil.Sync(source, target);
-            //} else if (type == 1) {
-            //    MediaUtil.Distinct(source, target);
-            //} else if (type == 2) {
-            //    MediaUtil.CreateFiles(source);
-            //}
         }
     }
 }
