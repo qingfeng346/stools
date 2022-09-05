@@ -184,6 +184,9 @@ namespace Scorpio.stools {
                     var time = info.GetObject(3);
                     if (time != null) {
                         mediaInfo.createTime = (DateTime)time;
+                        if (mediaInfo.createTime.Kind != DateTimeKind.Local) {
+                            mediaInfo.createTime = TimeZoneInfo.ConvertTime(mediaInfo.createTime, TimeZoneInfo.Utc, TimeZoneInfo.Local);
+                        }
                     } else {
                         mediaInfo.createTime = fileInfo.LastWriteTime;
                     }

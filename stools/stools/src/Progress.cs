@@ -3,7 +3,7 @@ public class Progress {
     private int total;
     private int phase;
     private int next;
-    public Progress(int total) : this(total, 15) { }
+    public Progress(int total) : this(total, 50) { }
     public Progress(int total, int phase) {
         this.total = total;
         this.phase = total / phase;

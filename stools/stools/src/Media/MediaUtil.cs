@@ -69,7 +69,7 @@ namespace Scorpio.stools {
                 if (!FileUtil.CompareFile(distinctFile.file, file)) {
                     continue;
                 }
-                var pathName = (mediaInfo.isImage ? "图片" : "视频") + Path.GetFileNameWithoutExtension(distinctFile.file);
+                var pathName = (mediaInfo.isImage ? "图片/" : "视频/") + Path.GetFileNameWithoutExtension(distinctFile.file);
                 var extension = Path.GetExtension(distinctFile.file);
                 if (!distinctFile.isBackup) {
                     distinctFile.isBackup = true;
