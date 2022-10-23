@@ -95,16 +95,12 @@ namespace Scorpio.stools {
             commit.Execute();
         }
         public static string GetMobileprovisionInfo(string file) {
-            var info = "";
-            ScorpioUtil.StartProcess("security", null, new string[] {
+            return ScorpioUtil.Execute("security", null, new string[] {
                 "cms",
                 "-D",
                 "-i",
                 file
-            }, null, (process) => {
-                info = process.StandardOutput.ReadToEnd();
-            });
-            return info;
+            }).output;
         }
         public static void ExecuteTMSTransporter(string username, string password, IEnumerable<string> args) {
             if (ScorpioUtil.IsMacOS()) {
@@ -116,7 +112,7 @@ namespace Scorpio.stools {
                     password
                 };
                 argList.AddRange(args);
-                ScorpioUtil.StartProcess("xcrun", null, argList);
+                ScorpioUtil.Execute("xcrun", null, argList);
             } else if (ScorpioUtil.IsWindows()) {
                 var argList = new List<string>() {
                     "-u",
@@ -125,7 +121,7 @@ namespace Scorpio.stools {
                     password
                 };
                 argList.AddRange(args);
-                ScorpioUtil.StartCwd("iTMSTransporter.cmd", null, argList);
+                ScorpioUtil.Execute("iTMSTransporter.cmd", null, argList);
             } else if (ScorpioUtil.IsLinux()) {
                 var argList = new List<string>() {
                     "-u",
@@ -134,18 +130,16 @@ namespace Scorpio.stools {
                     password
                 };
                 argList.AddRange(args);
-                ScorpioUtil.StartProcess("iTMSTransporter", null, argList);
+                ScorpioUtil.Execute("iTMSTransporter", null, argList);
             }
         }
         public static int ExecuteFFmpeg(params string[] args) {
             if (ScorpioUtil.IsMacOS()) {
-                return ScorpioUtil.StartProcess("ffmpeg", null, args);
+                return ScorpioUtil.Execute("ffmpeg", null, args).exitCode;
             } else if (ScorpioUtil.IsWindows()) {
-                return ScorpioUtil.StartProcess("ffmpeg.exe", null, args, (process) => {
-                    process.StartInfo.CreateNoWindow = false;
-                });
+                return ScorpioUtil.Execute("ffmpeg.exe", null, args).exitCode;
             } else if (ScorpioUtil.IsLinux()) {
-                return ScorpioUtil.StartProcess("ffmpeg", null, args);
+                return ScorpioUtil.Execute("ffmpeg", null, args).exitCode;
             }
             return -1;
         }
@@ -282,39 +276,6 @@ namespace Scorpio.stools {
             }
             var music = MusicFactory.Create(type);
             await music.Download(id, output);
-        }
-        public static void StartQueue<T>(int queue, Queue<T> datas, Func<T, Task> action) {
-            var sync = new object();
-            var tasks = new List<Task<string>>();
-            for (var i = 0; i < queue; i++) {
-                var task = Task.Run(async () => {
-                    try {
-                    Start:
-                        T data = default;
-                        lock (sync) {
-                            if (datas.Count > 0) {
-                                data = datas.Dequeue();
-                            }
-                        }
-                        if (data == null) {
-                            return "";
-                        }
-                        await action(data);
-                        goto Start;
-                    } catch (System.Exception e) {
-                        return e.ToString();
-                    }
-                });
-                tasks.Add(task);
-            }
-            while (tasks.Count > 0) {
-                var taskIndex = Task.WaitAny(tasks.ToArray());
-                var taskResult = tasks[taskIndex].Result;
-                tasks.RemoveAt(taskIndex);
-                if (!string.IsNullOrEmpty(taskResult)) {
-                    throw new System.Exception(taskResult);
-                }
-            }
         }
     }
 }

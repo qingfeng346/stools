@@ -133,7 +133,7 @@ namespace Scorpio.stools {
                 }
             }
             File.Copy ($"{ScorpioUtil.BaseDirectory}/{resign}", resign, true);
-            ScorpioUtil.StartProcess ("sh", null, new string[] {
+            ScorpioUtil.Execute ("sh", null, new string[] {
                 resign,
                 ipa,
                 developer,
@@ -246,21 +246,27 @@ namespace Scorpio.stools {
             Console.WriteLine($"start download -> {output}");
             var tsTotal = tsList.Count;
             var downloaded = 0L;
-            Util.StartQueue(queue, tsList, async (data) => {
-                foreach (var url in data.urls) {
-                    var result = await HttpUtil.Download(url, $"{tsBase}/{data.Name}", false, true);
-                    if (result.IsSuccessStatusCode) {
-                        downloaded += result.Length;
-                        if (result.Skip) {
-                            logger.info($"[跳过] 下载进度:{++tsCount}/{tsTotal} 已下载:{downloaded.GetMemory()} - {data.Name} {url}");
+            ScorpioUtil.StartQueue(tsList, async (data, index) => {
+                var builder = new StringBuilder();
+                for (var i = 0; i < 5; ++i) {
+                    builder.Clear();
+                    foreach (var url in data.urls) {
+                        var result = await HttpUtil.Download(url, $"{tsBase}/{data.Name}", false, true);
+                        if (result.IsSuccessStatusCode) {
+                            downloaded += result.Length;
+                            if (result.Skip) {
+                                logger.info($"[跳过] 下载进度:{++tsCount}/{tsTotal} 已下载:{downloaded.GetMemory()} - {data.Name} {url}");
+                            } else {
+                                logger.info($"下载进度:{++tsCount}/{tsTotal}  已下载:{downloaded.GetMemory()} - {data.Name} {url}");
+                            }
+                            return;
                         } else {
-                            logger.info($"下载进度:{++tsCount}/{tsTotal}  已下载:{downloaded.GetMemory()} - {data.Name} {url}");
+                            builder.AppendLine($"{url} code : {result.StatusCode}  error : {result.Error}");
                         }
-                        return;
                     }
-                }
-                throw new System.Exception($"{data.Name} 下载失败 : {data.Urls}");
-            });
+                } 
+                throw new System.Exception($"{data.Name} 下载失败 : {builder.ToString()}");
+            }, queue);
             File.WriteAllLines($"{tsBase}/file.m3u8", lines.ToArray());
             FileUtil.DeleteFile(output);
             FileUtil.DeleteFolder(output, null, true);
