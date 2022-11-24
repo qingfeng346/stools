@@ -84,7 +84,4 @@ public class MusicKuwo : MusicBase {
             artist = albumInfo.data.artist,
             musicList = albumInfo.data.musicList.ConvertAll(_ => _.rid.ToString()) };
     }
-    //void DownloadLyric(string id) {
-    //    http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=79479
-    //}
 }

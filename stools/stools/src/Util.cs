@@ -229,6 +229,10 @@ namespace Scorpio.stools {
                 if (id.EndsWith("&")) {
                     id = id.Substring(0, id.Length - 1);
                 }
+            } else if (uri.Host.Contains("kugou")) {
+                type = MusicFactory.Kugou;
+                if (url.EndsWith("/")) url = url.Substring(0, url.Length - 1);
+                id = url.Substring(url.LastIndexOf("/") + 1);
             } else {
                 throw new System.Exception($"不支持的源数据:{url}");
             }

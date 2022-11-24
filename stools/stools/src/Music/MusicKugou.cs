@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Newtonsoft.Json;
-using System.Collections.Generic;
+using HtmlAgilityPack;
 public class MusicKugou : MusicBase {
     public override string Source => MusicFactory.Kugou;
     public class MusicInfo {
@@ -32,7 +32,26 @@ public class MusicKugou : MusicBase {
         Mp3Urls.Add(musicInfo.data.play_url);
         Mp3Urls.Add(musicInfo.data.play_backup_url);
     }
-    protected override Task<AlbumInfo> ParseAlbum_impl(string id) {
-        throw new System.NotImplementedException();
+    protected override async Task<AlbumInfo> ParseAlbum_impl(string id) {
+        var html = new HtmlWeb();
+        var doc = html.Load($"https://www.kugou.com/album/info/{id}/").DocumentNode;
+        var details = doc.SelectSingleNode("//p[@class='detail']").InnerText.Split('\n');
+        var albumInfo = new AlbumInfo();
+        foreach (var deltail in details) {
+            if (deltail.Contains("专辑名")) {
+                var index = deltail.LastIndexOf("：");
+                albumInfo.name = deltail.Substring(index + 1).Replace("<br />", "").Trim();
+            } else if (deltail.Contains("歌手")) {
+                var index = deltail.LastIndexOf("：");
+                albumInfo.artist = deltail.Substring(index + 1).Replace("<br />", "").Trim();
+            }
+        }
+        var nodes = doc.SelectNodes("//ul[@class='songList']/li/a");
+        foreach (var node in nodes) {
+            var data = node.GetAttributeValue("data", "");
+            var hash = data.Substring(0, data.LastIndexOf("|"));
+            albumInfo.musicList.Add(hash);
+        }
+        return albumInfo;
     }
 }
