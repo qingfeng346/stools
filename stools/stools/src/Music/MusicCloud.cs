@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-
+using RestSharp;
 public class MusicCloud : MusicBase {
     public override string Source => MusicFactory.Cloud;
     public class CloudMusicInfos {
@@ -37,6 +37,7 @@ public class MusicCloud : MusicBase {
             public List<Song> songs;    //歌曲列表
         }
         public int code;
+        public string message;
         public Album album;
         public Artist artist;
     }
@@ -63,9 +64,9 @@ public class MusicCloud : MusicBase {
             Singer.Add(artist.name);
             CoverUrls.Add(artist.picUrl);
         }
-        //Mp3Urls.Add($"http://music.163.com/song/media/outer/url?id={id}.mp3");
-        var mp3url = await HttpUtil.Get($"http://v.api.aa1.cn/api/wymusic/index.php?id={id}");
-        Mp3Urls.Add(mp3url);
+        Mp3Urls.Add($"http://music.163.com/song/media/outer/url?id={id}.mp3");
+        //var mp3url = await HttpUtil.Get($"http://v.api.aa1.cn/api/wymusic/index.php?id={id}");
+        //Mp3Urls.Add(mp3url);
         var lyric = JsonConvert.DeserializeObject<CloudLyric>(await HttpUtil.Get($"http://music.163.com/api/song/lyric?os=pc&id={id}&lv=-1&kv=-1&tv=-1"));
         if (!string.IsNullOrWhiteSpace(lyric?.lrc?.lyric)) {
             Lyrics = lyric.lrc.lyric;
@@ -76,9 +77,14 @@ public class MusicCloud : MusicBase {
         }
     }
     protected override async Task<AlbumInfo> ParseAlbum_impl(string id) {
-        //http://music.163.com/api/album/14449?ext=true&id=14449&offset=0&total=true
-        var result = await HttpUtil.Get($"http://music.163.com/api/album/{id}?ext=true&id={id}&offset=0&total=true&limit=10");
-        var albumInfo = JsonConvert.DeserializeObject<CloudAlbumInfo>(result);
+        var client = new RestClient($"http://music.163.com");
+        //var request = new RestRequest($"api/album/{id}?ext=true&id={id}&offset=0&total=true&limit=10");
+        var request = new RestRequest($"api/album/{id}?ext=true&id={id}");
+        var result = await client.GetAsync(request);
+        var albumInfo = JsonConvert.DeserializeObject<CloudAlbumInfo>(result.Content);
+        if (albumInfo?.code != 200) {
+            throw new System.Exception($"{albumInfo?.code} : {albumInfo?.message}");
+        }
         return new AlbumInfo() { 
             name = albumInfo.album.name,
             artist = albumInfo.artist?.name ?? albumInfo.album.artist?.name,

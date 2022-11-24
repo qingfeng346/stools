@@ -65,7 +65,10 @@ public abstract class MusicBase {
     public async Task<AlbumInfo> ParseAlbum(string id) {
         for (var i = 0; i < RetryTotal; ++i) {
             try {
-                return await ParseAlbum_impl(id);
+                var albumInfo = await ParseAlbum_impl(id);
+                using (var log = new LoggerColor(ConsoleColor.Green))
+                    logger.info($"解析专辑完成, 名称:{albumInfo.name}  歌手:{albumInfo.artist}  歌曲数量:{albumInfo.musicList.Count}");
+                return albumInfo;
             } catch (Exception ex) {
                 logger.error($"解析专辑出错,一秒后重试 {i + 1}/{RetryTotal} : {ex}");
                 await Task.Delay(1000);
@@ -78,64 +81,71 @@ public abstract class MusicBase {
     //解析专辑
     protected abstract Task<AlbumInfo> ParseAlbum_impl(string id);
     async Task DownloadFile(string savePath) {
-        FileUtil.CreateDirectory(savePath);
-        logger.info("解析完成,开始下载 id:{0} 名字:{1}  歌手:{2}  专辑:{3}  年份:{4}", ID, Name, Singer.GetSingers(), Album, Year);
-        var fileName = $"{Singer.GetSingers()} - {Name}.mp3";
-        var filePath = Path.Combine(savePath, fileName);
-        foreach (var mp3Url in Mp3Urls) {
-            try {
-                logger.info($"尝试下载文件 : {mp3Url}");
-                await HttpUtil.Download(mp3Url, filePath);
-                break;
-            } catch (Exception e) {
-                logger.error($"下载文件 {mp3Url} 失败 : {e}");
-            }
-        }
-        if (!System.IO.File.Exists(filePath)) { throw new Exception("音频文件下载失败"); }
-        logger.info("下载音频文件完成,文件大小:{1}", fileName, new FileInfo(filePath).Length.GetMemory());
-        var file = TagLib.File.Create(filePath);
-        file.Tag.Title = Name;
-        file.Tag.Performers = Singer.ToArray();
-        file.Tag.Album = Album;
-        file.Tag.Year = Year;
-        file.Tag.Track = Track;
-        file.Tag.Publisher = $"{Source} - {ID}";
-        file.Tag.Lyrics = Lyrics;
-        file.Tag.Genres = new string[0];
-        foreach (var coverUrl in CoverUrls) {
-            try {
-                //var imagePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.png");
-                var imagePath = Path.Combine(savePath, $"{Guid.NewGuid()}.png");
-                logger.info($"尝试下载封面 : {coverUrl}");
-                await HttpUtil.Download(coverUrl, imagePath);
-                ResizeImage(imagePath, 512);
-                var pictures = new List<IPicture>();
-                {
-                    var picture = new TagLib.Id3v2.AttachmentFrame(new Picture(imagePath));
-                    picture.Type = PictureType.FrontCover;
-                    picture.Filename = "frontcover.png";
-                    picture.Description = "";
-                    picture.MimeType = Picture.GetMimeFromExtension(imagePath);
-                    picture.TextEncoding = StringType.Latin1;
-                    //var picture = new Picture(imagePath);
-                    //picture.Type = PictureType.FrontCover;
-                    //picture.Filename = "frontcover.png";
-                    //picture.Description = "";
-                    pictures.Add(picture);
+        string filePath = "";
+        try {
+            FileUtil.CreateDirectory(savePath);
+            logger.info("解析完成,开始下载 id:{0} 名字:{1}  歌手:{2}  专辑:{3}  年份:{4}", ID, Name, Singer.GetSingers(), Album, Year);
+            var fileName = $"{Singer.GetSingers()} - {Name}.mp3";
+            filePath = Path.Combine(savePath, fileName);
+            foreach (var mp3Url in Mp3Urls) {
+                try {
+                    logger.info($"尝试下载文件 : {mp3Url}");
+                    await HttpUtil.Download(mp3Url, filePath);
+                    break;
+                } catch (Exception e) {
+                    logger.error($"下载文件 {mp3Url} 失败 : {e}");
                 }
-                file.Tag.Pictures = pictures.ToArray();
-                FileUtil.DeleteFile(imagePath);
-                break;
-            } catch (Exception e) {
-                logger.error($"下载封面 {coverUrl} 失败 : {e}");
             }
+            if (!System.IO.File.Exists(filePath)) { throw new Exception("音频文件下载失败"); }
+            logger.info("下载音频文件完成,文件大小:{1}", fileName, new FileInfo(filePath).Length.GetMemory());
+            var file = TagLib.File.Create(filePath);
+            file.Tag.Title = Name;
+            file.Tag.Performers = Singer.ToArray();
+            file.Tag.Album = Album;
+            file.Tag.Year = Year;
+            file.Tag.Track = Track;
+            file.Tag.Publisher = $"{Source} - {ID}";
+            file.Tag.Lyrics = Lyrics;
+            file.Tag.Genres = new string[0];
+            foreach (var coverUrl in CoverUrls) {
+                string imagePath = "";
+                try {
+                    imagePath = Path.Combine(savePath, $"{Guid.NewGuid()}.png");
+                    logger.info($"尝试下载封面 : {coverUrl}");
+                    await HttpUtil.Download(coverUrl, imagePath);
+                    ResizeImage(imagePath, 512);
+                    var pictures = new List<IPicture>();
+                    {
+                        var picture = new TagLib.Id3v2.AttachmentFrame(new Picture(imagePath));
+                        picture.Type = PictureType.FrontCover;
+                        picture.Filename = "frontcover.png";
+                        picture.Description = "";
+                        picture.MimeType = Picture.GetMimeFromExtension(imagePath);
+                        picture.TextEncoding = StringType.Latin1;
+                        //var picture = new Picture(imagePath);
+                        //picture.Type = PictureType.FrontCover;
+                        //picture.Filename = "frontcover.png";
+                        //picture.Description = "";
+                        pictures.Add(picture);
+                    }
+                    file.Tag.Pictures = pictures.ToArray();
+                    FileUtil.DeleteFile(imagePath);
+                    break;
+                } catch (Exception e) {
+                    FileUtil.DeleteFile(imagePath);
+                    logger.error($"下载封面 {coverUrl} 失败 : {e}");
+                }
+            }
+            file.Save();
+            using (var log = new LoggerColor(ConsoleColor.Green)) {
+                logger.info("下载音乐完成 文件名:{0}  文件大小:{1}", Path.GetFullPath(filePath), new FileInfo(filePath).Length.GetMemory());
+            }
+            logger.info("-------------------------------------------------------------------");
+        } catch (System.Exception e) {
+            FileUtil.DeleteFile(filePath);
+            using (var log = new LoggerColor(ConsoleColor.Red))
+                logger.error($"下载音乐【{Name}】失败:{e}");
         }
-        file.Save();
-        var old = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Green;
-        logger.info("下载音乐完成 文件名:{0}  文件大小:{1}", Path.GetFullPath(filePath), new FileInfo(filePath).Length.GetMemory());
-        Console.ForegroundColor = old;
-        logger.info("-------------------------------------------------------------------");
     }
     //重置封面大小
     void ResizeImage(string filePath, int size) {

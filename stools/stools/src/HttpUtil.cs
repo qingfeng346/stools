@@ -5,6 +5,8 @@ using Scorpio.Commons;
 using System.Net;
 using System.Net.Http.Headers;
 using System;
+using RestSharp;
+
 public class HttpUtil {
     private const int READ_LENGTH = 8192;
     public class Response {
@@ -16,27 +18,41 @@ public class HttpUtil {
         public string Error { get; set; }
     }
     public static async Task<string> Get(string url, Action<HttpRequestMessage> preRequest = null) {
-        using (var handler = new HttpClientHandler()) {
-            handler.AllowAutoRedirect = false;
-            handler.UseCookies = false;
-            handler.Credentials = CredentialCache.DefaultCredentials;
-            handler.ClientCertificateOptions = ClientCertificateOption.Automatic;
-            using (var client = new HttpClient(handler)) {
-                var cacheControl = new CacheControlHeaderValue();
-                cacheControl.NoCache = true;
-                cacheControl.NoStore = true;
-                client.DefaultRequestHeaders.CacheControl = cacheControl;
-                var message = new HttpRequestMessage(HttpMethod.Get, url);
-                message.Headers.Add("Cookie", "appver=1.5.0.75771");
-                message.Headers.Add("Referer", "http://music.163.com/");
-                preRequest?.Invoke(message);
-#if DEBUG
-                Console.WriteLine($"Request Url : {url}");
-#endif
-                var response = await client.SendAsync(message);
-                return await response.Content.ReadAsStringAsync();
-            }
-        }
+        var index = url.IndexOf("/", 8);
+        var baseUrl = url.Substring(0, index);
+        var requestUrl = url.Substring(index + 1);
+        var client = new RestClient(baseUrl);
+        var request = new RestRequest(requestUrl);
+        var result = await client.GetAsync(request);
+        return result.Content;
+        //var client = new RestClient($"http://music.163.com");
+
+        //        using (var handler = new HttpClientHandler()) {
+        //            handler.Credentials = CredentialCache.DefaultCredentials;
+        //            handler.UseDefaultCredentials = true;
+        //            handler.CookieContainer = new CookieContainer();
+        //            handler.AutomaticDecompression = DecompressionMethods.All;
+        //            handler.PreAuthenticate = false;
+        //            handler.AllowAutoRedirect = true;
+        //            //handler.UseCookies = false;
+        //            //handler.Credentials = CredentialCache.DefaultCredentials;
+        //            //handler.ClientCertificateOptions = ClientCertificateOption.Automatic;
+        //            using (var client = new HttpClient(handler)) {
+        //                var cacheControl = new CacheControlHeaderValue();
+        //                cacheControl.NoCache = true;
+        //                cacheControl.NoStore = true;
+        //                client.DefaultRequestHeaders.CacheControl = cacheControl;
+        //                var message = new HttpRequestMessage(HttpMethod.Get, url);
+        //                //message.Headers.Add("Cookie", "appver=1.5.0.75771");
+        //                //message.Headers.Add("Referer", "http://music.163.com/");
+        //                preRequest?.Invoke(message);
+        //#if DEBUG
+        //                Console.WriteLine($"Request Url : {url}");
+        //#endif
+        //                var response = await client.SendAsync(message);
+        //                return await response.Content.ReadAsStringAsync();
+        //            }
+        //        }
     }
     public static async Task<Response> Download(string url, string file) {
         return await Download(url, file, true, false);
