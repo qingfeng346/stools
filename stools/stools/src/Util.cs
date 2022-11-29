@@ -203,7 +203,7 @@ namespace Scorpio.stools {
             }
             return url;
         }
-        public static async Task DownloadAlbumUrl(string url, string output, bool createPath) {
+        public static async Task DownloadAlbumUrl(string url, string output, MusicPath musicPath) {
             if (string.IsNullOrWhiteSpace(url)) { return; }
             if (FileUtil.FileExist(url)) { url = Path.GetFullPath(url); }
             var uri = new Uri(url);
@@ -211,7 +211,7 @@ namespace Scorpio.stools {
                 var lines = File.ReadAllLines(uri.LocalPath);
                 foreach (var line in lines) {
                     if (line.StartsWith("#") || line.StartsWith(";") || line.StartsWith("!")) { continue; }
-                    await DownloadAlbumUrl(line, output, createPath);
+                    await DownloadAlbumUrl(line, output, musicPath);
                 }
                 return;
             }
@@ -236,14 +236,16 @@ namespace Scorpio.stools {
             } else {
                 throw new System.Exception($"不支持的源数据:{url}");
             }
+            await DownloadAlbum(type, id, output, musicPath);
+        }
+        public static async Task DownloadAlbum(string type, string id, string output, MusicPath musicPath) {
             var music = MusicFactory.Create(type);
             var albumInfo = await music.ParseAlbum(id);
-            var outputPath = createPath ? Path.Combine(output, albumInfo.artist, albumInfo.name) : output;
             foreach (var musicid in albumInfo.musicList) {
-                await music.Download(musicid, outputPath);
+                await music.Download(musicid, output, musicPath);
             }
         }
-        public static async Task DownloadMusicUrl(string url, string output) {
+        public static async Task DownloadMusicUrl(string url, string output, MusicPath musicPath) {
             if (string.IsNullOrWhiteSpace(url)) { return; }
             if (FileUtil.FileExist(url)) { url = Path.GetFullPath(url); }
             var uri = new Uri(url);
@@ -251,7 +253,7 @@ namespace Scorpio.stools {
                 var lines = File.ReadAllLines(uri.LocalPath);
                 foreach (var line in lines) {
                     if (line.StartsWith("#") || line.StartsWith(";")) { continue; }
-                    await DownloadMusicUrl(line, output);
+                    await DownloadMusicUrl(line, output, musicPath);
                 }
                 return;
             }
@@ -278,8 +280,10 @@ namespace Scorpio.stools {
             } else {
                 throw new System.Exception($"不支持的源数据:{url}");
             }
-            var music = MusicFactory.Create(type);
-            await music.Download(id, output);
+            await DownloadMusic(type, id, output, musicPath);
+        }
+        public static async Task DownloadMusic(string type, string id, string output, MusicPath musicPath) {
+            await MusicFactory.Create(type).Download(id, output, musicPath);
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Scorpio.stools {
         private const string ParameterType = "--type|-type|-t";
         private const string ParameterID = "--id|-id";
         private const string ParameterUrl = "--url|-url";
-        private const string ParameterNamePath = "--namepath|-namepath";
+        private const string ParameterPath = "--path|-path";
         private const string ParameterIpa = "--ipa|-ipa";
         private const string ParameterProvision = "--provision|-provision|-p";
         private const string ParameterDeveloper = "--developer|-developer|-d";
@@ -161,8 +161,8 @@ namespace Scorpio.stools {
         }
         static void DownloadAlbum(CommandLine commandLine,
                                   [ParamterInfo("专辑URL(酷我,网易云)", ParameterUrl, false)] string[] url,
-                                  [ParamterInfo("是否创建歌手专辑目录", ParameterNamePath, false)] bool namepath,
-                                  [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output) {
+                                  [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output,
+                                  [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath) {
             var tasks = new List<Task>();
             var urls = new List<string>();
             urls.AddRange(commandLine.Args);
@@ -170,23 +170,20 @@ namespace Scorpio.stools {
             var ids = commandLine.GetValues(ParameterID);
             Task.WaitAll(Task.Run(async () => {
                 if (ids.Length > 0) {
-                    var music = MusicFactory.Create(commandLine.GetValueDefault(ParameterType, ""));
+                    var type = commandLine.GetValueDefault(ParameterType, "");
                     foreach (var id in ids) {
-                        var albumInfo = await music.ParseAlbum(id);
-                        var outputPath = namepath ? Path.Combine(output, albumInfo.name) : output;
-                        foreach (var musicid in albumInfo.musicList) {
-                            await music.Download(musicid, outputPath);
-                        }
+                        await Util.DownloadAlbum(type, id, output, musicPath);
                     }
                 }
                 foreach (var url in urls) {
-                    await Util.DownloadAlbumUrl(url, output, namepath);
+                    await Util.DownloadAlbumUrl(url, output, musicPath);
                 }
             }));
         }
         static void DownloadMusic (CommandLine commandLine,
                                   [ParamterInfo("音乐URL(酷我,网易云)", ParameterUrl, false)] string[] url,
-                                  [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output) {
+                                  [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output,
+                                  [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath) {
             var tasks = new List<Task> ();
             var urls = new List<string> ();
             urls.AddRange (commandLine.Args);
@@ -194,13 +191,13 @@ namespace Scorpio.stools {
             var ids = commandLine.GetValues (ParameterID);
             Task.WaitAll(Task.Run(async () => {
                 if (ids.Length > 0) {
-                    var music = MusicFactory.Create(commandLine.GetValueDefault(ParameterType, ""));
+                    var type = commandLine.GetValueDefault(ParameterType, "");
                     foreach (var id in ids) {
-                        await music.Download(id, output);
+                        await Util.DownloadMusic(type, id, output, musicPath);
                     }
                 }
                 foreach (var url in urls) {
-                    await Util.DownloadMusicUrl(url, output);
+                    await Util.DownloadMusicUrl(url, output, musicPath);
                 }
             }));
         }

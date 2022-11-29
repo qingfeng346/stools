@@ -7,7 +7,12 @@ using TagLib;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
-
+public enum MusicPath {
+    None = 0,               //不创建文件夹
+    Artist = 1,             //创建歌手文件夹
+    Album = 2,              //创建专辑文件夹
+    ArtistAlbum = 3,        //创建歌手专辑两层文件夹
+}
 public abstract class MusicBase {
     public const int RetryTotal = 10;
     public class AlbumInfo {
@@ -36,16 +41,16 @@ public abstract class MusicBase {
     public List<string> Mp3Urls { get; } = new List<string>();
 
     //下载文件
-    public async Task Download(string id, string path) {
+    public async Task Download(string id, string path, MusicPath musicPath) {
         ID = id;
         logger.info($"开始解析数据  来源:{Source} ID:{id}");
-        Name = "";
-        Album = "";
-        Year = 0;
-        Track = 0;
         var success = false;
         for (var i = 0; i < RetryTotal; ++i) {
             try {
+                Name = "";
+                Album = "";
+                Year = 0;
+                Track = 0;
                 Singer.Clear();
                 CoverUrls.Clear();
                 Mp3Urls.Clear();
@@ -60,7 +65,7 @@ public abstract class MusicBase {
         if (!success) {
             throw new Exception("解析音乐数据出错");
         }
-        await DownloadFile(path);
+        await DownloadFile(path, musicPath);
     }
     public async Task<AlbumInfo> ParseAlbum(string id) {
         for (var i = 0; i < RetryTotal; ++i) {
@@ -80,13 +85,18 @@ public abstract class MusicBase {
     protected abstract Task ParseInfo(string id);
     //解析专辑
     protected abstract Task<AlbumInfo> ParseAlbum_impl(string id);
-    async Task DownloadFile(string savePath) {
+    async Task DownloadFile(string savePath, MusicPath musicPath) {
         string filePath = "";
         try {
-            FileUtil.CreateDirectory(savePath);
             logger.info("解析完成,开始下载 id:{0} 名字:{1}  歌手:{2}  专辑:{3}  年份:{4}", ID, Name, Singer.GetSingers(), Album, Year);
             var fileName = $"{Singer.GetSingers()} - {Name}.mp3";
-            filePath = Path.Combine(savePath, fileName);
+            filePath = musicPath switch {
+                MusicPath.Artist => Path.Combine(savePath, Singer.GetSingers(), fileName),
+                MusicPath.Album => Path.Combine(savePath, Album, fileName),
+                MusicPath.ArtistAlbum => Path.Combine(savePath, Singer.GetSingers(), Album, fileName),
+                _ => Path.Combine(savePath, fileName),
+            };
+            FileUtil.CreateDirectoryByFile(filePath);
             foreach (var mp3Url in Mp3Urls) {
                 try {
                     logger.info($"尝试下载文件 : {mp3Url}");
