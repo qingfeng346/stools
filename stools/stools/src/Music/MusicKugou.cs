@@ -33,6 +33,7 @@ public class MusicKugou : MusicBase {
         Mp3Urls.Add(musicInfo.data.play_backup_url);
     }
     protected override async Task<AlbumInfo> ParseAlbum_impl(string id) {
+        await Task.Delay(1);
         var html = new HtmlWeb();
         var doc = html.Load($"https://www.kugou.com/album/info/{id}/").DocumentNode;
         var details = doc.SelectSingleNode("//p[@class='detail']").InnerText.Split('\n');

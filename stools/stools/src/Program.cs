@@ -266,12 +266,13 @@ namespace Scorpio.stools {
             }, queue);
             File.WriteAllLines($"{tsBase}/file.m3u8", lines.ToArray());
             FileUtil.DeleteFile(output);
-            FileUtil.DeleteFolder(output, null, true);
+            // FileUtil.DeleteFolder(output, null, true);
             logger.info("合并ts文件...");
             var exitCode = Util.ExecuteFFmpeg("-f", "concat", "-safe", "0", "-i", $"{tsBase}/file.m3u8", "-vcodec", "copy", "-acodec", "copy", output);
             if (exitCode != 0) {
                 throw new System.Exception($"FFmpeg 合并 ts 文件出错 : {exitCode}");
             }
+            FileUtil.DeleteFolder(tsBase);
             logger.info($"下载完成:{output}");
         }
         static void SortMedia([ParamterInfo("类型,0 同步 1 去重", ParameterType, "0", false)] int type,
