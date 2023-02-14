@@ -206,11 +206,46 @@ namespace Scorpio.stools {
         }
         static void Watch([ParamterInfo("输出目录", ParameterOutput, "./", true)] string output,
                           [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath) {
-            Task.Run(async () => {
-                var music = FileUtil.GetFileString($"{output}/music.txt");
-                var album = FileUtil.GetFileString($"{output}/album.txt");
-                var cache = JsonConvert.DeserializeObject<MusicCache>(FileUtil.GetFileString($"{output}/cache.txt"));
-            });
+            Task.WaitAll(Task.Run(async () => {
+                logger.info($"开始监听音乐下载目录 : {output}");
+                var musicFile = $"{output}/music.txt";
+                var albumFile = $"{output}/album.txt";
+                var cacheFile = $"{output}/cache.txt";
+                var musicCache = JsonConvert.DeserializeObject<MusicCache>(FileUtil.GetFileString(cacheFile));
+                if (musicCache == null) {
+                    musicCache = new MusicCache();
+                }
+                Util.CheckMusic = (type, id) => {
+                    if (musicCache.music.Contains((type,id))) {
+                        return false;
+                    }
+                    return true;
+                };
+                Util.DownloadedMusic = (type, id) => {
+                    musicCache.music.Add((type,id));
+                };
+                var musicInfo = (0, 0);
+                var albumInfo = (0, 0);
+                while (true) {
+                    var musicFileInfo = new FileInfo(musicFile);
+                    var albumFileInfo = new FileInfo(albumFile);
+                    var changed = false;
+                    if (albumFileInfo.Exists && albumFileInfo.Length != albumInfo.Item1 && albumFileInfo.LastWriteTimeUtc.Ticks != albumInfo.Item2) {
+                        var urls = await File.ReadAllLinesAsync(albumFile, Encoding.UTF8);
+                        await Util.DownloadAlbumUrls(urls, output, musicPath);
+                        changed = true;
+                    }
+                    if (musicFileInfo.Exists && musicFileInfo.Length != musicInfo.Item1 && musicFileInfo.LastWriteTimeUtc.Ticks != musicInfo.Item2) {
+                        var urls = await File.ReadAllLinesAsync(musicFile, Encoding.UTF8);
+                        await Util.DownloadMusicUrls(urls, output, musicPath);
+                        changed = true;
+                    }
+                    if (changed) {
+                        FileUtil.CreateFile(cacheFile, JsonConvert.SerializeObject(musicCache));
+                    }
+                    await Task.Delay(1000);
+                }
+            }));
         }
         static void DownloadM3u8(CommandLine commandLine,
                                   [ParamterInfo("M3U8链接", ParameterUrl, false)] string url,

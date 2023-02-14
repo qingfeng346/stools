@@ -29,16 +29,10 @@ namespace Scorpio.stools {
         public string Name => string.Format("{0:00000}.ts", index);
         public string Urls => string.Join(";", urls);
     }
-    public struct MusicCache {
-        public class Data {
-            public string type;
-            public string id;
-        }
-        public List<Data> album;
-        public List<Data> music;
+    public class MusicCache {
+        public HashSet<(string, string)> music;
         public MusicCache() {
-            album = new List<Data>();
-            music = new List<Data>();
+            music = new HashSet<(string,string)>();
         }
     }
     public class MediaInfo {
@@ -86,6 +80,8 @@ namespace Scorpio.stools {
         }
     }
     public static class Util {
+        public static Func<string, string, bool> CheckMusic;
+        public static Action<string, string> DownloadedMusic;
         public static void ExecuteAndroidpublisher(string authFile, string packageName, Action<AndroidPublisherService, string> action, Action<TrackRelease> trackAction) {
             var service = new AndroidPublisherService(new BaseClientService.Initializer() {
                 HttpClientInitializer = GoogleCredential.FromFile(authFile).CreateScoped("https://www.googleapis.com/auth/androidpublisher"),
@@ -303,7 +299,11 @@ namespace Scorpio.stools {
             await DownloadMusic(type, id, output, musicPath);
         }
         public static async Task DownloadMusic(string type, string id, string output, MusicPath musicPath) {
-            await MusicFactory.Create(type).Download(id, output, musicPath);
+            if (CheckMusic?.Invoke(type, id) ?? true) {
+                if (await MusicFactory.Create(type).Download(id, output, musicPath)) {
+                    DownloadedMusic?.Invoke(type, id);
+                }
+            }
         }
     }
 }

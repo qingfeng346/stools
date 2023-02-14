@@ -41,7 +41,7 @@ public abstract class MusicBase {
     public List<string> Mp3Urls { get; } = new List<string>();
 
     //下载文件
-    public async Task Download(string id, string path, MusicPath musicPath) {
+    public async Task<bool> Download(string id, string path, MusicPath musicPath) {
         ID = id;
         logger.info($"开始解析数据  来源:{Source} ID:{id}");
         var success = false;
@@ -65,7 +65,7 @@ public abstract class MusicBase {
         if (!success) {
             throw new Exception("解析音乐数据出错");
         }
-        await DownloadFile(path, musicPath);
+        return await DownloadFile(path, musicPath);
     }
     public async Task<AlbumInfo> ParseAlbum(string id) {
         for (var i = 0; i < RetryTotal; ++i) {
@@ -85,7 +85,7 @@ public abstract class MusicBase {
     protected abstract Task ParseInfo(string id);
     //解析专辑
     protected abstract Task<AlbumInfo> ParseAlbum_impl(string id);
-    async Task DownloadFile(string savePath, MusicPath musicPath) {
+    async Task<bool> DownloadFile(string savePath, MusicPath musicPath) {
         string filePath = "";
         try {
             logger.info("解析完成,开始下载 id:{0} 名字:{1}  歌手:{2}  专辑:{3}  年份:{4}", ID, Name, Singer.GetSingers(), Album, Year);
@@ -151,11 +151,13 @@ public abstract class MusicBase {
                 logger.info("下载音乐完成 文件名:{0}  文件大小:{1}", Path.GetFullPath(filePath), new FileInfo(filePath).Length.GetMemory());
             }
             logger.info("-------------------------------------------------------------------");
-        } catch (System.Exception e) {
+            return true;
+        } catch (Exception e) {
             FileUtil.DeleteFile(filePath);
             using (var log = new LoggerColor(ConsoleColor.Red))
                 logger.error($"下载音乐【{Name}】失败:{e}");
         }
+        return false;
     }
     //重置封面大小
     void ResizeImage(string filePath, int size) {

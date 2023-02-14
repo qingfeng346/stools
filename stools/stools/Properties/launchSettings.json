@@ -42,6 +42,10 @@
       "commandName": "Project",
       "commandLineArgs": "sortmedia -type 0 -source F:\\照片整理 -target F:\\照片整理1",
       "workingDirectory": "$(ProjectDir)"
+    },
+    "watch": {
+      "commandName": "Project",
+      "commandLineArgs": "watch -output C:\\Users\\qingf\\Desktop\\music -path 3"
     }
   }
 }
