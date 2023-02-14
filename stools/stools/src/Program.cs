@@ -45,6 +45,7 @@ namespace Scorpio.stools {
             perform.AddExecute("downloadM3u8", "下载M3U8文件", DownloadM3u8);
             perform.AddExecute("sortmedia", "整理图片和视频", SortMedia);
             perform.AddExecute("md5", "获取文件MD5", GetMD5);
+            perform.AddExecute("watch", "监听音乐下载", Watch);
             try {
                 perform.Start(args);
                 Environment.Exit(0);
@@ -164,43 +165,46 @@ namespace Scorpio.stools {
                                   [ParamterInfo("专辑URL(酷我,网易云)", ParameterUrl, false)] string[] url,
                                   [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output,
                                   [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath) {
-            var tasks = new List<Task>();
             var urls = new List<string>();
             urls.AddRange(commandLine.Args);
             if (url != null) urls.AddRange(url);
-            var ids = commandLine.GetValues(ParameterID);
-            Task.WaitAll(Task.Run(async () => {
-                if (ids.Length > 0) {
-                    var type = commandLine.GetValueDefault(ParameterType, "");
-                    foreach (var id in ids) {
-                        await Util.DownloadAlbum(type, id, output, musicPath);
-                    }
-                }
-                foreach (var url in urls) {
-                    await Util.DownloadAlbumUrl(url, output, musicPath);
-                }
-            }));
+            Task.WaitAll(Util.DownloadAlbumUrls(urls, output, musicPath));
+            //var ids = commandLine.GetValues(ParameterID);
+            //Task.WaitAll(Task.Run(async () => {
+            //    if (ids.Length > 0) {
+            //        var type = commandLine.GetValueDefault(ParameterType, "");
+            //        foreach (var id in ids) {
+            //            await Util.DownloadAlbum(type, id, output, musicPath);
+            //        }
+            //    }
+            //    foreach (var url in urls) {
+            //        await Util.DownloadAlbumUrl(url, output, musicPath);
+            //    }
+            //}));
         }
         static void DownloadMusic(CommandLine commandLine,
                                   [ParamterInfo("音乐URL(酷我,网易云)", ParameterUrl, false)] string[] url,
                                   [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output,
                                   [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath) {
-            var tasks = new List<Task>();
             var urls = new List<string>();
             urls.AddRange(commandLine.Args);
             if (url != null) urls.AddRange(url);
-            var ids = commandLine.GetValues(ParameterID);
-            Task.WaitAll(Task.Run(async () => {
-                if (ids.Length > 0) {
-                    var type = commandLine.GetValueDefault(ParameterType, "");
-                    foreach (var id in ids) {
-                        await Util.DownloadMusic(type, id, output, musicPath);
-                    }
-                }
-                foreach (var url in urls) {
-                    await Util.DownloadMusicUrl(url, output, musicPath);
-                }
-            }));
+            Task.WaitAll(Util.DownloadMusicUrls(urls, output, musicPath));
+            //var ids = commandLine.GetValues(ParameterID);
+            //Task.WaitAll(Task.Run(async () => {
+            //    if (ids.Length > 0) {
+            //        var type = commandLine.GetValueDefault(ParameterType, "");
+            //        foreach (var id in ids) {
+            //            await Util.DownloadMusic(type, id, output, musicPath);
+            //        }
+            //    }
+            //    foreach (var url in urls) {
+            //        await Util.DownloadMusicUrl(url, output, musicPath);
+            //    }
+            //}));
+        }
+        static void Watch() {
+
         }
         static void DownloadM3u8(CommandLine commandLine,
                                   [ParamterInfo("M3U8链接", ParameterUrl, false)] string url,

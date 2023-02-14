@@ -203,6 +203,11 @@ namespace Scorpio.stools {
             }
             return url;
         }
+        public static async Task DownloadAlbumUrls(IEnumerable<string> urls, string output, MusicPath musicPath) {
+            foreach (var url in urls) {
+                await DownloadAlbumUrl(url, output, musicPath);
+            }
+        }
         public static async Task DownloadAlbumUrl(string url, string output, MusicPath musicPath) {
             if (string.IsNullOrWhiteSpace(url)) { return; }
             if (FileUtil.FileExist(url)) { url = Path.GetFullPath(url); }
@@ -243,6 +248,11 @@ namespace Scorpio.stools {
             var albumInfo = await music.ParseAlbum(id);
             foreach (var musicid in albumInfo.musicList) {
                 await music.Download(musicid, output, musicPath);
+            }
+        }
+        public static async Task DownloadMusicUrls(IEnumerable<string> urls, string output, MusicPath musicPath) {
+            foreach (var url in urls) {
+                await DownloadMusicUrl(url, output, musicPath);
             }
         }
         public static async Task DownloadMusicUrl(string url, string output, MusicPath musicPath) {
