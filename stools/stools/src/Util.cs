@@ -15,7 +15,6 @@ using MetadataExtractor.Formats.Exif;
 using System.Globalization;
 using MetadataExtractor.Formats.QuickTime;
 using System.Collections;
-using Newtonsoft.Json;
 
 #if NET35
 using DirectoryList = System.Collections.Generic.IList<MetadataExtractor.Directory>;
@@ -29,6 +28,18 @@ namespace Scorpio.stools {
         public List<string> urls = new List<string>();
         public string Name => string.Format("{0:00000}.ts", index);
         public string Urls => string.Join(";", urls);
+    }
+    public struct MusicCache {
+        public class Data {
+            public string type;
+            public string id;
+        }
+        public List<Data> album;
+        public List<Data> music;
+        public MusicCache() {
+            album = new List<Data>();
+            music = new List<Data>();
+        }
     }
     public class MediaInfo {
         public string fileName;             //文件路径
@@ -244,10 +255,9 @@ namespace Scorpio.stools {
             await DownloadAlbum(type, id, output, musicPath);
         }
         public static async Task DownloadAlbum(string type, string id, string output, MusicPath musicPath) {
-            var music = MusicFactory.Create(type);
-            var albumInfo = await music.ParseAlbum(id);
+            var albumInfo = await MusicFactory.Create(type).ParseAlbum(id);
             foreach (var musicid in albumInfo.musicList) {
-                await music.Download(musicid, output, musicPath);
+                await DownloadMusic(type, musicid, output, musicPath);
             }
         }
         public static async Task DownloadMusicUrls(IEnumerable<string> urls, string output, MusicPath musicPath) {

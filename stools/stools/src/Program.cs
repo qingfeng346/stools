@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Google.Apis.AndroidPublisher.v3;
 using Google.Apis.AndroidPublisher.v3.Data;
+using Newtonsoft.Json;
 using Scorpio.Commons;
 
 namespace Scorpio.stools {
@@ -203,8 +204,13 @@ namespace Scorpio.stools {
             //    }
             //}));
         }
-        static void Watch() {
-
+        static void Watch([ParamterInfo("输出目录", ParameterOutput, "./", true)] string output,
+                          [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath) {
+            Task.Run(async () => {
+                var music = FileUtil.GetFileString($"{output}/music.txt");
+                var album = FileUtil.GetFileString($"{output}/album.txt");
+                var cache = JsonConvert.DeserializeObject<MusicCache>(FileUtil.GetFileString($"{output}/cache.txt"));
+            });
         }
         static void DownloadM3u8(CommandLine commandLine,
                                   [ParamterInfo("M3U8链接", ParameterUrl, false)] string url,
