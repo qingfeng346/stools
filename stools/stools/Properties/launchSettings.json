@@ -45,7 +45,7 @@
     },
     "watch": {
       "commandName": "Project",
-      "commandLineArgs": "watch -output C:\\Users\\qingf\\Desktop\\music -path 3"
+      "commandLineArgs": "watch -output F:\\docker -path 3"
     }
   }
 }

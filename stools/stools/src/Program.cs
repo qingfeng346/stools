@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Google.Apis.AndroidPublisher.v3;
@@ -211,39 +212,55 @@ namespace Scorpio.stools {
                 var musicFile = $"{output}/music.txt";
                 var albumFile = $"{output}/album.txt";
                 var cacheFile = $"{output}/cache.txt";
-                var musicCache = JsonConvert.DeserializeObject<MusicCache>(FileUtil.GetFileString(cacheFile));
-                if (musicCache == null) {
-                    musicCache = new MusicCache();
-                }
+                MusicCache musicCache = null;
+                Func<MusicCache> MusicCache = () => {
+                    if (musicCache == null) {
+                        musicCache = JsonConvert.DeserializeObject<MusicCache>(FileUtil.GetFileString(cacheFile));
+                        if (musicCache == null) {
+                            musicCache = new MusicCache();
+                        }
+                    }
+                    return musicCache;
+                };
                 Util.CheckMusic = (type, id) => {
-                    if (musicCache.music.Contains((type,id))) {
+                    if (MusicCache().music.Contains((type,id))) {
                         return false;
                     }
                     return true;
                 };
                 Util.DownloadedMusic = (type, id) => {
-                    musicCache.music.Add((type,id));
+                    MusicCache().music.Add((type,id));
                 };
-                var musicInfo = (0, 0);
-                var albumInfo = (0, 0);
+                var musicInfo = (0L, 0L);
+                var albumInfo = (0L, 0L);
+                FileInfo musicFileInfo = new FileInfo(musicFile);
+                FileInfo albumFileInfo = new FileInfo(albumFile);
+                var changed = false;
                 while (true) {
-                    var musicFileInfo = new FileInfo(musicFile);
-                    var albumFileInfo = new FileInfo(albumFile);
-                    var changed = false;
-                    if (albumFileInfo.Exists && albumFileInfo.Length != albumInfo.Item1 && albumFileInfo.LastWriteTimeUtc.Ticks != albumInfo.Item2) {
-                        var urls = await File.ReadAllLinesAsync(albumFile, Encoding.UTF8);
-                        await Util.DownloadAlbumUrls(urls, output, musicPath);
+                    changed = false;
+                    musicCache = null;
+                    musicFileInfo = new FileInfo(musicFile);
+                    albumFileInfo = new FileInfo(albumFile);
+                    if (albumFileInfo.Exists && 
+                        albumFileInfo.Length != albumInfo.Item1 && 
+                        albumFileInfo.LastWriteTimeUtc.Ticks != albumInfo.Item2) {
+                        logger.info($"专辑文件 {albumFile} 有修改");
+                        await Util.DownloadAlbumUrls(await File.ReadAllLinesAsync(albumFile, Encoding.UTF8), output, musicPath);
+                        albumInfo = (albumFileInfo.Length, albumFileInfo.LastWriteTimeUtc.Ticks);
                         changed = true;
                     }
-                    if (musicFileInfo.Exists && musicFileInfo.Length != musicInfo.Item1 && musicFileInfo.LastWriteTimeUtc.Ticks != musicInfo.Item2) {
-                        var urls = await File.ReadAllLinesAsync(musicFile, Encoding.UTF8);
-                        await Util.DownloadMusicUrls(urls, output, musicPath);
+                    if (musicFileInfo.Exists && 
+                        musicFileInfo.Length != musicInfo.Item1 && 
+                        musicFileInfo.LastWriteTimeUtc.Ticks != musicInfo.Item2) {
+                        logger.info($"音乐文件 {musicFile} 有修改");
+                        await Util.DownloadMusicUrls(await File.ReadAllLinesAsync(musicFile, Encoding.UTF8), output, musicPath);
+                        musicInfo = (musicFileInfo.Length, musicFileInfo.LastWriteTimeUtc.Ticks);
                         changed = true;
                     }
                     if (changed) {
-                        FileUtil.CreateFile(cacheFile, JsonConvert.SerializeObject(musicCache));
+                        FileUtil.CreateFile(cacheFile, JsonConvert.SerializeObject(MusicCache()));
                     }
-                    await Task.Delay(1000);
+                    Thread.Sleep(10000);
                 }
             }));
         }
