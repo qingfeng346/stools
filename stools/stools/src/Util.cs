@@ -30,10 +30,7 @@ namespace Scorpio.stools {
         public string Urls => string.Join(";", urls);
     }
     public class MusicCache {
-        public HashSet<(string, string)> music;
-        public MusicCache() {
-            music = new HashSet<(string,string)>();
-        }
+        public Dictionary<string, HashSet<string>> music = new ();
     }
     public class MediaInfo {
         public string fileName;             //文件路径

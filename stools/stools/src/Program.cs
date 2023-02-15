@@ -211,7 +211,7 @@ namespace Scorpio.stools {
                 logger.info($"开始监听音乐下载目录 : {output}");
                 var musicFile = $"{output}/music.txt";
                 var albumFile = $"{output}/album.txt";
-                var cacheFile = $"{output}/cache.txt";
+                var cacheFile = $"{output}/cache";
                 MusicCache musicCache = null;
                 Func<MusicCache> MusicCache = () => {
                     if (musicCache == null) {
@@ -223,18 +223,22 @@ namespace Scorpio.stools {
                     return musicCache;
                 };
                 Util.CheckMusic = (type, id) => {
-                    if (MusicCache().music.Contains((type,id))) {
-                        return false;
+                    if (MusicCache().music.TryGetValue(type, out var value) ) {
+                        return value.Contains(id);
                     }
                     return true;
                 };
                 Util.DownloadedMusic = (type, id) => {
-                    MusicCache().music.Add((type,id));
+                    var cache = MusicCache();
+                    if (!cache.music.ContainsKey(type)) {
+                        cache.music.Add(type, new HashSet<string>());
+                    }
+                    cache.music[type].Add(id);
                 };
                 var musicInfo = (0L, 0L);
                 var albumInfo = (0L, 0L);
-                FileInfo musicFileInfo = new FileInfo(musicFile);
-                FileInfo albumFileInfo = new FileInfo(albumFile);
+                FileInfo musicFileInfo;
+                FileInfo albumFileInfo;
                 var changed = false;
                 while (true) {
                     changed = false;
@@ -261,6 +265,7 @@ namespace Scorpio.stools {
                         FileUtil.CreateFile(cacheFile, JsonConvert.SerializeObject(MusicCache()));
                     }
                     Thread.Sleep(10000);
+                    GC.Collect();
                 }
             }));
         }
