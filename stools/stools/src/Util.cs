@@ -297,8 +297,12 @@ namespace Scorpio.stools {
         }
         public static async Task DownloadMusic(string type, string id, string output, MusicPath musicPath) {
             if (CheckMusic?.Invoke(type, id) ?? true) {
-                if (await MusicFactory.Create(type).Download(id, output, musicPath)) {
-                    DownloadedMusic?.Invoke(type, id);
+                try {
+                    if (await MusicFactory.Create(type).Download(id, output, musicPath)) {
+                        DownloadedMusic?.Invoke(type, id);
+                    }
+                } catch (System.Exception e) {
+                    logger.error(e.ToString());
                 }
             }
         }

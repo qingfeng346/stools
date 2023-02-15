@@ -211,7 +211,7 @@ namespace Scorpio.stools {
                 logger.info($"开始监听音乐下载目录 : {output}");
                 var musicFile = $"{output}/music.txt";
                 var albumFile = $"{output}/album.txt";
-                var cacheFile = $"{output}/cache";
+                var cacheFile = $"{output}/cache.txt";
                 MusicCache musicCache = null;
                 Func<MusicCache> MusicCache = () => {
                     if (musicCache == null) {
@@ -224,7 +224,7 @@ namespace Scorpio.stools {
                 };
                 Util.CheckMusic = (type, id) => {
                     if (MusicCache().music.TryGetValue(type, out var value) ) {
-                        return value.Contains(id);
+                        return !value.Contains(id);
                     }
                     return true;
                 };
