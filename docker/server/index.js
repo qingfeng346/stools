@@ -16,7 +16,7 @@ async function main() {
         res.end();
     })
     app.listen(3000, () => {
-        console.log('示例应用正在监听 http://127.0.0.1:3000');
+        console.log('应用正在监听 http://127.0.0.1:3000');
     })
 }
 main()
