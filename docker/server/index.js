@@ -12,7 +12,7 @@ async function main() {
         next()
     })
     app.get("/", (_req, res) => {
-        res.writeHead(301, { 'Location': '/static' });
+        res.writeHead(301, { 'Location': '/client' });
         res.end();
     })
     app.listen(3000, () => {
