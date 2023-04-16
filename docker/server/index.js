@@ -2,7 +2,7 @@ const { Util } = require('weimingcommons')
 const express = require('express')
 async function main() {
     let app = express()
-    app.use("/client", express.static('static'))
+    app.use("/client", express.static('client'))
     // app.use(bodyParser.json())
     // app.use(bodyParser.urlencoded({ extended: false }));
     app.use("*", (_req, res, next) => {
