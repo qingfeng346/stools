@@ -1,6 +1,10 @@
 const { Util } = require('weimingcommons')
 const express = require('express')
 async function main() {
+    let a = ["123123", "123123"]
+    // a = "123123"
+    console.log(Array.isArray(a))
+    console.log(a.length)
     let app = express()
     app.use("/client", express.static('client'))
     // app.use(bodyParser.json())
