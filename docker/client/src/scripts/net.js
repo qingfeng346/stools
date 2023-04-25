@@ -5,10 +5,10 @@ class net {
         this.messages = new Map()
     }
     get ServerUrl() {
-        return `http://127.0.0.1:6000`
+        return `http://localhost:4100`
     }
     get ServerSocket() {
-        return `ws://127.0.0.1:6000`
+        return `ws://127.0.0.1:4100`
     }
     //开始连接服务器 websocket
     startWebSocket() {
@@ -38,15 +38,14 @@ class net {
         let strData = JSON.stringify(postData)
         try {
             let params = new FormData()
-            let config = {}
+            let config = {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                onUploadProgress: uploadProgress
+            }
             if (Array.isArray(files) && files.length > 0) {
                 for (let file of files) { params.append(file.name, file) }
-                config = {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    },
-                    onUploadProgress: uploadProgress
-                }
             }
             params.set("data", strData)
             console.log(`正在发送请求 [${code}] : ${strData}`)
