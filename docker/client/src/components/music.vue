@@ -9,7 +9,6 @@ export default {
     methods: {
         async OnClick() {
             let result = await net.request("code", {aaa : 100, b: 200})
-            console.log("==========================")
         }
     }
 }
