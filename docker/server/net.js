@@ -1,13 +1,14 @@
 const express = require('express')
 const multipart = require('multer');
 const webSocket = require('ws')
+const path = require('path')
 class net {
     async init() {
         let app = express()
-        app.use("/client", express.static('client'))
         app.use(express.json())
         app.use(express.text())
         app.use(multipart({ dest: "temp" }).any())                //设置上传文件存放的地址
+        app.use("/client", express.static(path.join(__dirname, "client")))
         app.use("*", (_req, res, next) => {
             res.header('Access-Control-Allow-Origin', '*');
             res.header("Access-Control-Allow-Headers", "Content-Type,Content-Length, Authorization, Accept,X-Requested-With");
@@ -38,8 +39,9 @@ class net {
             // }
             // res.end();
         })
-        let server = app.listen(4100, () => {
-            console.log('应用正在监听 http://127.0.0.1:4100');
+        let port = 4100
+        let server = app.listen(port, () => {
+            console.log(`应用正在监听 http://127.0.0.1:${port}`);
         })
         new webSocket.Server({ server: server }).on("connection", (ws) => {
             this.onConnected(ws)

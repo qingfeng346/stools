@@ -11,7 +11,11 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+  server: {
+    historyApiFallback: true,
+  },
+  base: "client",
   build: {
-    outDir: "../server/client"
+    outDir: "../server/client/"
   }
 })
