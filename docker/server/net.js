@@ -20,10 +20,9 @@ class net {
             res.end();
         })
         app.post("/execute", async (req, res) => {
-            let files = req.files
-            let body = req.body.data
+            let body = req.body
             let a = 0;
-            console.log(req.body.data)
+            console.log(req.body)
             res.end()
             // let code = req.body.code;
             // let data = req.body.data;
