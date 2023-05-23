@@ -44,17 +44,6 @@ class net {
         let postData = { code: code, data: data }
         let strData = JSON.stringify(postData)
         try {
-            // let params = new FormData()
-            // let config = {
-            //     headers: {
-            //         'Content-Type': 'multipart/form-data'
-            //     },
-            //     onUploadProgress: uploadProgress
-            // }
-            // if (Array.isArray(files) && files.length > 0) {
-            //     for (let file of files) { params.append(file.name, file) }
-            // }
-            // params.set("data", strData)
             console.log(`正在发送请求 [${code}] : ${strData}`)
             let result = await axios.post(`${this.ServerUrl}/execute`, postData)
             console.log(`请求返回 [${code}] : ${JSON.stringify(result.data)}`)
