@@ -11,7 +11,7 @@
                 </Space>
             </FormItem>
         </Form>
-        <Page v-model="page" :total="100" page-size="20" show-total />
+        <Page v-model="page" :total="total" :page-size=20 show-total />
         <Table :columns="columns" :data="data"></Table>
     </Layout>
 </template>
@@ -23,8 +23,12 @@ export default {
             formItem: {},
             columns: [],
             data: [],
-            page: 1
+            page: 1,
+            total: 0,
         }
+    },
+    mounted() {
+        this.UpdateMusicList()
     },
     methods: {
         async OnClickAlbum() {
@@ -33,8 +37,8 @@ export default {
         async OnClickMusic() {
             let result = await net.request("music", { url : this.formItem.url })
         },
-        async UpdateMusic() {
-
+        async UpdateMusicList() {
+            await net.request("musiclist", { page : this.page })
         }
     }
 }
