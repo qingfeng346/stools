@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require("sequelize")
 
-class data {
+class database {
     async init() {
         let sequelize = new Sequelize({
             dialect: "sqlite",
@@ -25,7 +25,7 @@ class data {
                 comment: "下载时间"
             },
             name: {
-                type: DataTypes.STRING(64),
+                type: DataTypes.STRING(128),
                 comment: "音乐名字",
             },
             album: {
@@ -40,6 +40,14 @@ class data {
                 type: DataTypes.INTEGER,
                 comment: "发行年份",
             },
+            size: {
+                type: DataTypes.INTEGER,
+                comment: "文件大小",
+            },
+            path: {
+                type: DataTypes.STRING(256),
+                comment: "文件路径",
+            }
         }, {
             tableName: "music",
             timestamps: false,
@@ -47,4 +55,4 @@ class data {
         await this.music.sync({ alter: true })
     }
 }
-module.exports = new data()
+module.exports = new database()

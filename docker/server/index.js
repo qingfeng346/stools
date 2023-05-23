@@ -1,5 +1,6 @@
 async function main() {
-    await require('./data').init()
+    await require('./database').init()
     await require('./net').init()
+    await require('./music').init()
 }
 main()

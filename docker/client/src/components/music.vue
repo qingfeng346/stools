@@ -11,7 +11,7 @@
                 </Space>
             </FormItem>
         </Form>
-        <Page v-model="page" :total="total" :page-size=20 show-total />
+        <Page v-model="page" :total="total" :page-size="pageSize" show-total />
         <Table :columns="columns" :data="data"></Table>
     </Layout>
 </template>
@@ -24,21 +24,44 @@ export default {
             columns: [],
             data: [],
             page: 1,
+            pageSize: 50,
             total: 0,
         }
     },
     mounted() {
+        this.columns = [
+            {
+                title: "ID", key: "musicId"
+            },
+            {
+                title: "平台", key: "musicType"
+            },
+            {
+                title: "名字", key: "name"
+            },
+            {
+                title: "专辑", key: "album"
+            },
+            {
+                title: "歌手", key: "singer"
+            },
+            {
+                title: "发型年份", key: "year"
+            }
+        ]
         this.UpdateMusicList()
     },
     methods: {
         async OnClickAlbum() {
-            let result = await net.request("album", { url : this.formItem.url })
+            let result = await net.request("musicdownload", { type: "album", url : this.formItem.url })
         },
         async OnClickMusic() {
-            let result = await net.request("music", { url : this.formItem.url })
+            let result = await net.request("musicdownload", { type: "music", url : this.formItem.url })
         },
         async UpdateMusicList() {
-            await net.request("musiclist", { page : this.page })
+            let result = await net.request("musiclist", { page: this.page, pageSize: this.pageSize })
+            this.total = result.total
+            this.data = result.datas
         }
     }
 }
