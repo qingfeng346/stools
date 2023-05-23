@@ -1,5 +1,5 @@
-const net = require('./net')
 async function main() {
-    await net.init()
+    await require('./data').init()
+    await require('./net').init()
 }
 main()
