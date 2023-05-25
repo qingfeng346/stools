@@ -24,28 +24,30 @@ class music {
         return result
     }
     async OnMusicDownload(msg) {
+        let file = Util.getTempFile(".json")
         if (msg.type == "music") {
-            let file = Util.getTempFile(".json")
             await Util.execAsync("stools", process.cwd(), [ "downloadmusic", "-url", msg.url, "-output", "data/music", "-path", 3, "-exportFile", file])
-            let infos = await FileUtil.GetFileJsonAsync(file)
-            if (infos == null) return
-            for (let info of infos) {
-                let data = {
-                    musicId: info.id,
-                    musicType: info.type,
-                    name: info.name,
-                    album: info.album,
-                    singer: info.singer,
-                    year: info.year,
-                    size: info.size,
-                    path: info.path,
-                    time: new Date().valueOf()
-                }
-                logger.info("下载音乐成功 : " + data)
-                await database.music.upsert(data, { 
-                    where: { musicId: info.id, musicType: info.type } 
-                })
+        } else if (msg.type == "album") {
+            await Util.execAsync("stools", process.cwd(), [ "downloadalbum", "-url", msg.url, "-output", "data/music", "-path", 3, "-exportFile", file])
+        }
+        let infos = await FileUtil.GetFileJsonAsync(file)
+        if (infos == null) return
+        for (let info of infos) {
+            let data = {
+                musicId: info.id,
+                musicType: info.type,
+                name: info.name,
+                album: info.album,
+                singer: info.singer,
+                year: info.year,
+                size: info.size,
+                path: info.path,
+                time: new Date().valueOf()
             }
+            logger.info("下载音乐成功 : " + data)
+            await database.music.upsert(data, { 
+                where: { musicId: info.id, musicType: info.type } 
+            })
         }
     }
 }
