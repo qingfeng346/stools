@@ -52,7 +52,8 @@ public class MusicKuwo : MusicBase {
     protected override async Task ParseInfo(string id) {
         var result = await HttpUtil.Get($"https://wapi.kuwo.cn/api/www/music/musicInfo?mid={id}");
         var musicInfo = JsonConvert.DeserializeObject<KuwoMusicInfo>(result);
-        var downloadUrl = await HttpUtil.Get($"http://antiserver.kuwo.cn/anti.s?type=convert_url&rid={id}&format=mp3|aac&response=url");
+        // var downloadUrl = await HttpUtil.Get($"http://antiserver.kuwo.cn/anti.s?type=convert_url&rid={id}&format=mp3|aac&response=url");
+        var downloadUrl = await HttpUtil.Get($"https://service-4v0argn6-1314197819.gz.apigw.tencentcs.com/rid/?rid={id}");
         Name = musicInfo.data.name;
         Album = musicInfo.data.album;
         Singer.AddRange(musicInfo.data.artist.Split("&"));

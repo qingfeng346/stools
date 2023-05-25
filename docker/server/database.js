@@ -11,13 +11,11 @@ class database {
             musicId: {
                 type: DataTypes.CHAR(32),
                 primaryKey: true,
-                autoIncrement: false,
                 comment: "音乐ID",
             },
             musicType: {
                 type: DataTypes.CHAR(32),
                 primaryKey: true,
-                autoIncrement: false,
                 comment: "音乐平台",
             },
             time: {
@@ -52,7 +50,7 @@ class database {
             tableName: "music",
             timestamps: false,
         })
-        await this.music.sync({ alter: true })
+        await this.music.sync()
     }
 }
 module.exports = new database()

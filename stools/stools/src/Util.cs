@@ -278,11 +278,20 @@ namespace Scorpio.stools {
                 if (id.IndexOf("?") >= 0) {
                     id = id.Substring(0, id.IndexOf("?"));
                 }
+            // } else if (uri.Host.Contains("kugou")) {
+            //     type = MusicFactory.Kugou;
+            //     id = Regex.Match(url, "hash=\\w+(&|$)").ToString().Substring(5);
+            //     if (id.EndsWith("&")) {
+            //         id = id.Substring(0, id.Length - 1);
+            //     }
             } else if (uri.Host.Contains("kugou")) {
                 type = MusicFactory.Kugou;
-                id = Regex.Match(url, "hash=\\w+(&|$)").ToString().Substring(5);
-                if (id.EndsWith("&")) {
-                    id = id.Substring(0, id.Length - 1);
+                id = url.Substring(url.LastIndexOf("/") + 1);
+                // if (id.IndexOf("?") >= 0) {
+                //     id = id.Substring(0, id.IndexOf("?"));
+                // }
+                if (id.IndexOf(".") >= 0) {
+                    id = id.Substring(0, id.IndexOf("."));
                 }
             } else if (uri.Host.Contains("163")) {
                 type = MusicFactory.Cloud;

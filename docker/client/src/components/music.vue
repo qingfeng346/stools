@@ -12,17 +12,18 @@
             </FormItem>
         </Form>
         <Page v-model="page" :total="total" :page-size="pageSize" show-total />
-        <Table :columns="columns" :data="data"></Table>
+        <Table :columns="columns" :data="datas"></Table>
     </Layout>
 </template>
 <script>
+import { Util, logger } from 'weimingcommons'
 import net from '../scripts/net'
 export default {
     data() {
         return {
             formItem: {},
             columns: [],
-            data: [],
+            datas: [],
             page: 1,
             pageSize: 50,
             total: 0,
@@ -30,12 +31,6 @@ export default {
     },
     mounted() {
         this.columns = [
-            {
-                title: "ID", key: "musicId"
-            },
-            {
-                title: "平台", key: "musicType"
-            },
             {
                 title: "名字", key: "name"
             },
@@ -50,21 +45,33 @@ export default {
             },
             {
                 title: "大小", key: "size"
+            },
+            {
+                title: "下载时间", key: "time"
             }
         ]
+        this.formItem.url = localStorage.getItem("url")
         this.UpdateMusicList()
     },
     methods: {
         async OnClickAlbum() {
-            let result = await net.request("musicdownload", { type: "album", url : this.formItem.url })
+            localStorage.setItem("url", this.formItem.url)
+            await net.request("musicdownload", { type: "album", url : this.formItem.url })
+            this.UpdateMusicList()
         },
         async OnClickMusic() {
-            let result = await net.request("musicdownload", { type: "music", url : this.formItem.url })
+            localStorage.setItem("url", this.formItem.url)
+            await net.request("musicdownload", { type: "music", url : this.formItem.url })
+            this.UpdateMusicList()
         },
         async UpdateMusicList() {
             let result = await net.request("musiclist", { page: this.page, pageSize: this.pageSize })
             this.total = result.total
-            this.data = result.datas
+            this.datas = result.datas
+            for (let data of this.datas) {
+                data.size = Util.getMemory(data.size)
+                data.time = Util.formatDate(new Date(data.time))
+            }
         }
     }
 }
