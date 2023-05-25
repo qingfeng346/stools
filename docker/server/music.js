@@ -1,5 +1,6 @@
 const net = require('./net')
 const database = require('./database')
+const { Util } = require('weimingcommons')
 class music {
     async init() {
         net.register("musiclist", this.OnMusicList.bind(this))
@@ -12,11 +13,6 @@ class music {
             limit: pageSize,
             offset: (page - 1) * pageSize,
             order: [["time", "DESC"]],
-            // where: {
-            //     id: {
-            //         [Op.like]: `%${searchValue}%`
-            //     }
-            // }
         }
         let total = await database.music.count()
         let datas = await database.music.findAll(condition)
@@ -28,7 +24,9 @@ class music {
         return result
     }
     OnMusicDownload(data) {
-
+        if (data.type == "music") {
+            await Util.execAsync("stools", )
+        }
     }
 }
 module.exports = new music()

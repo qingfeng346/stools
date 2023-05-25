@@ -21,7 +21,7 @@ $aipPath = ".\Install.aip"
 foreach ($platform in $platforms) {
     Write-Host "正在打包 $platform 版本..."
     $pathName = "$name-$platform"
-    dotnet publish ../stools/stools/stools.csproj -c release -o ../bin/$pathName --self-contained -r $platform -p:AssemblyVersion=$version -p:FileVersion=$version
+    dotnet publish ../stools/stools/stools.csproj -c release -o ../bin/$pathName --self-contained -r $platform -p:AssemblyVersion=$version -p:FileVersion=$version -p:PublishSingleFile=true
     Copy-Item -Path "../stools/stools/bash/*" -Destination ../bin/$pathName/
     Write-Host "正在压缩 $platform ..."
     $fileName = "$name-$version-$platform"
