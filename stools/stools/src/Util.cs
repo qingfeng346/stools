@@ -78,7 +78,7 @@ namespace Scorpio.stools {
     }
     public static class Util {
         public static Func<string, string, bool> CheckMusic;
-        public static Action<string, string> DownloadedMusic;
+        public static Action<MusicBase> DownloadedMusic;
         public static void ExecuteAndroidpublisher(string authFile, string packageName, Action<AndroidPublisherService, string> action, Action<TrackRelease> trackAction) {
             var service = new AndroidPublisherService(new BaseClientService.Initializer() {
                 HttpClientInitializer = GoogleCredential.FromFile(authFile).CreateScoped("https://www.googleapis.com/auth/androidpublisher"),
@@ -298,8 +298,9 @@ namespace Scorpio.stools {
         public static async Task DownloadMusic(string type, string id, string output, MusicPath musicPath) {
             if (CheckMusic?.Invoke(type, id) ?? true) {
                 try {
-                    if (await MusicFactory.Create(type).Download(id, output, musicPath)) {
-                        DownloadedMusic?.Invoke(type, id);
+                    var music = MusicFactory.Create(type);
+                    if (await music.Download(id, output, musicPath)) {
+                        DownloadedMusic?.Invoke(music);
                     }
                 } catch (System.Exception e) {
                     logger.error(e.ToString());

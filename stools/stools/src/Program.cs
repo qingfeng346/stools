@@ -89,7 +89,7 @@ namespace Scorpio.stools {
                     }
                 }
             },
-                (release) => {
+            (release) => {
                     if (!string.IsNullOrWhiteSpace(trackName)) { release.Name = trackName; }
                     if (!string.IsNullOrWhiteSpace(releaseNote)) {
                         release.ReleaseNotes = new List<LocalizedText>();
@@ -166,44 +166,56 @@ namespace Scorpio.stools {
         static void DownloadAlbum(CommandLine commandLine,
                                   [ParamterInfo("专辑URL(酷我,网易云)", ParameterUrl, false)] string[] url,
                                   [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output,
-                                  [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath) {
+                                  [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath,
+                                  string exportFile) {
             var urls = new List<string>();
             urls.AddRange(commandLine.Args);
             if (url != null) urls.AddRange(url);
+            var musics = new List<Dictionary<string, object>>();
+            Util.DownloadedMusic += (music) => {
+                var info = new Dictionary<string, object>() {
+                    {"type", music.Source },
+                    {"id", music.ID },
+                    {"name", music.Name },
+                    {"album", music.Album },
+                    {"year", music.Year },
+                    {"singer", music.Singer.GetSingers() },
+                    {"path", Path.GetFullPath(music.FilePath) },
+                    {"size", new FileInfo(music.FilePath).Length },
+                };
+                musics.Add(info);
+            };
             Task.WaitAll(Util.DownloadAlbumUrls(urls, output, musicPath));
-            //var ids = commandLine.GetValues(ParameterID);
-            //Task.WaitAll(Task.Run(async () => {
-            //    if (ids.Length > 0) {
-            //        var type = commandLine.GetValueDefault(ParameterType, "");
-            //        foreach (var id in ids) {
-            //            await Util.DownloadAlbum(type, id, output, musicPath);
-            //        }
-            //    }
-            //    foreach (var url in urls) {
-            //        await Util.DownloadAlbumUrl(url, output, musicPath);
-            //    }
-            //}));
+            if (!string.IsNullOrEmpty(exportFile)) {
+                FileUtil.CreateFile(exportFile, JsonConvert.SerializeObject(musics));
+            }
         }
         static void DownloadMusic(CommandLine commandLine,
                                   [ParamterInfo("音乐URL(酷我,网易云)", ParameterUrl, false)] string[] url,
                                   [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output,
-                                  [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath) {
+                                  [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath,
+                                  string exportFile) {
             var urls = new List<string>();
             urls.AddRange(commandLine.Args);
             if (url != null) urls.AddRange(url);
+            var musics = new List<Dictionary<string, object>>();
+            Util.DownloadedMusic += (music) => {
+                var info = new Dictionary<string, object>() {
+                    {"type", music.Source },
+                    {"id", music.ID },
+                    {"name", music.Name },
+                    {"album", music.Album },
+                    {"year", music.Year },
+                    {"singer", music.Singer.GetSingers() },
+                    {"path", Path.GetFullPath(music.FilePath) },
+                    {"size", new FileInfo(music.FilePath).Length },
+                };
+                musics.Add(info);
+            };
             Task.WaitAll(Util.DownloadMusicUrls(urls, output, musicPath));
-            //var ids = commandLine.GetValues(ParameterID);
-            //Task.WaitAll(Task.Run(async () => {
-            //    if (ids.Length > 0) {
-            //        var type = commandLine.GetValueDefault(ParameterType, "");
-            //        foreach (var id in ids) {
-            //            await Util.DownloadMusic(type, id, output, musicPath);
-            //        }
-            //    }
-            //    foreach (var url in urls) {
-            //        await Util.DownloadMusicUrl(url, output, musicPath);
-            //    }
-            //}));
+            if (!string.IsNullOrEmpty(exportFile)) {
+                FileUtil.CreateFile(exportFile, JsonConvert.SerializeObject(musics));
+            }
         }
         static void Watch([ParamterInfo("输出目录", ParameterOutput, "./", true)] string output,
                           [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath) {
@@ -228,12 +240,12 @@ namespace Scorpio.stools {
                     }
                     return true;
                 };
-                Util.DownloadedMusic = (type, id) => {
+                Util.DownloadedMusic = (music) => {
                     var cache = MusicCache();
-                    if (!cache.music.ContainsKey(type)) {
-                        cache.music.Add(type, new HashSet<string>());
+                    if (!cache.music.ContainsKey(music.Source)) {
+                        cache.music.Add(music.Source, new HashSet<string>());
                     }
-                    cache.music[type].Add(id);
+                    cache.music[music.Source].Add(music.ID);
                 };
                 var musicInfo = (0L, 0L);
                 var albumInfo = (0L, 0L);

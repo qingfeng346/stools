@@ -33,6 +33,7 @@ public abstract class MusicBase {
     public uint Track { get; protected set; }
     /// <summary> 歌词 </summary>
     public string Lyrics { get; protected set; } = "";
+    public string FilePath { get; protected set; } = "";
     /// <summary> 演唱者 </summary>
     public List<string> Singer { get; } = new List<string>();
     /// <summary> 封面图片地址,可能有多个地址,顺序尝试下载 </summary>
@@ -86,29 +87,28 @@ public abstract class MusicBase {
     //解析专辑
     protected abstract Task<AlbumInfo> ParseAlbum_impl(string id);
     async Task<bool> DownloadFile(string savePath, MusicPath musicPath) {
-        string filePath = "";
         try {
             logger.info("解析完成,开始下载 id:{0} 名字:{1}  歌手:{2}  专辑:{3}  年份:{4}", ID, Name, Singer.GetSingers(), Album, Year);
             var fileName = $"{Singer.GetSingers()} - {Name}.mp3";
-            filePath = musicPath switch {
+            FilePath = musicPath switch {
                 MusicPath.Artist => Path.Combine(savePath, Singer.GetSingers(), fileName),
                 MusicPath.Album => Path.Combine(savePath, Album, fileName),
                 MusicPath.ArtistAlbum => Path.Combine(savePath, Singer.GetSingers(), Album, fileName),
                 _ => Path.Combine(savePath, fileName),
             };
-            FileUtil.CreateDirectoryByFile(filePath);
+            FileUtil.CreateDirectoryByFile(FilePath);
             foreach (var mp3Url in Mp3Urls) {
                 try {
                     logger.info($"尝试下载文件 : {mp3Url}");
-                    await HttpUtil.Download(mp3Url, filePath);
+                    await HttpUtil.Download(mp3Url, FilePath);
                     break;
                 } catch (Exception e) {
                     logger.error($"下载文件 {mp3Url} 失败 : {e}");
                 }
             }
-            if (!System.IO.File.Exists(filePath)) { throw new Exception("音频文件下载失败"); }
-            logger.info("下载音频文件完成,文件大小:{1}", fileName, new FileInfo(filePath).Length.GetMemory());
-            var file = TagLib.File.Create(filePath);
+            if (!System.IO.File.Exists(FilePath)) { throw new Exception("音频文件下载失败"); }
+            logger.info("下载音频文件完成,文件大小:{1}", fileName, new FileInfo(FilePath).Length.GetMemory());
+            var file = TagLib.File.Create(FilePath);
             file.Tag.Title = Name;
             file.Tag.Performers = Singer.ToArray();
             file.Tag.Album = Album;
@@ -123,7 +123,11 @@ public abstract class MusicBase {
                     imagePath = Path.Combine(savePath, $"{Guid.NewGuid()}.png");
                     logger.info($"尝试下载封面 : {coverUrl}");
                     await HttpUtil.Download(coverUrl, imagePath);
-                    ResizeImage(imagePath, 512);
+                    //重置封面大小
+                    using (Image<Rgba32> image = Image.Load<Rgba32>(imagePath)) {
+                        image.Mutate(x => x.Resize(512, 512));
+                        image.Save(imagePath);
+                    }
                     var pictures = new List<IPicture>();
                     {
                         var picture = new TagLib.Id3v2.AttachmentFrame(new Picture(imagePath));
@@ -148,22 +152,15 @@ public abstract class MusicBase {
             }
             file.Save();
             using (var log = new LoggerColor(ConsoleColor.Green)) {
-                logger.info("下载音乐完成 文件名:{0}  文件大小:{1}", Path.GetFullPath(filePath), new FileInfo(filePath).Length.GetMemory());
+                logger.info("下载音乐完成 文件名:{0}  文件大小:{1}", Path.GetFullPath(FilePath), new FileInfo(FilePath).Length.GetMemory());
             }
             logger.info("-------------------------------------------------------------------");
             return true;
         } catch (Exception e) {
-            FileUtil.DeleteFile(filePath);
+            FileUtil.DeleteFile(FilePath);
             using (var log = new LoggerColor(ConsoleColor.Red))
                 logger.error($"下载音乐【{Name}】失败:{e}");
         }
         return false;
-    }
-    //重置封面大小
-    void ResizeImage(string filePath, int size) {
-        using (Image<Rgba32> image = Image.Load<Rgba32>(filePath)) {
-            image.Mutate(x => x.Resize(size, size));
-            image.Save(filePath); // Automatic encoder selected based on extension.
-        }
     }
 }
