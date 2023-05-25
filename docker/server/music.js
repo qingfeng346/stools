@@ -23,9 +23,9 @@ class music {
         result.datas = datas
         return result
     }
-    OnMusicDownload(data) {
+    async OnMusicDownload(data) {
         if (data.type == "music") {
-            await Util.execAsync("stools", )
+            await Util.execAsync("stools.exe", process.cwd(), [ "downloadmusic", "-url", data.url, "-output", "data", "-path", 3, "-exportFile", "aaa.json"])
         }
     }
 }

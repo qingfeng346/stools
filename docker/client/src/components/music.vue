@@ -47,6 +47,9 @@ export default {
             },
             {
                 title: "发型年份", key: "year"
+            },
+            {
+                title: "大小", key: "size"
             }
         ]
         this.UpdateMusicList()
