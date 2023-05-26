@@ -25,6 +25,9 @@ class music {
     }
     async OnMusicDownload(msg) {
         let file = Util.getTempFile(".json")
+        if (Util.IsLinux) {
+            await Util.execAsync("chmod", process.cwd(), ["+x", "stools"])
+        }
         if (msg.type == "music") {
             await Util.execAsync("stools", process.cwd(), [ "downloadmusic", "-url", msg.url, "-output", "data/music", "-path", 3, "-exportFile", file])
         } else if (msg.type == "album") {
