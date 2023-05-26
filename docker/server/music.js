@@ -25,13 +25,15 @@ class music {
     }
     async OnMusicDownload(msg) {
         let file = Util.getTempFile(".json")
+        let dir = `${process.cwd()}/stools`
+        logger.info("工作目录: " + dir)
         if (Util.IsLinux) {
-            await Util.execAsync("chmod", process.cwd(), ["+x", "stools"])
+            await Util.execAsync("chmod", dir, ["+x", "stools"])
         }
         if (msg.type == "music") {
-            await Util.execAsync("stools", process.cwd(), [ "downloadmusic", "-url", msg.url, "-output", "data/music", "-path", 3, "-exportFile", file])
+            await Util.execAsync("stools", dir, [ "downloadmusic", "-url", msg.url, "-output", "data/music", "-path", 3, "-exportFile", file], { shell: true} )
         } else if (msg.type == "album") {
-            await Util.execAsync("stools", process.cwd(), [ "downloadalbum", "-url", msg.url, "-output", "data/music", "-path", 3, "-exportFile", file])
+            await Util.execAsync("stools", dir, [ "downloadalbum", "-url", msg.url, "-output", "data/music", "-path", 3, "-exportFile", file], { shell: true})
         }
         let infos = await FileUtil.GetFileJsonAsync(file)
         if (infos == null) return
