@@ -7,6 +7,8 @@ using TagLib;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
+using static MusicKuwo.KuwoAlbumInfo;
+
 public enum MusicPath {
     None = 0,               //不创建文件夹
     Artist = 1,             //创建歌手文件夹
@@ -34,6 +36,7 @@ public abstract class MusicBase {
     /// <summary> 歌词 </summary>
     public string Lyrics { get; protected set; } = "";
     public string FilePath { get; protected set; } = "";
+    public long Duration { get; protected set; } = 0;
     /// <summary> 演唱者 </summary>
     public List<string> Singer { get; } = new List<string>();
     /// <summary> 封面图片地址,可能有多个地址,顺序尝试下载 </summary>
@@ -117,6 +120,7 @@ public abstract class MusicBase {
             file.Tag.Publisher = $"{Source} - {ID}";
             file.Tag.Lyrics = Lyrics;
             file.Tag.Genres = new string[0];
+            Duration = (long)file.Properties.Duration.TotalMilliseconds;
             foreach (var coverUrl in CoverUrls) {
                 string imagePath = "";
                 try {
@@ -162,5 +166,18 @@ public abstract class MusicBase {
                 logger.error($"下载音乐【{Name}】失败:{e}");
         }
         return false;
+    }
+    public Dictionary<string, object> ToInfo() {
+        return new Dictionary<string, object>() {
+            {"type", Source },
+            {"id", ID },
+            {"name", Name },
+            {"album", Album },
+            {"year", Year },
+            {"singer", Singer.GetSingers() },
+            {"path", Path.GetFullPath(FilePath) },
+            {"size", new FileInfo(FilePath).Length },
+            {"duration", Duration }
+        };
     }
 }

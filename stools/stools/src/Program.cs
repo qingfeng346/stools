@@ -173,17 +173,7 @@ namespace Scorpio.stools {
             if (url != null) urls.AddRange(url);
             var musics = new List<Dictionary<string, object>>();
             Util.DownloadedMusic += (music) => {
-                var info = new Dictionary<string, object>() {
-                    {"type", music.Source },
-                    {"id", music.ID },
-                    {"name", music.Name },
-                    {"album", music.Album },
-                    {"year", music.Year },
-                    {"singer", music.Singer.GetSingers() },
-                    {"path", Path.GetFullPath(music.FilePath) },
-                    {"size", new FileInfo(music.FilePath).Length },
-                };
-                musics.Add(info);
+                musics.Add(music.ToInfo());
             };
             Task.WaitAll(Util.DownloadAlbumUrls(urls, output, musicPath));
             if (!string.IsNullOrEmpty(exportFile)) {
@@ -200,17 +190,7 @@ namespace Scorpio.stools {
             if (url != null) urls.AddRange(url);
             var musics = new List<Dictionary<string, object>>();
             Util.DownloadedMusic += (music) => {
-                var info = new Dictionary<string, object>() {
-                    {"type", music.Source },
-                    {"id", music.ID },
-                    {"name", music.Name },
-                    {"album", music.Album },
-                    {"year", music.Year },
-                    {"singer", music.Singer.GetSingers() },
-                    {"path", Path.GetFullPath(music.FilePath) },
-                    {"size", new FileInfo(music.FilePath).Length },
-                };
-                musics.Add(info);
+                musics.Add(music.ToInfo());
             };
             Task.WaitAll(Util.DownloadMusicUrls(urls, output, musicPath));
             if (!string.IsNullOrEmpty(exportFile)) {

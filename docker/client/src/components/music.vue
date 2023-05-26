@@ -47,7 +47,29 @@ export default {
                 title: "大小", key: "size"
             },
             {
+                title: "时长", key: "duration"
+            },
+            {
                 title: "下载时间", key: "time"
+            },
+            {
+                title: "下载",
+                render: (h, params) => {
+                    return h(
+                        "a", {
+                            href: params.row.downloadUrl,
+                            attrs: {
+                                href: params.row.downloadUrl,
+                                target: "_blank"
+                            },
+                            style: {
+                                color: "blue",
+                                "text-decoration": "underline",
+                            },
+                        },
+                        "链接"
+                    );
+                },
             }
         ]
         this.formItem.url = localStorage.getItem("url")
@@ -71,6 +93,8 @@ export default {
             for (let data of this.datas) {
                 data.size = Util.getMemory(data.size)
                 data.time = Util.formatDate(new Date(data.time))
+                data.duration = Util.getElapsedTimeString(data.duration)
+                data.downloadUrl = `http://${window.location.hostname}:${window.location.port}/music/${data.singer}/${data.album}/${data.singer} - ${data.name}.mp3`
             }
         }
     }
