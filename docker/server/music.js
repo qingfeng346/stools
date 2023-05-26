@@ -42,6 +42,7 @@ class music {
                 year: info.year,
                 size: info.size,
                 path: info.path,
+                duration: info.duration,
                 time: new Date().valueOf()
             }
             logger.info("下载音乐成功 : " + data)

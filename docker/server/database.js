@@ -45,7 +45,11 @@ class database {
             path: {
                 type: DataTypes.STRING(256),
                 comment: "文件路径",
-            }
+            },
+            duration: {
+                type: DataTypes.BIGINT,
+                comment: "时长",
+            },
         }, {
             tableName: "music",
             timestamps: false,
