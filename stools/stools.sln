@@ -5,8 +5,6 @@ VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "stools", "stools\stools.csproj", "{DC99583D-F04A-4218-B405-D64916AF3C6F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scorpio.Commons", "..\..\ScorpioCommons\Scorpio.Commons\Scorpio.Commons.csproj", "{18CBABE0-3AE8-4385-B3C4-F9F73B03C577}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{DC99583D-F04A-4218-B405-D64916AF3C6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC99583D-F04A-4218-B405-D64916AF3C6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC99583D-F04A-4218-B405-D64916AF3C6F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{18CBABE0-3AE8-4385-B3C4-F9F73B03C577}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{18CBABE0-3AE8-4385-B3C4-F9F73B03C577}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{18CBABE0-3AE8-4385-B3C4-F9F73B03C577}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{18CBABE0-3AE8-4385-B3C4-F9F73B03C577}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
