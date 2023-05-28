@@ -25,7 +25,7 @@ class music {
     }
     async OnMusicDownload(msg) {
         let file = Util.getTempFile(".json")
-        let dir = `${process.cwd()}/stools`
+        let dir = `${process.cwd()}`
         logger.info("工作目录: " + dir)
         if (Util.IsLinux) {
             await Util.execAsync("chmod", dir, ["+x", "stools"])
