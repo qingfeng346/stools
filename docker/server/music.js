@@ -3,6 +3,7 @@ const database = require('./database')
 const { Util, FileUtil, logger } = require('weimingcommons')
 class music {
     async init() {
+        Util.Encoding = "utf8"
         net.register("musiclist", this.OnMusicList.bind(this))
         net.register("musicdownload", this.OnMusicDownload.bind(this))
     }
@@ -27,9 +28,6 @@ class music {
         let file = Util.getTempFile(".json")
         let dir = `${process.cwd()}/stools`
         logger.info("工作目录: " + dir)
-        // if (Util.IsLinux) {
-        //     await Util.execAsync("chmod", dir, ["+x", "stools"])
-        // }
         if (msg.type == "music") {
             await Util.execAsync("dotnet", dir, [ "run", "downloadmusic", "-url", msg.url, "-output", `${process.cwd()}/data/music`, "-path", 3, "-exportFile", file], { shell: true} )
         } else if (msg.type == "album") {
@@ -50,7 +48,7 @@ class music {
                 duration: info.duration,
                 time: new Date().valueOf()
             }
-            logger.info("下载音乐成功 : " + data)
+            logger.info(`下载音乐成功 : ${JSON.stringify(data)}`)
             await database.music.upsert(data, { 
                 where: { musicId: info.id, musicType: info.type } 
             })

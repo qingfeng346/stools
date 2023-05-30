@@ -7,6 +7,36 @@ class net {
     constructor() {
         this.events = {}
         this.clients = []
+        logger.ilog = this
+    }
+    write(str) {
+        process.stdout.write(str)
+        this.sendMessage("write", str)
+    }
+    writeError(str) {
+        process.stderr.write(str)
+        this.sendMessage("write", str)
+    }
+    info(str) {
+        console.log(str)
+        this.sendMessage("log", str)
+    }
+    warn(str) {
+        console.warn(str)
+        this.sendMessage("log", str)
+    }
+    error(str) {
+        console.error(str)
+        this.sendMessage("log", str)
+    }
+    notify(str) {
+        this.sendMessage("notice", { type: "info", msg: str })
+    }
+    notifySuccess(str) {
+        this.sendMessage("notice", { type: "success", msg: str })
+    }
+    notifyError(str) {
+        this.sendMessage("notice", { type: "error", msg: str })
     }
     async init() {
         let app = express()
@@ -89,9 +119,6 @@ class net {
         } catch (e) {
             logger.error("sendMessage is error : ", e)
         }
-    }
-    notice() {
-
     }
 }
 module.exports = new net()

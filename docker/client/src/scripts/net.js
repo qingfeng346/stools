@@ -8,6 +8,7 @@ class net {
         if (Util.IsDevelopment) {
             this.httpPort = 4100
         }
+        this.startWebSocket()
     }
     get ServerUrl() {
         return `http://${this.hostName}:${this.httpPort}`

@@ -1,5 +1,5 @@
 <template>
-    <Layout>
+    <Layout style="minWidth:765px">
         <Form :model="formItem" :label-width="80">
             <FormItem label="URL">
                 <Input v-model="formItem.url" placeholder="url"></Input>
@@ -25,35 +25,48 @@ export default {
             columns: [],
             datas: [],
             page: 1,
-            pageSize: 50,
+            pageSize: 100,
             total: 0,
         }
     },
     mounted() {
         this.columns = [
             {
-                title: "名字", key: "name"
+                title: "名字", 
+                key: "name",
+                minWidth: 200,
             },
             {
-                title: "专辑", key: "album"
+                title: "专辑", 
+                key: "album",
+                minWidth: 150,
             },
             {
-                title: "歌手", key: "singer"
+                title: "歌手", 
+                key: "singer",
+                width: 150
             },
             {
-                title: "发型年份", key: "year"
+                title: "年份", 
+                key: "year",
+                width: 75
             },
             {
-                title: "大小", key: "size"
+                title: "大小", 
+                key: "size",
+                width: 100
             },
             {
-                title: "时长", key: "duration"
+                title: "时长", 
+                key: "duration",
+                width: 90
             },
-            {
-                title: "下载时间", key: "time"
-            },
+            // {
+            //     title: "下载时间", key: "time"
+            // },
             {
                 title: "下载",
+                width: 90,
                 render: (h, params) => {
                     return h(
                         "a", {
