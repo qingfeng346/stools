@@ -1,3 +1,6 @@
 data
 node_modules
 package-lock.json
+stools/bin
+stools/obj
+stools/.vs
