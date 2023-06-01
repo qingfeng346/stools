@@ -37,6 +37,7 @@ class music {
         if (infos == null) return
         for (let info of infos) {
             let data = {
+                path: info.path,
                 musicId: info.id,
                 musicType: info.type,
                 name: info.name,
@@ -44,13 +45,12 @@ class music {
                 singer: info.singer,
                 year: info.year,
                 size: info.size,
-                path: info.path,
                 duration: info.duration,
                 time: new Date().valueOf()
             }
             logger.info(`下载音乐成功 : ${JSON.stringify(data)}`)
             await database.music.upsert(data, { 
-                where: { musicId: info.id, musicType: info.type } 
+                where: { path: info.path } 
             })
         }
     }
