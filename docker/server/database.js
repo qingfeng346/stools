@@ -8,14 +8,17 @@ class database {
         })
         this.sequelize = sequelize
         this.music = sequelize.define("music", {
+            path: {
+                type: DataTypes.CHAR(256),
+                comment: "文件路径",
+                primaryKey: true,
+            },
             musicId: {
                 type: DataTypes.CHAR(32),
-                primaryKey: true,
                 comment: "音乐ID",
             },
             musicType: {
                 type: DataTypes.CHAR(32),
-                primaryKey: true,
                 comment: "音乐平台",
             },
             time: {
@@ -41,10 +44,6 @@ class database {
             size: {
                 type: DataTypes.INTEGER,
                 comment: "文件大小",
-            },
-            path: {
-                type: DataTypes.STRING(256),
-                comment: "文件路径",
             },
             duration: {
                 type: DataTypes.BIGINT,
