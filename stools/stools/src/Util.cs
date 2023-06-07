@@ -15,6 +15,7 @@ using MetadataExtractor.Formats.Exif;
 using System.Globalization;
 using MetadataExtractor.Formats.QuickTime;
 using System.Collections;
+using Newtonsoft.Json;
 
 #if NET35
 using DirectoryList = System.Collections.Generic.IList<MetadataExtractor.Directory>;
@@ -278,21 +279,11 @@ namespace Scorpio.stools {
                 if (id.IndexOf("?") >= 0) {
                     id = id.Substring(0, id.IndexOf("?"));
                 }
-            // } else if (uri.Host.Contains("kugou")) {
-            //     type = MusicFactory.Kugou;
-            //     id = Regex.Match(url, "hash=\\w+(&|$)").ToString().Substring(5);
-            //     if (id.EndsWith("&")) {
-            //         id = id.Substring(0, id.Length - 1);
-            //     }
             } else if (uri.Host.Contains("kugou")) {
                 type = MusicFactory.Kugou;
-                id = url.Substring(url.LastIndexOf("/") + 1);
-                // if (id.IndexOf("?") >= 0) {
-                //     id = id.Substring(0, id.IndexOf("?"));
-                // }
-                if (id.IndexOf(".") >= 0) {
-                    id = id.Substring(0, id.IndexOf("."));
-                }
+                var result = await HttpUtil.Get(url);
+                var info = JsonConvert.DeserializeObject<MusicKugou.MusicUrlInfo>(Regex.Match(result, "(?<=dataFromSmarty = \\[).*?(?=],)").ToString());
+                id = info.hash;
             } else if (uri.Host.Contains("163")) {
                 type = MusicFactory.Cloud;
                 id = Regex.Match(url, "id=\\w+(&|$)").ToString().Substring(3);

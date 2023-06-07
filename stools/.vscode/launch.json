@@ -43,7 +43,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/stools/bin/Debug/net7.0/stools.dll",
-            "args": ["downloadmusic", "http://kuwo.cn/play_detail/226555044", "-output", "~/"],
+            "args": ["downloadmusic", "https://www.kugou.com/mixsong/j2sea97.html", "-output", "~/"],
             "cwd": "${workspaceFolder}/stools",
             "console": "internalConsole",
             "stopAtEntry": false

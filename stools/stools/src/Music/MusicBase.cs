@@ -156,7 +156,7 @@ public abstract class MusicBase {
             }
             file.Save();
             using (var log = new LoggerColor(ConsoleColor.Green)) {
-                logger.info("下载音乐完成 文件名:{0}  文件大小:{1}", Path.GetFullPath(FilePath), new FileInfo(FilePath).Length.GetMemory());
+                logger.info("下载音乐完成 文件名:{0}  文件大小:{1}  时长:{2}s", Path.GetFullPath(FilePath), new FileInfo(FilePath).Length.GetMemory(), Duration / 1000);
             }
             logger.info("-------------------------------------------------------------------");
             return true;

@@ -3,6 +3,9 @@ using Newtonsoft.Json;
 using HtmlAgilityPack;
 public class MusicKugou : MusicBase {
     public override string Source => MusicFactory.Kugou;
+    public class MusicUrlInfo {
+        public string hash;
+    }
     public class MusicInfo {
         public int err_code;
         public MusicData data;
