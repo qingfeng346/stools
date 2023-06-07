@@ -2,7 +2,7 @@ const express = require('express')
 const multipart = require('multer');
 const webSocket = require('ws')
 const path = require('path')
-const { logger } = require('weimingcommons')
+const { logger, FileUtil } = require('weimingcommons')
 class net {
     constructor() {
         this.events = {}
@@ -39,12 +39,13 @@ class net {
         this.sendMessage("notice", { type: "error", msg: str })
     }
     async init() {
+        FileUtil.CreateDirectory("./music")
         let app = express()
         app.use(express.json())
         app.use(express.text())
         app.use(multipart({ dest: "temp" }).any())                //设置上传文件存放的地址
         app.use("/client", express.static(path.join(__dirname, "client")))
-        app.use("/music", express.static(path.join(__dirname, "data/music")))
+        app.use("/music", express.static(path.join(__dirname, "music")))
         app.use("*", (_req, res, next) => {
             res.header('Access-Control-Allow-Origin', '*');
             res.header("Access-Control-Allow-Headers", "Content-Type,Content-Length, Authorization, Accept,X-Requested-With");
