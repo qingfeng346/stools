@@ -29,9 +29,9 @@ class music {
         let dir = `${process.cwd()}/stools`
         logger.info("工作目录: " + dir)
         if (msg.type == "music") {
-            await Util.execAsync("dotnet", dir, [ "run", "downloadmusic", "-url", msg.url, "-output", `${process.cwd()}/data/music`, "-path", 3, "-exportFile", file], { shell: true} )
+            await Util.execAsync("dotnet", dir, [ "run", "downloadmusic", "-url", msg.url, "-output", `${process.cwd()}/music`, "-path", 3, "-exportFile", file], { shell: true} )
         } else if (msg.type == "album") {
-            await Util.execAsync("dotnet", dir, [ "run", "downloadalbum", "-url", msg.url, "-output", `${process.cwd()}/data/music`, "-path", 3, "-exportFile", file], { shell: true})
+            await Util.execAsync("dotnet", dir, [ "run", "downloadalbum", "-url", msg.url, "-output", `${process.cwd()}/music`, "-path", 3, "-exportFile", file], { shell: true})
         }
         let infos = await FileUtil.GetFileJsonAsync(file)
         if (infos == null) return
