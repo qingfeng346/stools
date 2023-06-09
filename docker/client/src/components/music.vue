@@ -11,7 +11,7 @@
                 </Space>
             </FormItem>
         </Form>
-        <Page v-model="page" :total="total" :page-size="pageSize" show-total />
+        <Page v-model="page" :total="total" :page-size="pageSize" show-total @on-change="UpdateMusicList" />
         <Table :columns="columns" :data="datas"></Table>
     </Layout>
 </template>
@@ -71,6 +71,7 @@ export default {
                     return h(
                         "a", {
                             href: params.row.downloadUrl,
+                            target: "_blank",
                             attrs: {
                                 href: params.row.downloadUrl,
                                 target: "_blank"

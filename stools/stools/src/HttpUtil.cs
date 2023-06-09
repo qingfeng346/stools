@@ -5,7 +5,6 @@ using Scorpio.Commons;
 using System.Net;
 using System.Net.Http.Headers;
 using System;
-using RestSharp;
 
 public class HttpUtil {
     private const int READ_LENGTH = 8192;
@@ -36,6 +35,7 @@ public class HttpUtil {
             //handler.Credentials = CredentialCache.DefaultCredentials;
             //handler.ClientCertificateOptions = ClientCertificateOption.Automatic;
             using (var client = new HttpClient(handler)) {
+                client.Timeout = new TimeSpan(0, 0, 15);
                 var cacheControl = new CacheControlHeaderValue();
                 cacheControl.NoCache = true;
                 cacheControl.NoStore = true;
