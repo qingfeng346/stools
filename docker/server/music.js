@@ -3,9 +3,11 @@ const database = require('./database')
 const { Util, FileUtil, logger } = require('weimingcommons')
 class music {
     async init() {
+        this.list = []
         Util.Encoding = "utf8"
         net.register("musiclist", this.OnMusicList.bind(this))
         net.register("musicdownload", this.OnMusicDownload.bind(this))
+        this.CheckDownload()
     }
     async OnMusicList(data) {
         let pageSize = data.pageSize
@@ -25,9 +27,21 @@ class music {
         return result
     }
     async OnMusicDownload(msg) {
+        this.list.splice(0, 0, msg)
+    }
+    async CheckDownload() {
+        while (true) {
+            while (this.list.length > 0) {
+                let msg = this.list.pop()
+                logger.info(`开始下载:${JSON.stringify(msg)}  剩余数量:${this.list.length}`)
+                await this.Download(msg)
+            }
+            await Util.sleep(3000)
+        }
+    }
+    async Download(msg) {
         let file = Util.getTempFile(".json")
         let dir = `${process.cwd()}/stools`
-        logger.info("工作目录: " + dir)
         if (msg.type == "music") {
             await Util.execAsync("dotnet", dir, [ "run", "downloadmusic", "-url", msg.url, "-output", `${process.cwd()}/music`, "-path", 3, "-exportFile", file], { shell: true} )
         } else if (msg.type == "album") {

@@ -72,10 +72,6 @@ export default {
                         "a", {
                             href: params.row.downloadUrl,
                             target: "_blank",
-                            attrs: {
-                                href: params.row.downloadUrl,
-                                target: "_blank"
-                            },
                             style: {
                                 color: "blue",
                                 "text-decoration": "underline",
