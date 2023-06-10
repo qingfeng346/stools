@@ -12,12 +12,18 @@
             </FormItem>
         </Form>
         <Page v-model="page" :total="total" :page-size="pageSize" show-total @on-change="UpdateMusicList" />
-        <Table :columns="columns" :data="datas"></Table>
+        <Table :columns="columns" :data="datas">
+            <template #action="{ row, index }">
+                <a :href="row.downloadUrl" target="_blank" style="margin-right: 10px;">下载</a>
+                <Button type="error" size="small" @click="OnClickRemove(row)">删除</Button>
+            </template>
+        </Table>
     </Layout>
 </template>
 <script>
-import { Util, logger } from 'weimingcommons'
+import { Util } from 'weimingcommons'
 import net from '../scripts/net'
+import util from '../scripts/util'
 export default {
     data() {
         return {
@@ -61,29 +67,15 @@ export default {
                 key: "duration",
                 width: 90
             },
-            // {
-            //     title: "下载时间", key: "time"
-            // },
             {
-                title: "下载",
-                width: 90,
-                render: (h, params) => {
-                    return h(
-                        "a", {
-                            href: params.row.downloadUrl,
-                            target: "_blank",
-                            style: {
-                                color: "blue",
-                                "text-decoration": "underline",
-                            },
-                        },
-                        "链接"
-                    );
-                },
+                title: "操作",
+                width: 120,
+                slot: 'action',
             }
         ]
         this.formItem.url = localStorage.getItem("url")
         this.UpdateMusicList()
+        net.registerMessage("downloadSuccess", this.OnDownloadSuccess.bind(this));
     },
     methods: {
         async OnClickAlbum() {
@@ -96,6 +88,12 @@ export default {
             await net.request("musicdownload", { type: "music", url : this.formItem.url })
             this.UpdateMusicList()
         },
+        OnClickRemove(row) {
+            util.confirmBox("警告",`确定要删除歌曲《${row.name}》吗？`, async () => {
+                await net.request("musicdelete", { path: row.path })
+                this.UpdateMusicList()
+            })
+        },
         async UpdateMusicList() {
             let result = await net.request("musiclist", { page: this.page, pageSize: this.pageSize })
             this.total = result.total
@@ -106,6 +104,10 @@ export default {
                 data.duration = Util.getElapsedTimeString(data.duration)
                 data.downloadUrl = `http://${window.location.hostname}:${window.location.port}/music/${data.singer}/${data.album}/${data.singer} - ${data.name}.mp3`
             }
+        },
+        OnDownloadSuccess(data) {
+            util.noticeSuccess(`下载成功 : ${data.path}`)
+            this.UpdateMusicList()
         }
     }
 }

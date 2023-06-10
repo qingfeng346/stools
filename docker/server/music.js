@@ -7,6 +7,7 @@ class music {
         Util.Encoding = "utf8"
         net.register("musiclist", this.OnMusicList.bind(this))
         net.register("musicdownload", this.OnMusicDownload.bind(this))
+        net.register("musicdelete", this.OnMusicDelete.bind(this))
         this.CheckDownload()
     }
     async OnMusicList(data) {
@@ -43,9 +44,9 @@ class music {
         let file = Util.getTempFile(".json")
         let dir = `${process.cwd()}/stools`
         if (msg.type == "music") {
-            await Util.execAsync("dotnet", dir, [ "run", "downloadmusic", "-url", msg.url, "-output", `${process.cwd()}/music`, "-path", 3, "-exportFile", file], { shell: true} )
+            await Util.execAsync("dotnet", dir, [ "run", "downloadmusic", "-url", msg.url, "-output", `${process.cwd()}/music`, "-path", 1, "-exportFile", file], { shell: true} )
         } else if (msg.type == "album") {
-            await Util.execAsync("dotnet", dir, [ "run", "downloadalbum", "-url", msg.url, "-output", `${process.cwd()}/music`, "-path", 3, "-exportFile", file], { shell: true})
+            await Util.execAsync("dotnet", dir, [ "run", "downloadalbum", "-url", msg.url, "-output", `${process.cwd()}/music`, "-path", 1, "-exportFile", file], { shell: true})
         }
         let infos = await FileUtil.GetFileJsonAsync(file)
         if (infos == null) return
@@ -62,11 +63,15 @@ class music {
                 duration: info.duration,
                 time: new Date().valueOf()
             }
+            await database.music.upsert(data, { where: { path: info.path } })
             logger.info(`下载音乐成功 : ${JSON.stringify(data)}`)
-            await database.music.upsert(data, { 
-                where: { path: info.path } 
-            })
+            net.sendMessage("downloadSuccess", data)
         }
+    }
+    async OnMusicDelete(msg) {
+        await FileUtil.DeleteFileAsync(msg.path)
+        await database.music.destroy({ where: { path: msg.path } })
+        logger.notify(`删除《${msg.path}》成功`)
     }
 }
 module.exports = new music()

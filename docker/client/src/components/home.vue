@@ -26,6 +26,7 @@
 import { Util } from 'weimingcommons'
 import { RouterView } from 'vue-router'
 import net from "../scripts/net";
+import util from '../scripts/util'
 export default {
     data() {
         return {
@@ -36,6 +37,7 @@ export default {
         }
     },
     beforeMount() {
+        util.init(this.$Message, this.$Modal, this)
         this.UpdateMenu()
     },
     beforeUpdate() {
@@ -45,6 +47,7 @@ export default {
         this.viewLog = document.querySelector("#viewLog");
         net.registerMessage("write", this.OnMessage.bind(this));
         net.registerMessage("log", this.OnMessage.bind(this));
+        net.registerMessage("notice", this.OnNotice.bind(this));
         this.UpdateScroll()
     },
     methods: {
@@ -72,7 +75,10 @@ export default {
             }
         },
         OnMessage(data, code) {
-            if (code == "write") {
+            this.AddLog(data, code == "write")
+        },
+        AddLog(data, write) {
+            if (write) {
                 this.logValueCache += data;
             } else {
                 this.logValueCache += `${data}\n`;
@@ -85,7 +91,16 @@ export default {
         OnClickLog() {
             this.showLog = true
             this.changed = true
-        }
+        },
+        OnNotice(data) {
+            if (data.type == "success") {
+                util.noticeSuccess(data.msg)
+            } else if (data.type == "error") {
+                util.noticeError(data.msg)
+            } else {
+                util.noticeInfo(data.msg)
+            }
+        },
     }
 }
 </script>
