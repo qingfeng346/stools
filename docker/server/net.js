@@ -30,12 +30,15 @@ class net {
         this.sendMessage("log", str)
     }
     notify(str) {
+        console.log(str)
         this.sendMessage("notice", { type: "info", msg: str })
     }
     notifySuccess(str) {
+        console.log(str)
         this.sendMessage("notice", { type: "success", msg: str })
     }
     notifyError(str) {
+        console.error(str)
         this.sendMessage("notice", { type: "error", msg: str })
     }
     async init() {
@@ -64,7 +67,7 @@ class net {
                 let msgData = await this.fireFunc(code, data, req, res, null)
                 logger.info(`<=== [${req.ip}] execute [${code}] : ${msgData}`)
             } catch (e) {
-                this.notice("error", `execute is error, from:${req.ip}  ${code} - ${JSON.stringify(data)} : ${e.stack}`)
+                this.notifyError(`execute is error, from:${req.ip}  ${code} - ${JSON.stringify(data)} : ${e.stack}`)
             }
             res.end();
         })

@@ -7,7 +7,6 @@ using TagLib;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
-using static MusicKuwo.KuwoAlbumInfo;
 
 public enum MusicPath {
     None = 0,               //不创建文件夹
@@ -99,6 +98,7 @@ public abstract class MusicBase {
                 MusicPath.ArtistAlbum => Path.Combine(savePath, Singer.GetSingers(), Album, fileName),
                 _ => Path.Combine(savePath, fileName),
             };
+            FilePath = Path.GetFullPath(FilePath);
             FileUtil.CreateDirectoryByFile(FilePath);
             foreach (var mp3Url in Mp3Urls) {
                 try {

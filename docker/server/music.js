@@ -28,6 +28,10 @@ class music {
         return result
     }
     async OnMusicDownload(msg) {
+        let index = msg.url.indexOf("&")
+        if (index > 0) {
+            msg.url = msg.url.substring(0, index)
+        }
         this.list.splice(0, 0, msg)
     }
     async CheckDownload() {
@@ -44,9 +48,9 @@ class music {
         let file = Util.getTempFile(".json")
         let dir = `${process.cwd()}/stools`
         if (msg.type == "music") {
-            await Util.execAsync("dotnet", dir, [ "run", "downloadmusic", "-url", msg.url, "-output", `${process.cwd()}/music`, "-path", 1, "-exportFile", file], { shell: true} )
+            await Util.execAsync("dotnet", dir, [ "run", "downloadmusic", "-output", `${process.cwd()}/music`, "-path", 1, "-exportFile", file, "-url", msg.url], { shell: true} )
         } else if (msg.type == "album") {
-            await Util.execAsync("dotnet", dir, [ "run", "downloadalbum", "-url", msg.url, "-output", `${process.cwd()}/music`, "-path", 1, "-exportFile", file], { shell: true})
+            await Util.execAsync("dotnet", dir, [ "run", "downloadalbum", "-output", `${process.cwd()}/music`, "-path", 1, "-exportFile", file, "-url", msg.url], { shell: true})
         }
         let infos = await FileUtil.GetFileJsonAsync(file)
         if (infos == null) return
