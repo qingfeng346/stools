@@ -102,7 +102,9 @@ export default {
                 data.size = Util.getMemory(data.size)
                 data.time = Util.formatDate(new Date(data.time))
                 data.duration = Util.getElapsedTimeString(data.duration)
-                data.downloadUrl = `http://${window.location.hostname}:${window.location.port}/music/${data.singer}/${data.album}/${data.singer} - ${data.name}.mp3`
+                let index = data.path.indexOf("music")
+                let path = data.path.substring(index + 6)
+                data.downloadUrl = `http://${window.location.hostname}:${window.location.port}/music/${path}`
             }
         },
         OnDownloadSuccess(data) {
