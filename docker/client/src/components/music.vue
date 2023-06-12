@@ -6,14 +6,20 @@
             </FormItem>
             <FormItem label="下载">
                 <Space>
+                    <Button type="primary" @click="OnClickRefresh">刷新</Button>
+                    <Button type="primary" @click="OnClickCopy">复制并下载</Button>
                     <Button type="primary" @click="OnClickAlbum">下载专辑</Button>
                     <Button type="primary" @click="OnClickMusic">下载音乐</Button>
                 </Space>
             </FormItem>
+            <FormItem label="过滤">
+                <Tag v-for="item in filter" :key="item" :name="item" type="border" closable color="primary" @on-close="OnClickRemoveFilter">{{ item.name }}</Tag>
+                <Button icon="ios-add" type="dashed" size="small" @click="OnClickAddFilter">添加标签</Button>
+            </FormItem>
         </Form>
         <Page v-model="page" :total="total" :page-size="pageSize" show-total @on-change="UpdateMusicList" />
         <Table :columns="columns" :data="datas">
-            <template #action="{ row, index }">
+            <template #action="{ row }">
                 <a :href="row.downloadUrl" target="_blank" style="margin-right: 10px;">下载</a>
                 <Button type="error" size="small" @click="OnClickRemove(row)">删除</Button>
             </template>
@@ -33,6 +39,7 @@ export default {
             page: 1,
             pageSize: 100,
             total: 0,
+            filter: []
         }
     },
     mounted() {
@@ -40,12 +47,12 @@ export default {
             {
                 title: "名字", 
                 key: "name",
-                minWidth: 200,
+                width: 200,
             },
             {
                 title: "专辑", 
                 key: "album",
-                minWidth: 150,
+                width: 200,
             },
             {
                 title: "歌手", 
@@ -68,6 +75,11 @@ export default {
                 width: 90
             },
             {
+                title: "路径", 
+                key: "path",
+                minWidth: 350
+            },
+            {
                 title: "操作",
                 width: 120,
                 slot: 'action',
@@ -78,14 +90,23 @@ export default {
         net.registerMessage("downloadSuccess", this.OnDownloadSuccess.bind(this));
     },
     methods: {
+        async OnClickRefresh() {
+            await this.UpdateMusicList()
+        },
+        async OnClickCopy() {
+            this.formItem.url = await util.getClipboardText()
+            await this.OnClickMusic()
+        },
         async OnClickAlbum() {
             localStorage.setItem("url", this.formItem.url)
             await net.request("musicdownload", { type: "album", url : this.formItem.url })
+            util.noticeInfo(`开始下载 : ${this.formItem.url}`)
             this.UpdateMusicList()
         },
         async OnClickMusic() {
             localStorage.setItem("url", this.formItem.url)
             await net.request("musicdownload", { type: "music", url : this.formItem.url })
+            util.noticeInfo(`开始下载 : ${this.formItem.url}`)
             this.UpdateMusicList()
         },
         OnClickRemove(row) {
@@ -95,7 +116,7 @@ export default {
             })
         },
         async UpdateMusicList() {
-            let result = await net.request("musiclist", { page: this.page, pageSize: this.pageSize })
+            let result = await net.request("musiclist", { page: this.page, pageSize: this.pageSize, filter: this.filter })
             this.total = result.total
             this.datas = result.datas
             for (let data of this.datas) {
@@ -103,13 +124,25 @@ export default {
                 data.time = Util.formatDate(new Date(data.time))
                 data.duration = Util.getElapsedTimeString(data.duration)
                 let index = data.path.indexOf("music")
-                let path = data.path.substring(index + 6)
-                data.downloadUrl = `http://${window.location.hostname}:${window.location.port}/music/${path}`
+                data.path = data.path.substring(index + 6)
+                data.downloadUrl = `http://${window.location.hostname}:${window.location.port}/music/${data.path}`
             }
         },
         OnDownloadSuccess(data) {
             util.noticeSuccess(`下载成功 : ${data.path}`)
             this.UpdateMusicList()
+        },
+        OnClickRemoveFilter(evt, name) {
+            let index = this.filter.indexOf(name)
+            if (index >= 0) {
+                this.filter.splice(index, 1)
+            }
+        },
+        OnClickAddFilter() {
+            util.confirmFilter((text) => {
+                this.filter.push({type: 'name', value: text, name: `名字:${text}`})
+                this.UpdateMusicList()
+            })
         }
     }
 }

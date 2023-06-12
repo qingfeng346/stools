@@ -1,5 +1,6 @@
 const net = require('./net')
 const database = require('./database')
+const { Op } = require('sequelize')
 const { Util, FileUtil, logger } = require('weimingcommons')
 class music {
     async init() {
@@ -13,10 +14,29 @@ class music {
     async OnMusicList(data) {
         let pageSize = data.pageSize
         let page = data.page
+        let where = {}
+        if (data.filter != null) {
+            for (let v of data.filter) {
+                if (v.type == "name") {
+                    where["name"] = {
+                        [Op.like]: `%${v.value}%`
+                    }
+                } else if (v.type == "album") {
+                    where["album"] = {
+                        [Op.like]: `%${v.value}%`
+                    }
+                } else if (v.type == "singer") {
+                    where["singer"] = {
+                        [Op.like]: `%${v.value}%`
+                    }
+                }
+            }
+        }
         let condition = {
             limit: pageSize,
             offset: (page - 1) * pageSize,
             order: [["time", "DESC"]],
+            where: where
         }
         let total = await database.music.count()
         let datas = await database.music.findAll(condition)

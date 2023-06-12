@@ -1,3 +1,4 @@
+import { RadioGroup,Radio,Input } from 'view-ui-plus'
 class util {
     init($Message, $Modal, homePage) {
         this.$Message = $Message
@@ -45,6 +46,49 @@ class util {
         }
         if (onOk != null) {
             config.onOk = onOk
+        }
+        this.confirm(config)
+    }
+    confirmFilter(onOk) {
+        let text = ""
+        let config = {
+            okText: "确定",
+            cancelText: "关闭",
+            closeable: false,
+            render: (h) => {
+                return h("div", [
+                    // h(RadioGroup, {
+                    //     onChange: (v,v1) => {
+                    //         // console.log(v, v1)
+                    //     },
+                    // },
+                    // [
+                    //     h(Radio, {
+                    //         label: "name",
+                    //         onChange: (v,v1) => {
+                    //             console.log(v, v1)
+                    //         },
+                    //     },() => "名字"),
+                    //     h(Radio, {
+                    //         label: "album",
+                    //         onChange: (v,v1) => {
+                    //             console.log(v, v1)
+                    //         },
+                    //     },() => "专辑")
+                    // ],
+                    // ),
+                    h(Input, {
+                        "onInput": (v) => {
+                            text = v.target.value
+                        }
+                    })
+                ])
+            }
+        }
+        if (onOk != null) {
+            config.onOk = () => {
+                onOk?.(text)
+            }
         }
         this.confirm(config)
     }
