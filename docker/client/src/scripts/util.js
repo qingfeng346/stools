@@ -4,6 +4,9 @@ class util {
         this.$Modal = $Modal
         this.homePage = homePage
     }
+    async getClipboardText() {
+        return await navigator.clipboard.readText();
+    }
     noticeInfo(msg) {
         this.$Message.info({
             duration: 6,
