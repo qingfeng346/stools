@@ -21,12 +21,21 @@
         <pre id="viewLog">{{ logValue }}</pre>
       </div>
     </Modal>
+    <Modal v-model="showFilter"
+        title="搜索过滤"
+        @on-ok="OnClickFilter">
+        <Select v-model="filterType">
+            <Option v-for="item in filterList" :key="item.type" :value="item.type" >{{ item.label }}</Option>
+        </Select>
+        <Input v-model="filterValue"/>
+    </Modal>
 </template>
 <script>
 import { Util } from 'weimingcommons'
 import { RouterView } from 'vue-router'
 import net from "../scripts/net";
 import util from '../scripts/util'
+import { RadioGroup } from 'view-ui-plus';
 export default {
     data() {
         return {
@@ -34,21 +43,26 @@ export default {
             showLog: false,
             logValue: "",
             logValueCache: "",
-        }
+            showFilter: false,
+            filterType: "name",
+            filterValue: "",
+            filterList: []
+        };
     },
     beforeMount() {
-        util.init(this.$Message, this.$Modal, this)
-        this.UpdateMenu()
+        util.init(this.$Message, this.$Modal, this);
+        this.UpdateMenu();
     },
     beforeUpdate() {
-        this.UpdateMenu()
+        this.UpdateMenu();
     },
     mounted() {
+        this.filterList = util.filterList
         this.viewLog = document.querySelector("#viewLog");
         net.registerMessage("write", this.OnMessage.bind(this));
         net.registerMessage("log", this.OnMessage.bind(this));
         net.registerMessage("notice", this.OnNotice.bind(this));
-        this.UpdateScroll()
+        this.UpdateScroll();
     },
     methods: {
         UpdateMenu() {
@@ -65,43 +79,56 @@ export default {
         },
         async UpdateScroll() {
             while (true) {
-                await Util.sleep(0.5)
+                await Util.sleep(0.5);
                 if (this.changed) {
-                    this.changed = false
-                    this.logValue = this.logValueCache
-                    await Util.sleep(0.1)
+                    this.changed = false;
+                    this.logValue = this.logValueCache;
+                    await Util.sleep(0.1);
                     this.viewLog.scrollTop = this.viewLog.scrollHeight;
                 }
             }
         },
         OnMessage(data, code) {
-            this.AddLog(data, code == "write")
+            this.AddLog(data, code == "write");
         },
         AddLog(data, write) {
             if (write) {
                 this.logValueCache += data;
-            } else {
+            }
+            else {
                 this.logValueCache += `${data}\n`;
             }
             if (this.logValueCache.length > 81920) {
                 this.logValueCache = this.logValueCache.substring(this.logValueCache.length - 81920);
             }
-            this.changed = true
+            this.changed = true;
         },
         OnClickLog() {
-            this.showLog = true
-            this.changed = true
+            this.showLog = true;
+            this.changed = true;
         },
         OnNotice(data) {
             if (data.type == "success") {
-                util.noticeSuccess(data.msg)
-            } else if (data.type == "error") {
-                util.noticeError(data.msg)
-            } else {
-                util.noticeInfo(data.msg)
+                util.noticeSuccess(data.msg);
+            }
+            else if (data.type == "error") {
+                util.noticeError(data.msg);
+            }
+            else {
+                util.noticeInfo(data.msg);
             }
         },
-    }
+        ShowFilter(onOK) {
+            this.showFilter = true
+            this.onFilter = onOK
+        },
+        OnClickFilter() {
+            if (this.onFilter != null) {
+                this.onFilter(this.filterType, this.filterValue)
+            }
+        }
+    },
+    components: { RadioGroup }
 }
 </script>
 <style>

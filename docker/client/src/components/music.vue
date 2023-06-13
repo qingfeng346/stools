@@ -13,7 +13,7 @@
                 </Space>
             </FormItem>
             <FormItem label="过滤">
-                <Tag v-for="item in filter" :key="item" :name="item" type="border" closable color="primary" @on-close="OnClickRemoveFilter">{{ item.name }}</Tag>
+                <Tag v-for="item in filter" :key="item.name" :name="item.name" type="border" closable color="primary" @on-close="OnClickRemoveFilter">{{ item.name }}</Tag>
                 <Button icon="ios-add" type="dashed" size="small" @click="OnClickAddFilter">添加标签</Button>
             </FormItem>
         </Form>
@@ -133,14 +133,17 @@ export default {
             this.UpdateMusicList()
         },
         OnClickRemoveFilter(evt, name) {
-            let index = this.filter.indexOf(name)
+            let index = this.filter.findIndex((item) => { return item.name == name })
             if (index >= 0) {
                 this.filter.splice(index, 1)
+                this.UpdateMusicList()
             }
         },
         OnClickAddFilter() {
-            util.confirmFilter((text) => {
-                this.filter.push({type: 'name', value: text, name: `名字:${text}`})
+            util.confirmFilter((type, value) => {
+                if (this.filter.findIndex((item) => { return item.type == type && item.value == value}) >= 0) { return }
+                let filter = util.getFilter(type)
+                this.filter.push({type: type, value: value, name: `${filter.label}:${value}`})
                 this.UpdateMusicList()
             })
         }

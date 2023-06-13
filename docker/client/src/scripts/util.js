@@ -4,9 +4,17 @@ class util {
         this.$Message = $Message
         this.$Modal = $Modal
         this.homePage = homePage
+        this.filterList = [
+            { type: "name", label: "名字" },
+            { type: "album", label: "专辑" },
+            { type: "singer", label: "歌手" }
+        ]
     }
     async getClipboardText() {
         return await navigator.clipboard.readText();
+    }
+    getFilter(type) {
+        return this.filterList.find((item) => { return item.type == type })
     }
     noticeInfo(msg) {
         this.$Message.info({
@@ -36,6 +44,9 @@ class util {
         console.log(msg)
         this.homePage.AddLog(msg)
     }
+    confirmFilter(onOk) {
+        this.homePage.ShowFilter(onOk)
+    }
     confirmBox(title, content, onOk, closeable) {
         let config = {
             title: title,
@@ -46,49 +57,6 @@ class util {
         }
         if (onOk != null) {
             config.onOk = onOk
-        }
-        this.confirm(config)
-    }
-    confirmFilter(onOk) {
-        let text = ""
-        let config = {
-            okText: "确定",
-            cancelText: "关闭",
-            closeable: false,
-            render: (h) => {
-                return h("div", [
-                    // h(RadioGroup, {
-                    //     onChange: (v,v1) => {
-                    //         // console.log(v, v1)
-                    //     },
-                    // },
-                    // [
-                    //     h(Radio, {
-                    //         label: "name",
-                    //         onChange: (v,v1) => {
-                    //             console.log(v, v1)
-                    //         },
-                    //     },() => "名字"),
-                    //     h(Radio, {
-                    //         label: "album",
-                    //         onChange: (v,v1) => {
-                    //             console.log(v, v1)
-                    //         },
-                    //     },() => "专辑")
-                    // ],
-                    // ),
-                    h(Input, {
-                        "onInput": (v) => {
-                            text = v.target.value
-                        }
-                    })
-                ])
-            }
-        }
-        if (onOk != null) {
-            config.onOk = () => {
-                onOk?.(text)
-            }
         }
         this.confirm(config)
     }
