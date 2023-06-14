@@ -48,36 +48,43 @@ export default {
                 title: "名字", 
                 key: "name",
                 width: 200,
+                sortable: true,
             },
             {
                 title: "专辑", 
                 key: "album",
                 width: 200,
+                sortable: true,
             },
             {
                 title: "歌手", 
                 key: "singer",
-                width: 150
+                width: 150,
+                sortable: true,
             },
             {
                 title: "年份", 
                 key: "year",
-                width: 75
+                width: 85,
+                sortable: true,
             },
             {
                 title: "大小", 
                 key: "size",
-                width: 100
+                width: 100,
+                sortable: true,
             },
             {
                 title: "时长", 
                 key: "duration",
-                width: 90
+                width: 90,
+                sortable: true,
             },
             {
                 title: "路径", 
                 key: "relative",
-                minWidth: 350
+                minWidth: 350,
+                sortable: true,
             },
             {
                 title: "操作",
