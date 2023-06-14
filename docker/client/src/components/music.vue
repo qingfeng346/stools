@@ -76,7 +76,7 @@ export default {
             },
             {
                 title: "路径", 
-                key: "path",
+                key: "relative",
                 minWidth: 350
             },
             {
@@ -124,8 +124,8 @@ export default {
                 data.time = Util.formatDate(new Date(data.time))
                 data.duration = Util.getElapsedTimeString(data.duration)
                 let index = data.path.indexOf("music")
-                data.path = data.path.substring(index + 6)
-                data.downloadUrl = `http://${window.location.hostname}:${window.location.port}/music/${data.path}`
+                data.relative = data.path.substring(index + 6)
+                data.downloadUrl = `http://${window.location.hostname}:${window.location.port}/music/${data.relative}`
             }
         },
         OnDownloadSuccess(data) {
