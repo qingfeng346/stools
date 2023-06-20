@@ -49,24 +49,84 @@ export default {
                 key: "name",
                 width: 200,
                 sortable: true,
+                render: (h, params) => {
+                    return h(
+                        "a", {
+                            target: "_blank",
+                            style: {
+                                color: "blue",
+                                "text-decoration": "underline",
+                            },
+                            onclick: () => {
+                                this.AddFilter("name", params.row.name)
+                            }
+                        },
+                        params.row.name
+                    );
+                },
             },
             {
                 title: "专辑", 
                 key: "album",
                 width: 200,
                 sortable: true,
+                render: (h, params) => {
+                    return h(
+                        "a", {
+                            target: "_blank",
+                            style: {
+                                color: "blue",
+                                "text-decoration": "underline",
+                            },
+                            onclick: () => {
+                                this.AddFilter("album", params.row.album)
+                            }
+                        },
+                        params.row.album
+                    );
+                },
             },
             {
                 title: "歌手", 
                 key: "singer",
                 width: 150,
                 sortable: true,
+                render: (h, params) => {
+                    return h(
+                        "a", {
+                            target: "_blank",
+                            style: {
+                                color: "blue",
+                                "text-decoration": "underline",
+                            },
+                            onclick: () => {
+                                this.AddFilter("singer", params.row.singer)
+                            }
+                        },
+                        params.row.singer
+                    );
+                },
             },
             {
                 title: "年份", 
                 key: "year",
                 width: 85,
                 sortable: true,
+                render: (h, params) => {
+                    return h(
+                        "a", {
+                            target: "_blank",
+                            style: {
+                                color: "blue",
+                                "text-decoration": "underline",
+                            },
+                            onclick: () => {
+                                this.AddFilter("year", params.row.year)
+                            }
+                        },
+                        params.row.year
+                    );
+                },
             },
             {
                 title: "大小", 
@@ -124,7 +184,7 @@ export default {
         },
         async UpdateMusicList() {
             let result = await net.request("musiclist", { page: this.page, pageSize: this.pageSize, filter: this.filter })
-            this.total = result.total
+            this.total = result.datas.length
             this.datas = result.datas
             for (let data of this.datas) {
                 data.size = Util.getMemory(data.size)
@@ -148,11 +208,19 @@ export default {
         },
         OnClickAddFilter() {
             util.confirmFilter((type, value) => {
-                if (this.filter.findIndex((item) => { return item.type == type && item.value == value}) >= 0) { return }
-                let filter = util.getFilter(type)
-                this.filter.push({type: type, value: value, name: `${filter.label}:${value}`})
-                this.UpdateMusicList()
+                this.AddFilter(type, value)
             })
+        },
+        AddFilter(type, value) {
+            let filter = util.getFilter(type)
+            let data = {type: type, value: value, name: `${filter.label}:${value}`}
+            let index = this.filter.findIndex((item) => { return item.type == type })
+            if (index >= 0) {
+                this.filter[index] = data
+            } else {
+                this.filter.push(data)
+            }
+            this.UpdateMusicList()
         }
     }
 }

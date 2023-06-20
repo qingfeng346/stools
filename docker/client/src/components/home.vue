@@ -27,7 +27,7 @@
         <Select v-model="filterType">
             <Option v-for="item in filterList" :key="item.type" :value="item.type" >{{ item.label }}</Option>
         </Select>
-        <Input v-model="filterValue"/>
+        <Input ref="filterInput" v-model="filterValue" @on-enter="OnClickFilter"/>
     </Modal>
 </template>
 <script>
@@ -118,11 +118,14 @@ export default {
                 util.noticeInfo(data.msg);
             }
         },
-        ShowFilter(onOK) {
+        async ShowFilter(onOK) {
             this.showFilter = true
             this.onFilter = onOK
+            await Util.sleep(0.1)
+            this.$refs.filterInput.focus({cursor:"end"})
         },
         OnClickFilter() {
+            this.showFilter = false
             if (this.onFilter != null) {
                 this.onFilter(this.filterType, this.filterValue)
             }

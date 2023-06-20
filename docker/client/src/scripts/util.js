@@ -7,7 +7,8 @@ class util {
         this.filterList = [
             { type: "name", label: "名字" },
             { type: "album", label: "专辑" },
-            { type: "singer", label: "歌手" }
+            { type: "singer", label: "歌手" },
+            { type: "year", label: "年份" }
         ]
     }
     async getClipboardText() {
@@ -17,6 +18,7 @@ class util {
         return this.filterList.find((item) => { return item.type == type })
     }
     noticeInfo(msg) {
+        this.log(`[Info]${msg}`)
         this.$Message.info({
             duration: 6,
             render: h => {
@@ -25,6 +27,7 @@ class util {
         })
     }
     noticeSuccess(msg) {
+        this.log(`[Success]${msg}`)
         this.$Message.success({
             duration: 6,
             render: h => {
@@ -33,6 +36,7 @@ class util {
         })
     }
     noticeError(msg) {
+        this.log(`[Error]${msg}`)
         this.$Message.error({
             duration: 6,
             render: h => {

@@ -29,6 +29,10 @@ class music {
                     where["singer"] = {
                         [Op.like]: `%${v.value}%`
                     }
+                } else if (v.type == "year") {
+                    where["year"] = {
+                        [Op.like]: `%${v.value}%`
+                    }
                 }
             }
         }
