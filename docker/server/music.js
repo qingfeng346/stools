@@ -42,7 +42,7 @@ class music {
             order: [["time", "DESC"]],
             where: where
         }
-        let total = await database.music.count()
+        let total = await database.music.count(condition)
         let datas = await database.music.findAll(condition)
         let result = {}
         result.total = total
