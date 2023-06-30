@@ -184,7 +184,7 @@ export default {
         },
         async UpdateMusicList() {
             let result = await net.request("musiclist", { page: this.page, pageSize: this.pageSize, filter: this.filter })
-            this.total = result.datas.length
+            this.total = result.total
             this.datas = result.datas
             for (let data of this.datas) {
                 data.size = Util.getMemory(data.size)
