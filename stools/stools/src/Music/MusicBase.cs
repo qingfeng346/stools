@@ -46,8 +46,7 @@ public abstract class MusicBase {
     //下载文件
     public async Task<bool> Download(string id, string path, MusicPath musicPath) {
         ID = id;
-        logger.info($"开始解析数据  来源:{Source} ID:{id}");
-        var success = false;
+        logger.info($"开始解析数据,来源:{Source} ID:{id}");
         for (var i = 0; i < RetryTotal; ++i) {
             try {
                 Name = "";
@@ -58,17 +57,13 @@ public abstract class MusicBase {
                 CoverUrls.Clear();
                 Mp3Urls.Clear();
                 await ParseInfo(id);
-                success = true;
-                break;
+                return await DownloadFile(path, musicPath);
             } catch (Exception ex) {
-                logger.error($"解析数据出错,一秒后重试 {i + 1}/{RetryTotal} : {ex}");
+                logger.error($"下载音乐【{Name}】失败,一秒后重试 {i + 1}/{RetryTotal} : {ex}");
                 await Task.Delay(1000);
             }
         }
-        if (!success) {
-            throw new Exception("解析音乐数据出错");
-        }
-        return await DownloadFile(path, musicPath);
+        return false;
     }
     public async Task<AlbumInfo> ParseAlbum(string id) {
         for (var i = 0; i < RetryTotal; ++i) {
@@ -158,14 +153,11 @@ public abstract class MusicBase {
             using (var log = new LoggerColor(ConsoleColor.Green)) {
                 logger.info("下载音乐完成 文件名:{0}  文件大小:{1}  时长:{2}s", Path.GetFullPath(FilePath), new FileInfo(FilePath).Length.GetMemory(), Duration / 1000);
             }
-            logger.info("-------------------------------------------------------------------");
             return true;
-        } catch (Exception e) {
+        } catch (Exception ) {
             FileUtil.DeleteFile(FilePath);
-            using (var log = new LoggerColor(ConsoleColor.Red))
-                logger.error($"下载音乐【{Name}】失败:{e}");
+            throw;
         }
-        return false;
     }
     public Dictionary<string, object> ToInfo() {
         return new Dictionary<string, object>() {
