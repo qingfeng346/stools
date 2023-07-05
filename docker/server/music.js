@@ -2,11 +2,13 @@ const net = require('./net')
 const database = require('./database')
 const { Op } = require('sequelize')
 const { Util, FileUtil, logger } = require('weimingcommons')
+const { QueryTypes } = require('sequelize');
 class music {
     async init() {
         this.list = []
         Util.Encoding = "utf8"
         net.register("musiclist", this.OnMusicList.bind(this))
+        net.register("findsame", this.OnFindSame.bind(this))
         net.register("musicdownload", this.OnMusicDownload.bind(this))
         net.register("musicdelete", this.OnMusicDelete.bind(this))
         this.CheckDownload()
@@ -49,6 +51,11 @@ class music {
         result.pageSize = pageSize
         result.page = page
         result.datas = datas
+        return result
+    }
+    async OnFindSame() {
+        let result = {}
+        result.datas = await database.sequelize.query("SELECT * FROM `music` where `name` in (select `name` from `music` group by `name` having count(`name`) > 1)", { type: QueryTypes.SELECT });
         return result
     }
     async OnMusicDownload(msg) {
@@ -97,9 +104,14 @@ class music {
         }
     }
     async OnMusicDelete(msg) {
+        let index = msg.path.indexOf("music")
+        let relative = msg.path.substring(index + 6)
+        let newPath = `${process.cwd()}/music/${relative}`
+        logger.info(`删除缓存文件:${newPath}`)
+        await FileUtil.DeleteFileAsync(newPath)
         await FileUtil.DeleteFileAsync(msg.path)
-        await database.music.destroy({ where: { path: msg.path } })
-        logger.notify(`删除《${msg.path}》成功`)
+        let number = await database.music.destroy({ where: { path: msg.path } })
+        logger.notify(`删除《${msg.path}》成功:${number}`)
     }
 }
 module.exports = new music()

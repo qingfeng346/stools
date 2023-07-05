@@ -7,6 +7,7 @@
             <FormItem label="下载">
                 <Space>
                     <Button type="primary" @click="OnClickRefresh">刷新</Button>
+                    <Button type="primary" @click="OnClickFindSame">重复数据</Button>
                     <Button type="primary" @click="OnClickCopy">复制并下载</Button>
                     <Button type="primary" @click="OnClickAlbum">下载专辑</Button>
                     <Button type="primary" @click="OnClickMusic">下载音乐</Button>
@@ -160,6 +161,22 @@ export default {
         async OnClickRefresh() {
             await this.UpdateMusicList()
         },
+        ParseData(data) {
+            data.size = Util.getMemory(data.size)
+            data.time = Util.formatDate(new Date(data.time))
+            data.duration = Util.getElapsedTimeString(data.duration)
+            let index = data.path.indexOf("music")
+            data.relative = data.path.substring(index + 6)
+            data.downloadUrl = `http://${window.location.hostname}:${window.location.port}/music/${data.relative}`
+        },
+        async OnClickFindSame() {
+            let result = await net.request("findsame")
+            this.total = result.datas.length
+            this.datas = result.datas
+            for (let data of this.datas) {
+                this.ParseData(data)
+            }
+        },
         async OnClickCopy() {
             this.formItem.url = await util.getClipboardText()
             await this.OnClickMusic()
@@ -187,12 +204,7 @@ export default {
             this.total = result.total
             this.datas = result.datas
             for (let data of this.datas) {
-                data.size = Util.getMemory(data.size)
-                data.time = Util.formatDate(new Date(data.time))
-                data.duration = Util.getElapsedTimeString(data.duration)
-                let index = data.path.indexOf("music")
-                data.relative = data.path.substring(index + 6)
-                data.downloadUrl = `http://${window.location.hostname}:${window.location.port}/music/${data.relative}`
+                this.ParseData(data)
             }
         },
         OnDownloadSuccess(data) {
