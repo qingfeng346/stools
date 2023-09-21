@@ -6,14 +6,16 @@
             </FormItem>
             <FormItem label="下载">
                 <Space>
-                    <Button type="primary" @click="OnClickRefresh">刷新</Button>
-                    <Button type="primary" @click="OnClickFindSame">重复数据</Button>
                     <Button type="primary" @click="OnClickCopy">复制并下载</Button>
                     <Button type="primary" @click="OnClickAlbum">下载专辑</Button>
                     <Button type="primary" @click="OnClickMusic">下载音乐</Button>
                 </Space>
             </FormItem>
             <FormItem label="过滤">
+                <Space>
+                    <Button type="primary" @click="OnClickRefresh">刷新数据</Button>
+                    <Button type="primary" @click="OnClickFindSame">重复数据</Button>
+                </Space>
                 <Tag v-for="item in filter" :key="item.name" :name="item.name" type="border" closable color="primary" @on-close="OnClickRemoveFilter">{{ item.name }}</Tag>
                 <Button icon="ios-add" type="dashed" size="small" @click="OnClickAddFilter">添加标签</Button>
             </FormItem>
@@ -182,15 +184,17 @@ export default {
             await this.OnClickMusic()
         },
         async OnClickAlbum() {
-            localStorage.setItem("url", this.formItem.url)
-            await net.request("musicdownload", { type: "album", url : this.formItem.url })
-            util.noticeInfo(`开始下载 : ${this.formItem.url}`)
+            let url = this.formItem.url
+            this.formItem.url = ""
+            await net.request("musicdownload", { type: "album", url : url })
+            util.noticeInfo(`开始下载专辑 : ${url}`)
             this.UpdateMusicList()
         },
         async OnClickMusic() {
-            localStorage.setItem("url", this.formItem.url)
-            await net.request("musicdownload", { type: "music", url : this.formItem.url })
-            util.noticeInfo(`开始下载 : ${this.formItem.url}`)
+            let url = this.formItem.url
+            this.formItem.url = ""
+            await net.request("musicdownload", { type: "music", url : url })
+            util.noticeInfo(`开始下载音乐 : ${url}`)
             this.UpdateMusicList()
         },
         OnClickRemove(row) {
