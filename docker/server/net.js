@@ -44,17 +44,18 @@ class net {
     async init() {
         FileUtil.CreateDirectory("./music")
         let app = express()
+        app.all("*", (_req, res, next) => {
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Credentials', 'true');
+            res.header("Access-Control-Allow-Headers", "Content-Type,Content-Length, Authorization, Accept,X-Requested-With");
+            res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+            next()
+        })
         app.use(express.json())
         app.use(express.text())
         app.use(multipart({ dest: "temp" }).any())                //设置上传文件存放的地址
         app.use("/client", express.static(path.join(__dirname, "client")))
         app.use("/music", express.static(path.join(__dirname, "music")))
-        app.use("*", (_req, res, next) => {
-            res.header('Access-Control-Allow-Origin', '*');
-            res.header("Access-Control-Allow-Headers", "Content-Type,Content-Length, Authorization, Accept,X-Requested-With");
-            res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
-            next()
-        })
         app.get("/", (_req, res) => {
             res.writeHead(301, { 'Location': '/client' });
             res.end();
