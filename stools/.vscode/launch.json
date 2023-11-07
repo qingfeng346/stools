@@ -43,7 +43,18 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/stools/bin/Debug/net7.0/stools.dll",
-            "args": ["downloadmusic", "https://www.kugou.com/mixsong/j2sea97.html", "-output", "~/"],
+            "args": ["downloadmusic", "https://www.kugou.com/mixsong/j2sea97.html", "-output", "/"],
+            "cwd": "${workspaceFolder}/stools",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "downloadkuwo",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/stools/bin/Debug/net7.0/stools.dll",
+            "args": ["downloadmusic", "https://www.kuwo.cn/play_detail/324244", "-output", "./"],
             "cwd": "${workspaceFolder}/stools",
             "console": "internalConsole",
             "stopAtEntry": false
