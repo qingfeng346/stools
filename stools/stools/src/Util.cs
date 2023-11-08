@@ -107,37 +107,6 @@ namespace Scorpio.stools {
                 file
             }).output;
         }
-        public static void ExecuteTMSTransporter(string username, string password, IEnumerable<string> args) {
-            if (ScorpioUtil.IsMacOS()) {
-                var argList = new List<string>() {
-                    "iTMSTransporter",
-                    "-u",
-                    username,
-                    "-p",
-                    password
-                };
-                argList.AddRange(args);
-                ScorpioUtil.Execute("xcrun", null, argList);
-            } else if (ScorpioUtil.IsWindows()) {
-                var argList = new List<string>() {
-                    "-u",
-                    username,
-                    "-p",
-                    password
-                };
-                argList.AddRange(args);
-                ScorpioUtil.Execute("iTMSTransporter.cmd", null, argList);
-            } else if (ScorpioUtil.IsLinux()) {
-                var argList = new List<string>() {
-                    "-u",
-                    username,
-                    "-p",
-                    password
-                };
-                argList.AddRange(args);
-                ScorpioUtil.Execute("iTMSTransporter", null, argList);
-            }
-        }
         public static int ExecuteFFmpeg(params string[] args) {
             if (ScorpioUtil.IsMacOS()) {
                 return ScorpioUtil.Execute("ffmpeg", null, args).exitCode;

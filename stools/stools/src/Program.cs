@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Google.Apis.AndroidPublisher.v3;
 using Google.Apis.AndroidPublisher.v3.Data;
-using Newtonsoft.Json;
+using Google.Apis.Drive.v3;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
 using Scorpio.Commons;
+using Newtonsoft.Json;
 
 namespace Scorpio.stools {
     partial class Program {
@@ -17,18 +19,17 @@ namespace Scorpio.stools {
         private const string ParameterPackageName = "--packageName|-packageName";
         private const string ParameterVersion = "--version|-version";
         private const string ParameterTrackName = "--trackName|-trackName";
+        private const string ParameterAab = "--aab|-aab";
         private const string ParameterApk = "--apk|-apk";
         private const string ParameterObb = "--obb|-obb";
-        private const string ParameterReleasenote = "--releasenote|-releasenote";
-        private const string ParameterUsername = "--username|-username|-u";
-        private const string ParameterPassword = "--password|-password|-p";
-        private const string ParameterAppleid = "--appleid|-appleid|--apple_id|-apple_id|-id";
+        private const string ParameterReleasenote = "--releasenote|-releasenote|--releaseNote|-releaseNote";
         private const string ParameterOutput = "--output|-output|-o";
+        private const string ParameterFileId = "--fileId|-fileId";
+        private const string ParameterMimeType = "--mimeType|-mimeType";
         private const string ParameterFile = "--file|-file|-f";
         private const string ParameterType = "--type|-type|-t";
-        private const string ParameterID = "--id|-id";
+        private const string ParameterInfo = "--info|-info";
         private const string ParameterUrl = "--url|-url";
-        private const string ParameterPath = "--path|-path";
         private const string ParameterIpa = "--ipa|-ipa";
         private const string ParameterProvision = "--provision|-provision|-p";
         private const string ParameterDeveloper = "--developer|-developer|-d";
@@ -37,17 +38,14 @@ namespace Scorpio.stools {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var perform = new Perform();
             perform.AddExecute("androidpublisher", "更新Google Play信息", Androidpublisher);
-            perform.AddExecute("lookupMetadata", "获取AppStore Metadata文件", LookupMetadata);
-            perform.AddExecute("uploadMetadata", "更新AppStore Metadata文件", UploadMetadata);
+            perform.AddExecute("googledrivedownload", "", GoogleDriveDownload);
             perform.AddExecute("lookupMobileprovision", "查看mobileprovision文件", LookupMobileprovision);
             perform.AddExecute("resign", "ipa文件重签名", Resign);
             perform.AddExecute("wget", "下载文件", Wget);
-            perform.AddExecute("downloadAlbum", "下载音乐专辑", DownloadAlbum);
-            perform.AddExecute("downloadMusic", "下载音乐", DownloadMusic);
             perform.AddExecute("downloadM3u8", "下载M3U8文件", DownloadM3u8);
             perform.AddExecute("sortmedia", "整理图片和视频", SortMedia);
             perform.AddExecute("md5", "获取文件MD5", GetMD5);
-            perform.AddExecute("watch", "监听音乐下载", Watch);
+            perform.AddExecute("musicInfo", "设置音频信息", MusicInfo);
             try {
                 perform.Start(args);
                 Environment.Exit(0);
@@ -57,72 +55,104 @@ namespace Scorpio.stools {
             }
         }
         static void Androidpublisher([ParamterInfo("服务账号json文件", ParameterAuth)] string auth,
-                                      [ParamterInfo("PackageName", ParameterPackageName)] string packageName,
-                                      [ParamterInfo("VersionCode", ParameterVersion, false)] int version,
-                                      [ParamterInfo("轨道名字", ParameterTrackName, false)] string trackName,
-                                      [ParamterInfo("Apk文件", ParameterApk, false)] string apk,
-                                      [ParamterInfo("Obb文件", ParameterObb, false)] string obb,
-                                      [ParamterInfo("ReleaseNote文件(xml文件)", ParameterReleasenote, false)] string releaseNote) {
-            Util.ExecuteAndroidpublisher(auth, packageName, (service, editId) => {
-                if (!string.IsNullOrWhiteSpace(apk)) {
-                    var apkSize = new FileInfo(apk).Length;
-                    var apkUpload = service.Edits.Apks.Upload(packageName, editId, File.OpenRead(apk), "application/vnd.android.package-archive");
-                    apkUpload.ProgressChanged += (progress) => {
-                        Console.WriteLine($"上传{apk}进度:{progress.BytesSent.GetMemory()}/{apkSize.GetMemory()}");
-                    };
-                    Console.WriteLine($"开始上传apk文件:{apk}");
-                    var apkResult = apkUpload.Upload();
-                    if (apkResult.Exception != null) {
-                        throw apkResult.Exception;
-                    }
-                }
-                if (!string.IsNullOrWhiteSpace(obb)) {
-                    var obbSize = new FileInfo(obb).Length;
-                    var obbUpload = service.Edits.Expansionfiles.Upload(packageName, editId, version, EditsResource.ExpansionfilesResource.UploadMediaUpload.ExpansionFileTypeEnum.Main, File.OpenRead(obb), "application/octet-stream");
-                    obbUpload.ProgressChanged += (progress) => {
-                        Console.WriteLine($"上传{obb}进度:{progress.BytesSent.GetMemory()}/{obbSize.GetMemory()}");
-                    };
-                    Console.WriteLine($"开始上传obb文件:{obb}");
-                    var obbResult = obbUpload.Upload();
-                    if (obbResult.Exception != null) {
-                        throw obbResult.Exception;
-                    }
-                }
-            },
-            (release) => {
-                    if (!string.IsNullOrWhiteSpace(trackName)) { release.Name = trackName; }
-                    if (!string.IsNullOrWhiteSpace(releaseNote)) {
-                        release.ReleaseNotes = new List<LocalizedText>();
-                        var xmlDoc = new XmlDocument();
-                        xmlDoc.Load(releaseNote);
-                        foreach (XmlNode language in xmlDoc.DocumentElement) {
-                            release.ReleaseNotes.Add(new LocalizedText() {
-                                Language = language.Name,
-                                Text = language.InnerText.Trim()
-                            });
+                                     [ParamterInfo("PackageName", ParameterPackageName)] string packageName,
+                                     [ParamterInfo("VersionCode", ParameterVersion, false)] int version,
+                                     [ParamterInfo("轨道名字", ParameterTrackName, false)] string trackName,
+                                     [ParamterInfo("Aab文件", ParameterAab, false)] string aab,
+                                     [ParamterInfo("Apk文件", ParameterApk, false)] string apk,
+                                     [ParamterInfo("Obb文件", ParameterObb, false)] string obb,
+                                     [ParamterInfo("ReleaseNote文件(xml文件)", ParameterReleasenote, false)] string releaseNote) {
+            Util.ExecuteAndroidpublisher(auth, packageName,
+                (service, editId) => {
+                    if (!string.IsNullOrWhiteSpace(aab)) {
+                        var aabSize = new FileInfo(aab).Length;
+                        var aabUpload = service.Edits.Apks.Upload(packageName, editId, File.OpenRead(aab), "application/vnd.android.package-archive");
+                        aabUpload.ProgressChanged += (progress) => {
+                            Console.WriteLine($"上传{aab}进度:{progress.BytesSent.GetMemory()}/{aabSize.GetMemory()}");
+                        };
+                        Console.WriteLine($"开始上传apk文件:{aab}");
+                        var aabResult = aabUpload.Upload();
+                        if (aabResult.Exception != null) {
+                            throw aabResult.Exception;
                         }
                     }
+                    if (!string.IsNullOrWhiteSpace(apk)) {
+                        var apkSize = new FileInfo(apk).Length;
+                        var apkUpload = service.Edits.Apks.Upload(packageName, editId, File.OpenRead(apk), "application/vnd.android.package-archive");
+                        apkUpload.ProgressChanged += (progress) => {
+                            Console.WriteLine($"上传{apk}进度:{progress.BytesSent.GetMemory()}/{apkSize.GetMemory()}");
+                        };
+                        Console.WriteLine($"开始上传apk文件:{apk}");
+                        var apkResult = apkUpload.Upload();
+                        if (apkResult.Exception != null) {
+                            throw apkResult.Exception;
+                        }
+                    }
+                    if (!string.IsNullOrWhiteSpace(obb)) {
+                        var obbSize = new FileInfo(obb).Length;
+                        var obbUpload = service.Edits.Expansionfiles.Upload(packageName, editId, version, EditsResource.ExpansionfilesResource.UploadMediaUpload.ExpansionFileTypeEnum.Main, File.OpenRead(obb), "application/octet-stream");
+                        obbUpload.ProgressChanged += (progress) => {
+                            Console.WriteLine($"上传{obb}进度:{progress.BytesSent.GetMemory()}/{obbSize.GetMemory()}");
+                        };
+                        Console.WriteLine($"开始上传obb文件:{obb}");
+                        var obbResult = obbUpload.Upload();
+                        if (obbResult.Exception != null) {
+                            throw obbResult.Exception;
+                        }
+                    }
+                },
+            (release) => {
+                if (!string.IsNullOrWhiteSpace(trackName)) { release.Name = trackName; }
+                if (!string.IsNullOrWhiteSpace(releaseNote)) {
+                    release.ReleaseNotes = new List<LocalizedText>();
+                    var xmlDoc = new XmlDocument();
+                    xmlDoc.Load(releaseNote);
+                    foreach (XmlNode language in xmlDoc.DocumentElement) {
+                        release.ReleaseNotes.Add(new LocalizedText() {
+                            Language = language.Name,
+                            Text = language.InnerText.Trim()
+                        });
+                    }
+                }
+                if (version > 0)
                     release.VersionCodes = new List<long?>() { version };
-                });
+            });
         }
-        static void LookupMetadata([ParamterInfo("账号", ParameterUsername)] string username,
-                                    [ParamterInfo("密码", ParameterPassword)] string password,
-                                    [ParamterInfo("AppleId", ParameterAppleid)] string appleid,
-                                    [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output) {
-            Util.ExecuteTMSTransporter(username, password, new[] { "-m", "lookupMetadata", "-apple_id", appleid, "-destination", output });
-        }
-        static void UploadMetadata([ParamterInfo("账号", ParameterUsername)] string username,
-                                    [ParamterInfo("密码", ParameterPassword)] string password,
-                                    [ParamterInfo("文件", ParameterFile)] string file) {
-            Util.ExecuteTMSTransporter(username, password, new[] { "-m", "upload", "-f", file });
+        static void GoogleDriveDownload([ParamterInfo("服务账号json文件", ParameterAuth)] string auth,
+                                        [ParamterInfo("文件ID", ParameterFileId)] string fileId,
+                                        [ParamterInfo("文件MimeType", ParameterMimeType)] string mimeType,
+                                        [ParamterInfo("保存路径", ParameterOutput)] string file) {
+            var service = new DriveService(new BaseClientService.Initializer() {
+                HttpClientInitializer = GoogleCredential.FromFile(auth).CreateScoped("https://www.googleapis.com/auth/drive"),
+            });
+            var request = service.Files.Export(fileId, mimeType);
+            FileUtil.CreateDirectoryByFile(file);
+            var error = "";
+            request.MediaDownloader.ProgressChanged += (progress) => {
+                if (progress.Status == Google.Apis.Download.DownloadStatus.Downloading) {
+                    Console.WriteLine($"下载{file}进度:{progress.BytesDownloaded.GetMemory()}");
+                } else if (progress.Status == Google.Apis.Download.DownloadStatus.Completed) {
+                    Console.WriteLine($"下载{file}完成,总大小:{progress.BytesDownloaded.GetMemory()}");
+                } else if (progress.Status == Google.Apis.Download.DownloadStatus.Failed) {
+                    error = $"下载{file}失败:{progress.Exception}";
+                    Console.WriteLine(error);
+                }
+            };
+            FileUtil.DeleteFile(file);
+            using (var stream = new FileStream(file, FileMode.CreateNew)) {
+                request.Download(stream);
+            }
+            if (!string.IsNullOrEmpty(error)) {
+                throw new System.Exception(error);
+            }
         }
         static void LookupMobileprovision([ParamterInfo("文件", ParameterFile)] string file) {
             Console.WriteLine(Util.GetMobileprovisionInfo(file));
         }
         static void Resign([ParamterInfo("ipa文件", ParameterIpa)] string ipa,
-                            [ParamterInfo("描述文件", ParameterProvision)] string provision,
-                            [ParamterInfo("开发者名称", ParameterDeveloper)] string developer,
-                            [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output) {
+                           [ParamterInfo("描述文件", ParameterProvision)] string provision,
+                           [ParamterInfo("开发者名称", ParameterDeveloper)] string developer,
+                           [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output) {
             var resign = "ios_resign_with_ipa.sh";
             if (string.IsNullOrEmpty(developer)) {
                 var mobileprovisionInfo = Util.GetMobileprovisionInfo(provision);
@@ -157,109 +187,12 @@ namespace Scorpio.stools {
                 var uri = urls[i];
                 tasks.Add(Task.Run(async () => {
                     logger.info($"开始下载 : {uri}");
-                    await HttpUtil.Download(uri, output + Util.GetFilenameByUrl(uri));
-                    logger.info($"下载完成 : {uri}");
+                    var fileName = Path.Combine(output, Util.GetFilenameByUrl(uri));
+                    await HttpUtil.Download(uri, fileName);
+                    logger.info($"下载完成 : {fileName}");
                 }));
             }
             Task.WaitAll(tasks.ToArray());
-        }
-        static void DownloadAlbum(CommandLine commandLine,
-                                  [ParamterInfo("专辑URL(酷我,网易云)", ParameterUrl, false)] string[] url,
-                                  [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output,
-                                  [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath,
-                                  string exportFile) {
-            var urls = new List<string>();
-            urls.AddRange(commandLine.Args);
-            if (url != null) urls.AddRange(url);
-            var musics = new List<Dictionary<string, object>>();
-            Util.DownloadedMusic += (music) => {
-                musics.Add(music.ToInfo());
-            };
-            Task.WaitAll(Util.DownloadAlbumUrls(urls, output, musicPath));
-            if (!string.IsNullOrEmpty(exportFile)) {
-                FileUtil.CreateFile(exportFile, JsonConvert.SerializeObject(musics));
-            }
-        }
-        static void DownloadMusic(CommandLine commandLine,
-                                  [ParamterInfo("音乐URL(酷我,网易云)", ParameterUrl, false)] string[] url,
-                                  [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output,
-                                  [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath,
-                                  string exportFile) {
-            var urls = new List<string>();
-            urls.AddRange(commandLine.Args);
-            if (url != null) urls.AddRange(url);
-            var musics = new List<Dictionary<string, object>>();
-            Util.DownloadedMusic += (music) => {
-                musics.Add(music.ToInfo());
-            };
-            Task.WaitAll(Util.DownloadMusicUrls(urls, output, musicPath));
-            if (!string.IsNullOrEmpty(exportFile)) {
-                FileUtil.CreateFile(exportFile, JsonConvert.SerializeObject(musics));
-            }
-        }
-        static void Watch([ParamterInfo("输出目录", ParameterOutput, "./", true)] string output,
-                          [ParamterInfo("创建目录", ParameterPath, false)] MusicPath musicPath) {
-            Task.WaitAll(Task.Run(async () => {
-                logger.info($"开始监听音乐下载目录 : {output}");
-                var musicFile = $"{output}/music.txt";
-                var albumFile = $"{output}/album.txt";
-                var cacheFile = $"{output}/cache.txt";
-                MusicCache musicCache = null;
-                Func<MusicCache> MusicCache = () => {
-                    if (musicCache == null) {
-                        musicCache = JsonConvert.DeserializeObject<MusicCache>(FileUtil.GetFileString(cacheFile));
-                        if (musicCache == null) {
-                            musicCache = new MusicCache();
-                        }
-                    }
-                    return musicCache;
-                };
-                Util.CheckMusic = (type, id) => {
-                    if (MusicCache().music.TryGetValue(type, out var value) ) {
-                        return !value.Contains(id);
-                    }
-                    return true;
-                };
-                Util.DownloadedMusic = (music) => {
-                    var cache = MusicCache();
-                    if (!cache.music.ContainsKey(music.Source)) {
-                        cache.music.Add(music.Source, new HashSet<string>());
-                    }
-                    cache.music[music.Source].Add(music.ID);
-                };
-                var musicInfo = (0L, 0L);
-                var albumInfo = (0L, 0L);
-                FileInfo musicFileInfo;
-                FileInfo albumFileInfo;
-                var changed = false;
-                while (true) {
-                    changed = false;
-                    musicCache = null;
-                    musicFileInfo = new FileInfo(musicFile);
-                    albumFileInfo = new FileInfo(albumFile);
-                    if (albumFileInfo.Exists && 
-                        albumFileInfo.Length != albumInfo.Item1 && 
-                        albumFileInfo.LastWriteTimeUtc.Ticks != albumInfo.Item2) {
-                        logger.info($"专辑文件 {albumFile} 有修改");
-                        await Util.DownloadAlbumUrls(await File.ReadAllLinesAsync(albumFile, Encoding.UTF8), output, musicPath);
-                        albumInfo = (albumFileInfo.Length, albumFileInfo.LastWriteTimeUtc.Ticks);
-                        changed = true;
-                    }
-                    if (musicFileInfo.Exists && 
-                        musicFileInfo.Length != musicInfo.Item1 && 
-                        musicFileInfo.LastWriteTimeUtc.Ticks != musicInfo.Item2) {
-                        logger.info($"音乐文件 {musicFile} 有修改");
-                        await Util.DownloadMusicUrls(await File.ReadAllLinesAsync(musicFile, Encoding.UTF8), output, musicPath);
-                        musicInfo = (musicFileInfo.Length, musicFileInfo.LastWriteTimeUtc.Ticks);
-                        changed = true;
-                    }
-                    if (changed) {
-                        FileUtil.CreateFile(cacheFile, JsonConvert.SerializeObject(MusicCache()));
-                    }
-                    Thread.Sleep(10000);
-                    GC.Collect();
-                }
-            }));
         }
         static void DownloadM3u8(CommandLine commandLine,
                                   [ParamterInfo("M3U8链接", ParameterUrl, false)] string url,
@@ -348,6 +281,10 @@ namespace Scorpio.stools {
             foreach (var file in commandLine.Args) {
                 logger.info(FileUtil.GetMD5FromFile(file));
             }
+        }
+        static void MusicInfo([ParamterInfo("音频文件", ParameterFile)] string file,
+                              [ParamterInfo("音频信息", ParameterInfo)] string info) {
+            MusicUtil.SetMusicInfo(file, JsonConvert.DeserializeObject<MusicInfo>(FileUtil.GetFileString(info)));
         }
     }
 }

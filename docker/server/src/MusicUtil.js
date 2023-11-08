@@ -3,7 +3,7 @@ const database = require('./database')
 const { Op } = require('sequelize')
 const { Util, FileUtil, logger } = require('weimingcommons')
 const { QueryTypes } = require('sequelize');
-class music {
+class MusicUtil {
     async init() {
         this.list = []
         Util.Encoding = "utf8"
@@ -114,4 +114,4 @@ class music {
         logger.notify(`删除《${msg.path}》成功:${number}`)
     }
 }
-module.exports = new music()
+module.exports = new MusicUtil()

@@ -63,10 +63,10 @@ class net {
         app.post("/execute", async (req, res) => {
             let code = req.body.code;
             let data = req.body.data;
-            // logger.info(`===> [${req.ip}] execute [${code}] : ${JSON.stringify(data)}`)
+            logger.info(`===> [${req.ip}] execute [${code}] : ${JSON.stringify(data)}`)
             try {
                 let msgData = await this.fireFunc(code, data, req, res, null)
-                // logger.info(`<=== [${req.ip}] execute [${code}] : ${msgData}`)
+                logger.info(`<=== [${req.ip}] execute [${code}] : ${msgData}`)
             } catch (e) {
                 this.notifyError(`execute is error, from:${req.ip}  ${code} - ${JSON.stringify(data)} : ${e.stack}`)
             }
@@ -78,13 +78,11 @@ class net {
         })
         new webSocket.Server({ server: server }).on("connection", (ws) => {
             this.clients.push(ws)
-            // logger.info(`有链接 ${ws._socket.remoteAddress} 进入, 当前总数量 : ${this.clients.length}`)
             ws.onclose = () => {
                 let index = this.clients.indexOf(ws)
                 if (index >= 0) {
                     this.clients.splice(index, 1)
                 }
-                // logger.info(`有链接断开, 当前总数量 : ${this.clients.length}`)
             }
         })
     }
