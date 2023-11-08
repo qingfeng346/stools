@@ -188,8 +188,12 @@ namespace Scorpio.stools {
                 tasks.Add(Task.Run(async () => {
                     logger.info($"开始下载 : {uri}");
                     var fileName = Path.Combine(output, Util.GetFilenameByUrl(uri));
-                    await HttpUtil.Download(uri, fileName);
-                    logger.info($"下载完成 : {fileName}");
+                    var response = await HttpUtil.Download(uri, fileName);
+                    if (response.IsSuccessStatusCode)
+                        logger.info($"下载完成 : {fileName}");
+                    else
+                        logger.info($"下载失败 {fileName} : {response.StatusCode}({(int)response.StatusCode}) - {response.Error}");
+                    
                 }));
             }
             Task.WaitAll(tasks.ToArray());

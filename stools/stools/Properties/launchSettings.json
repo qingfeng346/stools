@@ -1,9 +1,5 @@
 {
   "profiles": {
-    "lookupmetadata": {
-      "commandName": "Project",
-      "commandLineArgs": "lookupmetadata -u linyuan.yang@centurygame.com -p wahq-zjkx-aqrs-oead -id 1515511378"
-    },
     "kuwo": {
       "commandName": "Project",
       "commandLineArgs": "downloadmusic -id 215257"
@@ -46,6 +42,10 @@
     "watch": {
       "commandName": "Project",
       "commandLineArgs": "watch -output F:\\docker -path 3"
+    },
+    "wget": {
+      "commandName": "Project",
+      "commandLineArgs": "wget https://www.shiyinren.com/tool/song/js/function.2.5.js?v=2.3.11"
     }
   }
 }
