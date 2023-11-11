@@ -210,6 +210,8 @@ namespace Scorpio.stools {
             }
             if (string.IsNullOrEmpty(output)) {
                 output = Path.GetFullPath(FileUtil.GetMD5FromString(url) + ".mp4");
+            } else if (!output.EndsWith(".mp4")) {
+                output = $"{output}.mp4";
             }
             queue = Math.Max(1, queue);
             string m3u8Content = "";
