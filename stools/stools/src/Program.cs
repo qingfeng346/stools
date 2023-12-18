@@ -209,9 +209,7 @@ namespace Scorpio.stools {
                 throw new System.Exception("m3u8 url 不能为空");
             }
             if (string.IsNullOrEmpty(output)) {
-                output = Path.GetFullPath(FileUtil.GetMD5FromString(url) + ".mp4");
-            } else if (!output.EndsWith(".mp4")) {
-                output = $"{output}.mp4";
+                output = Path.GetFullPath(FileUtil.GetMD5FromString(url));
             }
             queue = Math.Max(1, queue);
             string m3u8Content = "";
@@ -220,7 +218,7 @@ namespace Scorpio.stools {
             var parentUrl = url.Substring(0, url.LastIndexOf("/") + 1);
             var lines = m3u8Content.Split("\n");
             var index = 1;
-            var tsBase = $"{output}.ts";
+            var tsBase = $"{output}";
             FileUtil.CreateDirectory(tsBase);
             var tsCount = 0;
             var tsList = new Queue<TSData>();
@@ -267,7 +265,7 @@ namespace Scorpio.stools {
             FileUtil.DeleteFile(output);
             // FileUtil.DeleteFolder(output, null, true);
             logger.info("合并ts文件...");
-            var exitCode = Util.ExecuteFFmpeg("-f", "concat", "-safe", "0", "-i", $"{tsBase}/file.m3u8", "-vcodec", "copy", "-acodec", "copy", output);
+            var exitCode = Util.ExecuteFFmpeg("-f", "concat", "-safe", "0", "-i", $"{tsBase}/file.m3u8", "-vcodec", "copy", "-acodec", "copy", $"{output}.mp4");
             if (exitCode != 0) {
                 throw new System.Exception($"FFmpeg 合并 ts 文件出错 : {exitCode}");
             }
