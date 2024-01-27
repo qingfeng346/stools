@@ -283,7 +283,11 @@ namespace Scorpio.stools {
         }
         static void GetMD5(CommandLine commandLine) {
             foreach (var file in commandLine.Args) {
-                logger.info(FileUtil.GetMD5FromFile(file));
+                if (FileUtil.FileExist(file)) {
+                    logger.info(FileUtil.GetMD5FromFile(file));
+                } else {
+                    logger.info(FileUtil.GetMD5FromString(file));
+                }
             }
         }
         static void MusicInfo([ParamterInfo("音频文件", ParameterFile)] string file,
