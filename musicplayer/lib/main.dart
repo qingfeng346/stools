@@ -2,7 +2,9 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/manager/PlayerMgr.dart';
 import 'package:musicplayer/util/HttpUtil.dart';
+import 'package:musicplayer/widget/TabContent.dart';
 import 'package:musicplayer/widget/setting.dart';
+import 'package:musicplayer/widget/stream_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,7 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _currentDrawer = 0;
   List<Widget> tabWidgets = [
     setting(),
-    setting(),
+    StreamWidget(),
     setting()
   ];
   @override
@@ -46,13 +48,14 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Container(
-          alignment: Alignment.topCenter,
-          child: SingleChildScrollView,
-          children: [
-            Expanded(child: tabWidgets.elementAt(_currentTab))
-          ],
-        ),
+        child: TabContent(children: [tabWidgets.elementAt(_currentTab)])
+        // child: Container(
+        //   alignment: Alignment.topCenter,
+        //   // child: SingleChildScrollView,
+        //   children: [
+        //     Expanded(child: tabWidgets.elementAt(_currentTab))
+        //   ],
+        // ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: null,
@@ -65,7 +68,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onTabChanged(int index) {
-    print("onclick : ${index}");
     setState(() {
       this._currentTab = index;
     });
