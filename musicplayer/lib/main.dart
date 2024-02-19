@@ -45,14 +45,20 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Container(
-          alignment: Alignment.topCenter,
-          child: SingleChildScrollView,
-          children: [
-            Expanded(child: tabWidgets.elementAt(_currentTab))
-          ],
-        ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Expanded (
+            flex: 1,
+            child: Container(
+              width: double.infinity,
+              child: SingleChildScrollView(
+                  reverse: true,
+                  child: tabWidgets.elementAt(_currentTab)
+              ),
+            )
+          )
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: null,
