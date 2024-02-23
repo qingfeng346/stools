@@ -1,8 +1,8 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:audioplayers_example/components/player_widget.dart';
-import 'package:audioplayers_example/components/properties_widget.dart';
-import 'package:audioplayers_example/components/stream_widget.dart';
-import 'package:audioplayers_example/components/tab_content.dart';
+import 'package:musicplayer/components/player_widget.dart';
+import 'package:musicplayer/components/properties_widget.dart';
+import 'package:musicplayer/components/stream_widget.dart';
+import 'package:musicplayer/components/tab_content.dart';
 import 'package:flutter/material.dart';
 
 class StreamsTab extends StatelessWidget {

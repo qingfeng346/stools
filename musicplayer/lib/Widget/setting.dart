@@ -10,7 +10,6 @@ class setting extends StatelessWidget {
         Text("11111"),
         Text("11111"),
         Text("11111"),
-        Text("11111"),Text("11111"),
         Text("11111"),
         Text("11111"),
         Text("11111"),
@@ -28,7 +27,8 @@ class setting extends StatelessWidget {
         Text("11111"),
         Text("11111"),
         Text("11111"),
-
+        Text("11111"),
+        Text("11111"),
       ],
     );
   }

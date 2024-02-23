@@ -1,132 +1,208 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
+import 'package:musicplayer/components/tabs.dart';
+import 'package:musicplayer/components/tgl.dart';
+import 'package:musicplayer/tabs/audio_context.dart';
+import 'package:musicplayer/tabs/controls.dart';
+import 'package:musicplayer/tabs/logger.dart';
+import 'package:musicplayer/tabs/sources.dart';
+import 'package:musicplayer/tabs/streams.dart';
+import 'package:musicplayer/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:musicplayer/manager/PlayerMgr.dart';
-import 'package:musicplayer/util/HttpUtil.dart';
-import 'package:musicplayer/widget/setting.dart';
 
+const defaultPlayerCount = 4;
+
+typedef OnError = void Function(Exception exception);
+
+/// The app is deployed at: https://bluefireteam.github.io/audioplayers/
 void main() {
-  runApp(const MyApp());
+  runApp(const MaterialApp(home: _ExampleApp()));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class _ExampleApp extends StatefulWidget {
+  const _ExampleApp();
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Music Player'),
-    );
+  _ExampleAppState createState() => _ExampleAppState();
+}
+
+class _ExampleAppState extends State<_ExampleApp> {
+  List<AudioPlayer> audioPlayers = List.generate(
+    defaultPlayerCount,
+    (_) => AudioPlayer()..setReleaseMode(ReleaseMode.stop),
+  );
+  int selectedPlayerIdx = 0;
+
+  AudioPlayer get selectedAudioPlayer => audioPlayers[selectedPlayerIdx];
+  List<StreamSubscription> streams = [];
+
+  @override
+  void initState() {
+    super.initState();
+    audioPlayers.asMap().forEach((index, player) {
+      streams.add(
+        player.onPlayerStateChanged.listen(
+          (it) {
+            switch (it) {
+              case PlayerState.stopped:
+                toast(
+                  'Player stopped!',
+                  textKey: Key('toast-player-stopped-$index'),
+                );
+                break;
+              case PlayerState.completed:
+                toast(
+                  'Player complete!',
+                  textKey: Key('toast-player-complete-$index'),
+                );
+                break;
+              default:
+                break;
+            }
+          },
+        ),
+      );
+      streams.add(
+        player.onSeekComplete.listen(
+          (it) => toast(
+            'Seek complete!',
+            textKey: Key('toast-seek-complete-$index'),
+          ),
+        ),
+      );
+    });
   }
-}
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+  void dispose() {
+    streams.forEach((it) => it.cancel());
+    super.dispose();
+  }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _currentTab = 0;
-  int _currentDrawer = 0;
-  List<Widget> tabWidgets = [
-    setting(),
-    setting(),
-    setting()
-  ];
+  void _handleAction(PopupAction value) {
+    switch (value) {
+      case PopupAction.add:
+        setState(() {
+          audioPlayers.add(AudioPlayer()..setReleaseMode(ReleaseMode.stop));
+        });
+        break;
+      case PopupAction.remove:
+        setState(() {
+          if (audioPlayers.isNotEmpty) {
+            selectedAudioPlayer.dispose();
+            audioPlayers.removeAt(selectedPlayerIdx);
+          }
+          // Adjust index to be in valid range
+          if (audioPlayers.isEmpty) {
+            selectedPlayerIdx = 0;
+          } else if (selectedPlayerIdx >= audioPlayers.length) {
+            selectedPlayerIdx = audioPlayers.length - 1;
+          }
+        });
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: const Text('AudioPlayers example'),
+        actions: [
+          PopupMenuButton<PopupAction>(
+            onSelected: _handleAction,
+            itemBuilder: (BuildContext context) {
+              return PopupAction.values.map((PopupAction choice) {
+                return PopupMenuItem<PopupAction>(
+                  value: choice,
+                  child: Text(
+                    choice == PopupAction.add
+                        ? 'Add player'
+                        : 'Remove selected player',
+                  ),
+                );
+              }).toList();
+            },
+          ),
+        ],
       ),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Expanded (
-            flex: 1,
-            child: Container(
-              width: double.infinity,
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
               child: SingleChildScrollView(
-                  reverse: true,
-                  child: tabWidgets.elementAt(_currentTab)
+                scrollDirection: Axis.horizontal,
+                child: Tgl(
+                  key: const Key('playerTgl'),
+                  options: [for (var i = 1; i <= audioPlayers.length; i++) i]
+                      .asMap()
+                      .map((key, val) => MapEntry('player-$key', 'P$val')),
+                  selected: selectedPlayerIdx,
+                  onChange: (v) => setState(() => selectedPlayerIdx = v),
+                ),
               ),
-            )
-          )
+            ),
+          ),
+          Expanded(
+            child: audioPlayers.isEmpty
+                ? const Text('No AudioPlayer available!')
+                : IndexedStack(
+                    index: selectedPlayerIdx,
+                    children: audioPlayers
+                        .map(
+                          (player) => Tabs(
+                            key: GlobalObjectKey(player),
+                            tabs: [
+                              TabData(
+                                key: 'sourcesTab',
+                                label: 'Src',
+                                content: SourcesTab(
+                                  player: player,
+                                ),
+                              ),
+                              TabData(
+                                key: 'controlsTab',
+                                label: 'Ctrl',
+                                content: ControlsTab(
+                                  player: player,
+                                ),
+                              ),
+                              TabData(
+                                key: 'streamsTab',
+                                label: 'Stream',
+                                content: StreamsTab(
+                                  player: player,
+                                ),
+                              ),
+                              TabData(
+                                key: 'audioContextTab',
+                                label: 'Ctx',
+                                content: AudioContextTab(
+                                  player: player,
+                                ),
+                              ),
+                              TabData(
+                                key: 'loggerTab',
+                                label: 'Log',
+                                content: LoggerTab(
+                                  player: player,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                        .toList(),
+                  ),
+          ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: null,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-      bottomNavigationBar: createTabBar(),
-      drawer: createDrawer(),
     );
   }
+}
 
-  void onTabChanged(int index) {
-    print("onclick : ${index}");
-    setState(() {
-      this._currentTab = index;
-    });
-  }
-  void onDrawerChanged(int index) {
-    Test();
-    setState(() {
-      this._currentDrawer = index;
-    });
-  }
-  void Test() async {
-    // var res = await HttpUtil.httpGet("http://datools.diandian.info:7070/client/#/home/build");
-    // print(res.statusCode);
-    // print(res.data);
-    var res = await HttpUtil.httpPost("http://datools.diandian.info:7070/execute", {'userId': "linyuan.yang", 'code': "requestServerConfig"});
-    print(res.statusCode);
-    print(res.data);
-  }
-  Widget createTabBar() {
-    return new BottomNavigationBar(
-      currentIndex: this._currentTab,
-      onTap: this.onTabChanged,
-      items: [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "主页"),
-        BottomNavigationBarItem(icon: Icon(Icons.library_music), label: "音乐"),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: "设置"),
-      ],
-    );
-  }
-  Drawer createDrawer() {
-    return new Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-              child: Text("111")
-          ),
-          ListTile(
-            title: Text("Home1"),
-            selected: _currentDrawer == 0,
-            onTap: () {
-              this.onDrawerChanged(0);
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            title: Text("Home2"),
-            selected: _currentDrawer == 1,
-            onTap: () {
-              this.onDrawerChanged(1);
-              Navigator.pop(context);
-            },
-          )
-        ],
-      ),
-    );
-  }
+enum PopupAction {
+  add,
+  remove,
 }
