@@ -28,16 +28,8 @@ namespace Scorpio.stools {
         private const string ParameterUrl = "--url|-url";
         private const string ParameterQueue = "--queue|-queue|-q";
         private const string ParameterSource = "--source|-source|-s";
-        enum www {
-            a,b,c,d,e,f,g,
-        }
+        private const string ParameterClear = "--clear|-clear|-c";
         unsafe static void Main(string[] args) {
-            var list = new List<IComparable>() { www.d, www.a, www.b, www.c,  };
-            list.Sort();
-            foreach (var a in list) {
-                Console.WriteLine(a);
-            }
-            return;
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var perform = new Perform();
             perform.AddExecute("androidpublisher", "更新Google Play信息", Androidpublisher);
@@ -253,11 +245,14 @@ namespace Scorpio.stools {
             logger.info($"下载完成:{output}");
         }
         static void SortMedia([ParamterInfo(Label = "起始目录", Param = ParameterSource)] string source,
-                              [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target) {
-            MediaUtil.SortMedia(source, target);
+                              [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target,
+                              [ParamterInfo(Label = "清理目录", Param = ParameterClear, Required = false)] bool clear) {
+            MediaUtil.SortMedia(source, target, clear);
         }
-        static void SortMusic() {
-
+        static void SortMusic([ParamterInfo(Label = "起始目录", Param = ParameterSource)] string source,
+                              [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target, 
+                              [ParamterInfo(Label = "清理目录", Param = ParameterClear, Required = false)] bool clear) {
+            MediaUtil.SortMusic(source, target, clear);
         }
     }
 }

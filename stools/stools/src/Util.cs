@@ -164,6 +164,13 @@ namespace Scorpio.stools {
             mediaInfo.size = fileInfo.Length;
             return mediaInfo;
         }
+        public static TagLib.File GetMusicInfo(string fileName) {
+            try {
+                return TagLib.File.Create(fileName);
+            } catch(System.Exception) {
+                return null;
+            }
+        }
         public static string GetFilenameByUrl(string url) {
             url = url.Substring(url.LastIndexOf("/") + 1);
             var index = url.IndexOf("?");

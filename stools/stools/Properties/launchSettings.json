@@ -32,20 +32,20 @@
     },
     "help": {
       "commandName": "Project",
-      "commandLineArgs": "androidpublisher help"
+      "commandLineArgs": "sortmedia --help"
     },
     "sortmedia": {
       "commandName": "Project",
-      "commandLineArgs": "sortmedia -type 0 -source F:\\照片整理 -target F:\\照片整理1",
+      "commandLineArgs": "sortmedia -source C:/Users/qingf/Downloads/Source -output C:/Users/qingf/Downloads/Target",
       "workingDirectory": "$(ProjectDir)"
-    },
-    "watch": {
-      "commandName": "Project",
-      "commandLineArgs": "watch -output F:\\docker -path 3"
     },
     "wget": {
       "commandName": "Project",
       "commandLineArgs": "wget https://www.shiyinren.com/tool/song/js/function.2.5.js?v=2.3.11"
+    },
+    "sortmusic": {
+      "commandName": "Project",
+      "commandLineArgs": "sortmusic -source D:/KwDownload/song -output D:/KwDownload/target -clear true"
     }
   }
 }
