@@ -38,7 +38,7 @@ namespace Scorpio.stools {
             var total = files.Length;
             if (clear) FileUtil.DeleteFolder(target);
             var progress = new Progress(total);
-            FileUtil.CreateFile("number.txt", $"总数量 : {total}");
+            FileUtil.CreateFile($"{target}/number.txt", $"总数量 : {total}");
             for (var i = 0; i < total; ++i) {
                 progress.SetProgress(i);
                 var file = files[i];
