@@ -41,13 +41,14 @@ namespace Scorpio.stools {
         public decimal width;               //宽度
         public decimal height;              //高度
         public long size;                   //文件大小
+        private string _md5 = null;
+        public string md5 => _md5 ??= FileUtil.GetMD5FromFileStream(fileName);
         public override int GetHashCode() {
             var comparer = (IEqualityComparer)EqualityComparer<object>.Default;
             return CombineHashCodes(comparer.GetHashCode(mediaType),
                                     comparer.GetHashCode(size),
                                     comparer.GetHashCode(width),
-                                    comparer.GetHashCode(height),
-                                    comparer.GetHashCode(createTime));
+                                    comparer.GetHashCode(height));
         }
         internal static int CombineHashCodes(int h1, int h2) {
             return ((h1 << 5) + h1) ^ h2;
@@ -58,12 +59,6 @@ namespace Scorpio.stools {
         internal static int CombineHashCodes(int h1, int h2, int h3, int h4) {
             return CombineHashCodes(CombineHashCodes(h1, h2), CombineHashCodes(h3, h4));
         }
-        internal static int CombineHashCodes(int h1, int h2, int h3, int h4, int h5) {
-            return CombineHashCodes(CombineHashCodes(h1, h2, h3, h4), h5);
-        }
-        internal static int CombineHashCodes(int h1, int h2, int h3, int h4, int h5, int h6) {
-            return CombineHashCodes(CombineHashCodes(h1, h2, h3, h4), CombineHashCodes(h5, h6));
-        }
         public override bool Equals(object obj) {
             var other = obj as MediaInfo;
             if (other == null) { return false; }
@@ -71,7 +66,7 @@ namespace Scorpio.stools {
                    size == other.size &&
                    width == other.width &&
                    height == other.height &&
-                   createTime == other.createTime;
+                   md5 == other.md5;
         }
         public override string ToString() {
             return $"{mediaType}-{width}x{height}-{size}-{createTime}";

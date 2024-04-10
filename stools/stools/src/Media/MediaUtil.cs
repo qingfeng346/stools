@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Scorpio.Commons;
 using System.IO;
-using System.Globalization;
 
 namespace Scorpio.stools {
     public class MediaUtil {
@@ -11,14 +10,9 @@ namespace Scorpio.stools {
             public string file;
             public bool isBackup;
         }
-        public static void Sync(string source, string target) {
+        public static void SortMedia(string source, string target) {
             var dateTimes = new HashSet<DateTime>();
-            if (Directory.Exists(target)) {
-                foreach (var file in Directory.GetFiles(target, "*", SearchOption.AllDirectories)) {
-                    var name = Path.GetFileNameWithoutExtension(file);
-                    dateTimes.Add(DateTime.ParseExact(name, FileNameFormat, CultureInfo.InvariantCulture));
-                }
-            }
+            var distinctFiles = new HashSet<MediaInfo>();
             var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories);
             var total = files.Length;
             var progress = new Progress(total);
@@ -27,6 +21,7 @@ namespace Scorpio.stools {
                 var file = files[i];
                 var mediaInfo = Util.GetMediaInfo(file);
                 if (mediaInfo == null) {
+                    FileUtil.CopyFile(file, $"{target}/错误文件/{Path.GetFileName(file)}", true);
                     logger.info($"{file} 文件不是有效的媒体文件");
                     continue;
                 }
@@ -43,39 +38,38 @@ namespace Scorpio.stools {
                 var mediaType = mediaInfo.isImage ? "照片" : "视频";
                 var targetFile = $"{target}/{mediaType}/{dateTime.Year}/{name}{extension}";
                 FileUtil.CreateDirectoryByFile(targetFile);
-                File.Move(file, targetFile);
-            }
-            FileUtil.DeleteEmptyFolder(source, true);
-        }
-        public static void Distinct(string source, string backup) {
-            var hashFiles = new Dictionary<MediaInfo, DistinctFile>();
-            var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories);
-            var total = files.Length;
-            var progress = new Progress(total);
-            for (var i = 0; i < total; i++) {
-                progress.SetProgress(i);
-                var file = files[i];
-                var mediaInfo = Util.GetMediaInfo(file);
-                if (mediaInfo == null) {
-                    logger.info($"{file} 文件不是有效的媒体文件");
-                    continue;
-                }
-                if (!hashFiles.TryGetValue(mediaInfo, out var distinctFile)) {
-                    hashFiles.Add(mediaInfo, new DistinctFile() { file = file });
-                    continue;
-                }
-                if (!FileUtil.CompareFile(distinctFile.file, file)) {
-                    continue;
-                }
-                var pathName = (mediaInfo.isImage ? "图片/" : "视频/") + Path.GetFileNameWithoutExtension(distinctFile.file);
-                var extension = Path.GetExtension(distinctFile.file);
-                if (!distinctFile.isBackup) {
-                    distinctFile.isBackup = true;
-                    FileUtil.CopyFile(distinctFile.file, $"{backup}/{pathName}/{Guid.NewGuid()}{extension}");
-                }
-                FileUtil.MoveFile(file, $"{backup}/{pathName}/{Guid.NewGuid()}{extension}", true);
-                logger.info($"发现重复文件 {file} -> {distinctFile.file}");
+                FileUtil.CopyFile(file, targetFile, true);
             }
         }
+        //public static void Distinct(string source, string backup) {
+        //    var hashFiles = new Dictionary<MediaInfo, DistinctFile>();
+        //    var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories);
+        //    var total = files.Length;
+        //    var progress = new Progress(total);
+        //    for (var i = 0; i < total; i++) {
+        //        progress.SetProgress(i);
+        //        var file = files[i];
+        //        var mediaInfo = Util.GetMediaInfo(file);
+        //        if (mediaInfo == null) {
+        //            logger.info($"{file} 文件不是有效的媒体文件");
+        //            continue;
+        //        }
+        //        if (!hashFiles.TryGetValue(mediaInfo, out var distinctFile)) {
+        //            hashFiles.Add(mediaInfo, new DistinctFile() { file = file });
+        //            continue;
+        //        }
+        //        if (!FileUtil.CompareFile(distinctFile.file, file)) {
+        //            continue;
+        //        }
+        //        var pathName = (mediaInfo.isImage ? "图片/" : "视频/") + Path.GetFileNameWithoutExtension(distinctFile.file);
+        //        var extension = Path.GetExtension(distinctFile.file);
+        //        if (!distinctFile.isBackup) {
+        //            distinctFile.isBackup = true;
+        //            FileUtil.CopyFile(distinctFile.file, $"{backup}/{pathName}/{Guid.NewGuid()}{extension}");
+        //        }
+        //        FileUtil.MoveFile(file, $"{backup}/{pathName}/{Guid.NewGuid()}{extension}", true);
+        //        logger.info($"发现重复文件 {file} -> {distinctFile.file}");
+        //    }
+        //}
     }
 }

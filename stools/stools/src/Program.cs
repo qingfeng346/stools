@@ -11,7 +11,6 @@ using Google.Apis.Drive.v3;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Scorpio.Commons;
-using Newtonsoft.Json;
 
 namespace Scorpio.stools {
     partial class Program {
@@ -26,26 +25,28 @@ namespace Scorpio.stools {
         private const string ParameterOutput = "--output|-output|-o";
         private const string ParameterFileId = "--fileId|-fileId";
         private const string ParameterMimeType = "--mimeType|-mimeType";
-        private const string ParameterFile = "--file|-file|-f";
-        private const string ParameterType = "--type|-type|-t";
-        private const string ParameterInfo = "--info|-info";
         private const string ParameterUrl = "--url|-url";
-        private const string ParameterIpa = "--ipa|-ipa";
-        private const string ParameterProvision = "--provision|-provision|-p";
-        private const string ParameterDeveloper = "--developer|-developer|-d";
         private const string ParameterQueue = "--queue|-queue|-q";
-        static void Main(string[] args) {
+        private const string ParameterSource = "--source|-source|-s";
+        enum www {
+            a,b,c,d,e,f,g,
+        }
+        unsafe static void Main(string[] args) {
+            var list = new List<IComparable>() { www.d, www.a, www.b, www.c,  };
+            list.Sort();
+            foreach (var a in list) {
+                Console.WriteLine(a);
+            }
+            return;
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var perform = new Perform();
             perform.AddExecute("androidpublisher", "更新Google Play信息", Androidpublisher);
             perform.AddExecute("googledrivedownload", "", GoogleDriveDownload);
-            perform.AddExecute("lookupMobileprovision", "查看mobileprovision文件", LookupMobileprovision);
-            perform.AddExecute("resign", "ipa文件重签名", Resign);
             perform.AddExecute("wget", "下载文件", Wget);
             perform.AddExecute("downloadM3u8", "下载M3U8文件", DownloadM3u8);
-            perform.AddExecute("sortmedia", "整理图片和视频", SortMedia);
             perform.AddExecute("md5", "获取文件MD5", GetMD5);
-            perform.AddExecute("musicInfo", "设置音频信息", MusicInfo);
+            perform.AddExecute("sortmedia", "整理图片和视频", SortMedia);
+            perform.AddExecute("sortmusic", "整理音频", SortMusic);
             try {
                 perform.Start(args);
                 Environment.Exit(0);
@@ -54,14 +55,14 @@ namespace Scorpio.stools {
                 Environment.Exit(1);
             }
         }
-        static void Androidpublisher([ParamterInfo("服务账号json文件", ParameterAuth)] string auth,
-                                     [ParamterInfo("PackageName", ParameterPackageName)] string packageName,
-                                     [ParamterInfo("VersionCode", ParameterVersion, false)] int version,
-                                     [ParamterInfo("轨道名字", ParameterTrackName, false)] string trackName,
-                                     [ParamterInfo("Aab文件", ParameterAab, false)] string aab,
-                                     [ParamterInfo("Apk文件", ParameterApk, false)] string apk,
-                                     [ParamterInfo("Obb文件", ParameterObb, false)] string obb,
-                                     [ParamterInfo("ReleaseNote文件(xml文件)", ParameterReleasenote, false)] string releaseNote) {
+        static void Androidpublisher([ParamterInfo(Label = "服务账号json文件", Param = ParameterAuth, Required = true)] string auth,
+                                     [ParamterInfo(Label = "PackageName", Param = ParameterPackageName, Required = true)] string packageName,
+                                     [ParamterInfo(Label = "VersionCode", Param = ParameterVersion)] int version,
+                                     [ParamterInfo(Label = "轨道名字", Param = ParameterTrackName)] string trackName,
+                                     [ParamterInfo(Label = "Aab文件", Param = ParameterAab)] string aab,
+                                     [ParamterInfo(Label = "Apk文件", Param = ParameterApk)] string apk,
+                                     [ParamterInfo(Label = "Obb文件", Param = ParameterObb)] string obb,
+                                     [ParamterInfo(Label = "ReleaseNote文件(xml文件)", Param = ParameterReleasenote)] string releaseNote) {
             Util.ExecuteAndroidpublisher(auth, packageName,
                 (service, editId) => {
                     if (!string.IsNullOrWhiteSpace(aab)) {
@@ -118,10 +119,10 @@ namespace Scorpio.stools {
                     release.VersionCodes = new List<long?>() { version };
             });
         }
-        static void GoogleDriveDownload([ParamterInfo("服务账号json文件", ParameterAuth)] string auth,
-                                        [ParamterInfo("文件ID", ParameterFileId)] string fileId,
-                                        [ParamterInfo("文件MimeType", ParameterMimeType)] string mimeType,
-                                        [ParamterInfo("保存路径", ParameterOutput)] string file) {
+        static void GoogleDriveDownload([ParamterInfo(Label = "服务账号json文件", Param = ParameterAuth, Required = true)] string auth,
+                                        [ParamterInfo(Label = "文件ID", Param = ParameterFileId, Required = true)] string fileId,
+                                        [ParamterInfo(Label = "文件MimeType", Param = ParameterMimeType, Required = true)] string mimeType,
+                                        [ParamterInfo(Label = "保存路径", Param = ParameterOutput, Required = true)] string file) {
             var service = new DriveService(new BaseClientService.Initializer() {
                 HttpClientInitializer = GoogleCredential.FromFile(auth).CreateScoped("https://www.googleapis.com/auth/drive"),
             });
@@ -146,39 +147,9 @@ namespace Scorpio.stools {
                 throw new System.Exception(error);
             }
         }
-        static void LookupMobileprovision([ParamterInfo("文件", ParameterFile)] string file) {
-            Console.WriteLine(Util.GetMobileprovisionInfo(file));
-        }
-        static void Resign([ParamterInfo("ipa文件", ParameterIpa)] string ipa,
-                           [ParamterInfo("描述文件", ParameterProvision)] string provision,
-                           [ParamterInfo("开发者名称", ParameterDeveloper)] string developer,
-                           [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output) {
-            var resign = "ios_resign_with_ipa.sh";
-            if (string.IsNullOrEmpty(developer)) {
-                var mobileprovisionInfo = Util.GetMobileprovisionInfo(provision);
-                var xmlDoc = new XmlDocument();
-                xmlDoc.LoadXml(mobileprovisionInfo);
-                var dict = xmlDoc.DocumentElement["dict"];
-                foreach (XmlNode node in dict) {
-                    if (node.Name == "key" && node.InnerText == "TeamName") {
-                        developer = $"iPhone Distribution: {node.NextSibling.InnerText}";
-                        break;
-                    }
-                }
-            }
-            File.Copy($"{ScorpioUtil.BaseDirectory}/{resign}", resign, true);
-            ScorpioUtil.Execute("sh", null, new string[] {
-                resign,
-                ipa,
-                developer,
-                provision,
-                output
-            });
-            FileUtil.DeleteFile(resign);
-        }
         static void Wget(CommandLine commandLine,
-                         [ParamterInfo("下载URL", ParameterUrl, false)] string[] url,
-                         [ParamterInfo("输出目录", ParameterOutput, "./", false)] string output) {
+                         [ParamterInfo(Label = "下载URL", Param = ParameterUrl)] string[] url,
+                         [ParamterInfo(Label = "输出目录", Param = ParameterOutput, Default = "./")] string output) {
             var urls = new List<string>();
             urls.AddRange(commandLine.Args);
             if (url != null) urls.AddRange(url);
@@ -198,10 +169,19 @@ namespace Scorpio.stools {
             }
             Task.WaitAll(tasks.ToArray());
         }
+        static void GetMD5(CommandLine commandLine) {
+            foreach (var file in commandLine.Args) {
+                if (FileUtil.FileExist(file)) {
+                    logger.info(FileUtil.GetMD5FromFile(file));
+                } else {
+                    logger.info(FileUtil.GetMD5FromString(file));
+                }
+            }
+        }
         static void DownloadM3u8(CommandLine commandLine,
-                                  [ParamterInfo("M3U8链接", ParameterUrl, false)] string url,
-                                  [ParamterInfo("下载队列数", ParameterQueue, "8", false)] int queue,
-                                  [ParamterInfo("输出文件", ParameterOutput, false)] string output) {
+                                  [ParamterInfo(Label = "M3U8链接", Param = ParameterUrl)] string url,
+                                  [ParamterInfo(Label = "下载队列数", Param = ParameterQueue, Default = "8")] int queue,
+                                  [ParamterInfo(Label = "输出文件", Param = ParameterOutput)] string output) {
             if (string.IsNullOrEmpty(url)) {
                 url = commandLine.Args.Count > 0 ? commandLine.Args[0] : null;
             }
@@ -272,27 +252,12 @@ namespace Scorpio.stools {
             FileUtil.DeleteFolder(tsBase);
             logger.info($"下载完成:{output}");
         }
-        static void SortMedia([ParamterInfo("类型,0 同步 1 去重", ParameterType, "0", false)] int type,
-                              [ParamterInfo("其实目录", "--source|-source")] string source,
-                              [ParamterInfo("目标目录", "--target|-target")] string target) {
-            if (type == 0) {
-                MediaUtil.Sync(source, target);
-            } else if (type == 1) {
-                MediaUtil.Distinct(source, target);
-            }
+        static void SortMedia([ParamterInfo(Label = "起始目录", Param = ParameterSource)] string source,
+                              [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target) {
+            MediaUtil.SortMedia(source, target);
         }
-        static void GetMD5(CommandLine commandLine) {
-            foreach (var file in commandLine.Args) {
-                if (FileUtil.FileExist(file)) {
-                    logger.info(FileUtil.GetMD5FromFile(file));
-                } else {
-                    logger.info(FileUtil.GetMD5FromString(file));
-                }
-            }
-        }
-        static void MusicInfo([ParamterInfo("音频文件", ParameterFile)] string file,
-                              [ParamterInfo("音频信息", ParameterInfo)] string info) {
-            MusicUtil.SetMusicInfo(file, JsonConvert.DeserializeObject<MusicInfo>(FileUtil.GetFileString(info)));
+        static void SortMusic() {
+
         }
     }
 }
