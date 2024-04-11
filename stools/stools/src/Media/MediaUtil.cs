@@ -36,7 +36,16 @@ namespace Scorpio.stools {
             var distinctFiles = new Dictionary<MediaInfo, string>();
             var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories);
             var total = files.Length;
-            if (clear) FileUtil.DeleteFolder(target);
+            if (clear) {
+                FileUtil.DeleteFolder(target);
+            } else if (FileUtil.PathExist($"{target}/整理文件")) {
+                foreach (var file in Directory.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories)) {
+                    var mediaInfo = Util.GetMediaInfo(file);
+                    if (mediaInfo != null) {
+                        distinctFiles[mediaInfo] = file;
+                    }
+                }
+            }
             var progress = new Progress(total);
             FileUtil.CreateFile($"{target}/number.txt", $"总数量 : {total}");
             for (var i = 0; i < total; ++i) {
@@ -47,14 +56,13 @@ namespace Scorpio.stools {
                     var errorPath = $"{target}/错误文件/";
                     var count = Directory.Exists(errorPath) ? Directory.GetFiles(errorPath).Length : 0;
                     FileUtil.CopyFile(file, $"{errorPath}{count}{Path.GetExtension(file)}", true);
-                    logger.info($"{file} 文件不是有效的媒体文件");
                     continue;
                 }
                 if (distinctFiles.TryGetValue(mediaInfo, out var origin)) {
                     var dateTime = mediaInfo.createTime;
                     var extension = Path.GetExtension(file);
-                    var mediaType = mediaInfo.isImage ? "重复照片" : "重复照片";
-                    var targetPath = $"{target}/{mediaType}/{dateTime.ToString(PathFormat)}/{mediaInfo.md5}_{mediaInfo.size}/";
+                    var mediaType = mediaInfo.isImage ? "重复照片" : "重复视频";
+                    var targetPath = $"{target}/重复文件/{mediaType}/{dateTime.ToString(PathFormat)}/{mediaInfo.md5}_{mediaInfo.size}/";
                     var targetFile = GetFileName(targetPath, dateTime, extension);
                     FileUtil.CopyFile(file, targetFile, true);
                     if (!FileUtil.FileExist($"{targetPath}/info.txt")) {
@@ -66,7 +74,7 @@ namespace Scorpio.stools {
                 } else {
                     var dateTime = mediaInfo.createTime;
                     var mediaType = mediaInfo.isImage ? "照片" : "视频";
-                    var targetFile = GetFileName($"{target}/{mediaType}/{dateTime.ToString(PathFormat)}/", dateTime, Path.GetExtension(file));
+                    var targetFile = GetFileName($"{target}/整理文件/{mediaType}/{dateTime.ToString(PathFormat)}/", dateTime, Path.GetExtension(file));
                     distinctFiles[mediaInfo] = targetFile;
                     FileUtil.CopyFile(file, targetFile, true);
                 }
