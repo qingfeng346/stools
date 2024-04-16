@@ -27,6 +27,14 @@
                 <Button type="error" size="small" @click="OnClickRemove(row)">删除</Button>
             </template>
         </Table>
+        <Modal v-model="showFilter"
+            title="搜索过滤"
+            @on-ok="OnClickFilter">
+            <Select v-model="filterType">
+                <Option v-for="item in filterList" :key="item.type" :value="item.type" >{{ item.label }}</Option>
+            </Select>
+            <Input ref="filterInput" v-model="filterValue" @on-enter="OnClickFilter"/>
+        </Modal>
     </Layout>
 </template>
 <script>
@@ -42,7 +50,12 @@ export default {
             page: 1,
             pageSize: 100,
             total: 0,
-            filter: []
+            filter: [],
+
+            showFilter: false,
+            filterType: "name",
+            filterValue: "",
+            filterList: []
         }
     },
     mounted() {
@@ -155,6 +168,7 @@ export default {
                 slot: 'action',
             }
         ]
+        this.filterList = util.filterList
         this.formItem.url = localStorage.getItem("url")
         this.UpdateMusicList()
         net.registerMessage("downloadSuccess", this.OnDownloadSuccess.bind(this));
@@ -222,10 +236,10 @@ export default {
                 this.UpdateMusicList()
             }
         },
-        OnClickAddFilter() {
-            util.confirmFilter((type, value) => {
-                this.AddFilter(type, value)
-            })
+        async OnClickAddFilter() {
+            this.showFilter = true
+            await Util.sleep(0.1)
+            this.$refs.filterInput.focus({cursor:"end"})
         },
         AddFilter(type, value) {
             let filter = util.getFilter(type)
@@ -237,6 +251,10 @@ export default {
                 this.filter.push(data)
             }
             this.UpdateMusicList()
+        },
+        OnClickFilter() {
+            this.showFilter = false
+            this.AddFilter(this.filterType, this.filterValue)
         }
     }
 }
