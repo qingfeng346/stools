@@ -1,21 +1,11 @@
-import { RadioGroup,Radio,Input } from 'view-ui-plus'
+import net from './net'
+import { RequestCode } from './code'
 class util {
     init($Message, $Modal, homePage) {
         this.$Message = $Message
         this.$Modal = $Modal
         this.homePage = homePage
-        this.filterList = [
-            { type: "name", label: "名字" },
-            { type: "album", label: "专辑" },
-            { type: "singer", label: "歌手" },
-            { type: "year", label: "年份" }
-        ]
-    }
-    async getClipboardText() {
-        return await navigator.clipboard.readText();
-    }
-    getFilter(type) {
-        return this.filterList.find((item) => { return item.type == type })
+        this.configs = {}
     }
     noticeInfo(msg) {
         this.log(`[Info]${msg}`)
@@ -48,9 +38,6 @@ class util {
         console.log(msg)
         this.homePage.AddLog(msg)
     }
-    confirmFilter(onOk) {
-        this.homePage.ShowFilter(onOk)
-    }
     confirmBox(title, content, onOk, closeable) {
         let config = {
             title: title,
@@ -68,5 +55,14 @@ class util {
         if (info.closable == undefined) { info.closable = true }
         this.$Modal.confirm(info)
     }
+    //获取config缓存
+    async GetConfig(key) {
+        if (this.configs.hasOwnProperty(key)) {
+            return this.configs[key]
+        } else {
+            return this.configs[key] = (await net.request(RequestCode.GetConfig, { key: key }))
+        }
+    }
+    
 }
 export default new util()

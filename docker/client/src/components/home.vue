@@ -5,6 +5,7 @@
         <Sider>
           <Menu :active-name="activeMenu" theme="dark" width="auto" @on-select="OnSelectMenu">
             <MenuItem name="music">音乐</MenuItem>
+            <MenuItem name="photo">整体相册</MenuItem>
           </Menu>
         </Sider>
         <Layout>
@@ -116,6 +117,9 @@ export default {
   position: relative;
   border-radius: 4px;
   overflow: hidden;
+}
+.content {
+  margin: 20px;
 }
 .logParent {
   width: 100%;
