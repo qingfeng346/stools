@@ -39,9 +39,10 @@
     </Form>
   </div>
 </template>
-
 <script>
-import { RequestCode, HistoryOperate } from '../scripts/code';
+import code from '../scripts/code.js';
+const { RequestCode, ConfigType } = code;
+// import { RequestCode, ConfigType } from '../scripts/code.js';
 import net from '../scripts/net';
 import util from '../scripts/util';
 export default {
@@ -62,8 +63,8 @@ export default {
   },
   methods: {
     async UpdateCommandList() {
-      this.commandConfig = await util.GetConfig("CommandConfig")
-      let list = await net.request(RequestCode.requestCommandList)
+      this.commandConfig = await util.GetConfig(ConfigType.CommandConfig)
+      let list = await net.request(RequestCode.GetCommandList)
       for (let v of list) {
         v.info = JSON.parse(v.info)
       }

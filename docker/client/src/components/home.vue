@@ -4,6 +4,7 @@
       <Layout style="width: 100%;">
         <Sider>
           <Menu :active-name="activeMenu" theme="dark" width="auto" @on-select="OnSelectMenu">
+            <MenuItem name="build">Build</MenuItem>
             <MenuItem name="music">音乐</MenuItem>
             <MenuItem name="photo">整体相册</MenuItem>
           </Menu>
@@ -28,7 +29,6 @@ import { Util } from 'weimingcommons'
 import { RouterView } from 'vue-router'
 import net from "../scripts/net";
 import util from '../scripts/util'
-import { RadioGroup } from 'view-ui-plus';
 export default {
   data() {
     return {
@@ -53,61 +53,57 @@ export default {
     this.UpdateScroll();
   },
   methods: {
-      UpdateMenu() {
-        let url = this.$route.fullPath;
-        let index = url.lastIndexOf("/");
-        let name = url.substring(index + 1);
-        this.activeMenu = name;
-      },
-      OnSelectMenu(name) {
-          if (name == this.activeMenu) {
-              return;
-          }
-          this.$router.push(`${name}`);
-      },
-      async UpdateScroll() {
-          while (true) {
-              await Util.sleep(0.5);
-              if (this.changed) {
-                  this.changed = false;
-                  this.logValue = this.logValueCache;
-                  await Util.sleep(0.1);
-                  this.viewLog.scrollTop = this.viewLog.scrollHeight;
-              }
-          }
-      },
-      OnMessage(data, code) {
-          this.AddLog(data, code == "write");
-      },
-      AddLog(data, write) {
-          if (write) {
-              this.logValueCache += data;
-          }
-          else {
-              this.logValueCache += `${data}\n`;
-          }
-          if (this.logValueCache.length > 81920) {
-              this.logValueCache = this.logValueCache.substring(this.logValueCache.length - 81920);
-          }
-          this.changed = true;
-      },
-      OnClickLog() {
-          this.showLog = true;
-          this.changed = true;
-      },
-      OnNotice(data) {
-          if (data.type == "success") {
-              util.noticeSuccess(data.msg);
-          }
-          else if (data.type == "error") {
-              util.noticeError(data.msg);
-          }
-          else {
-              util.noticeInfo(data.msg);
-          }
+    UpdateMenu() {
+      let url = this.$route.fullPath;
+      let index = url.lastIndexOf("/");
+      let name = url.substring(index + 1);
+      this.activeMenu = name;
+    },
+    OnSelectMenu(name) {
+      if (name == this.activeMenu) {
+        return;
       }
-  },
-  components: { RadioGroup }
+      this.$router.push(`${name}`);
+    },
+    async UpdateScroll() {
+      while (true) {
+        await Util.sleep(0.5);
+        if (this.changed) {
+          this.changed = false;
+          this.logValue = this.logValueCache;
+          await Util.sleep(0.1);
+          this.viewLog.scrollTop = this.viewLog.scrollHeight;
+        }
+      }
+    },
+    OnMessage(data, code) {
+      this.AddLog(data, code == "write");
+    },
+    AddLog(data, write) {
+      if (write) {
+        this.logValueCache += data;
+      } else {
+        this.logValueCache += `${data}\n`;
+      }
+      if (this.logValueCache.length > 1048576) {
+        this.logValueCache = this.logValueCache.substring(this.logValueCache.length - 1048576);
+      }
+      this.changed = true;
+    },
+    OnClickLog() {
+      this.showLog = true;
+      this.changed = true;
+    },
+    OnNotice(data) {
+      if (data.type == "success") {
+        util.noticeSuccess(data.msg);
+      } else if (data.type == "error") {
+        util.noticeError(data.msg);
+      } else {
+        util.noticeInfo(data.msg);
+      }
+    }
+  }
 }
 </script>
 <style>

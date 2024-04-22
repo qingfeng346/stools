@@ -1,5 +1,7 @@
 import net from './net'
-import { RequestCode } from './code'
+import code from '../scripts/code.js';
+const { RequestCode, ConfigType } = code;
+// const { RequestCode } = './code.js'
 class util {
     init($Message, $Modal, homePage) {
         this.$Message = $Message
@@ -57,9 +59,11 @@ class util {
     }
     //获取config缓存
     async GetConfig(key) {
+        console.log(RequestCode + "  " + this.configs)
         if (this.configs.hasOwnProperty(key)) {
             return this.configs[key]
         } else {
+            
             return this.configs[key] = (await net.request(RequestCode.GetConfig, { key: key }))
         }
     }
