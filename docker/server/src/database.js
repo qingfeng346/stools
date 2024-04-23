@@ -7,53 +7,86 @@ class database {
             storage: "./data/data.sqlite"
         })
         this.sequelize = sequelize
-        this.music = sequelize.define("music", {
-            path: {
-                type: DataTypes.CHAR(256),
-                comment: "文件路径",
-                primaryKey: true,
-            },
-            musicId: {
-                type: DataTypes.CHAR(32),
-                comment: "音乐ID",
-            },
-            musicType: {
-                type: DataTypes.CHAR(32),
-                comment: "音乐平台",
-            },
-            time: {
-                type: DataTypes.BIGINT,
-                comment: "下载时间"
-            },
-            name: {
-                type: DataTypes.STRING(128),
-                comment: "音乐名字",
-            },
-            album: {
+        this.config = sequelize.define('config', {
+            key: {
                 type: DataTypes.STRING(64),
-                comment: "专辑",
+                primaryKey: true
             },
-            singer: {
-                type: DataTypes.STRING(64),
-                comment: "作者",
-            },
-            year: {
-                type: DataTypes.INTEGER,
-                comment: "发行年份",
-            },
-            size: {
-                type: DataTypes.INTEGER,
-                comment: "文件大小",
-            },
-            duration: {
-                type: DataTypes.BIGINT,
-                comment: "时长",
-            },
+            value: DataTypes.TEXT,
         }, {
-            tableName: "music",
+            tableName: "config",
+            timestamps: false,
+        });
+        await this.config.sync()
+        this.history = sequelize.define("history", {
+            id: {
+                type: DataTypes.CHAR(32),
+                primaryKey: true,
+                autoIncrement: false,
+                comment: "执行ID",
+            },
+            createTime: {
+                type: DataTypes.BIGINT,
+                comment: "创建时间"
+            },
+            startTime: {
+                type: DataTypes.BIGINT,
+                comment: "开始执行时间",
+            },
+            endTime: {
+                type: DataTypes.BIGINT,
+                comment: "执行结束时间"
+            },
+            username: {
+                type: DataTypes.CHAR(64),
+                comment: "创建命令的用户",
+            },
+            serverAddress: {
+                type: DataTypes.CHAR(128),
+                comment: "服务器地址",
+            },
+            operate: {
+                type: DataTypes.CHAR(64),
+                comment: "操作类型",
+            },
+            command: {
+                type: DataTypes.STRING(2048),
+                comment: "命令"
+            },
+            status: {
+                type: DataTypes.CHAR(32),
+                comment: "当前状态"
+            },
+            result: {
+                type: DataTypes.TEXT,
+                comment: "返回结果",
+            },
+            urls: {
+                type: DataTypes.STRING(2048),
+                allowNull: false,
+                defaultValue: "",
+                comment: "生成的urls",
+            }
+        }, {
+            tableName: "history",
             timestamps: false,
         })
-        await this.music.sync()
+        await this.history.sync()
+        this.command = sequelize.define("command", {
+            name: {
+                type: DataTypes.CHAR(64),
+                primaryKey: true,
+                comment: "Name",
+            },
+            info: DataTypes.TEXT,       //基础信息
+            content: DataTypes.TEXT,    //命令参数
+            execute: DataTypes.TEXT,    //执行命令
+            operate: DataTypes.TEXT,    //二次操作
+        }, {
+            tableName: "command",
+            timestamps: false,
+        })
+        await this.command.sync()
     }
 }
 module.exports = new database()
