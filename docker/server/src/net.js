@@ -1,11 +1,11 @@
 const logger = require('log4js').getLogger('net.js')
 const express = require('express')
-const multipart = require('multer');
+const multipart = require('multer')
 const webSocket = require('ws')
 const path = require('path')
+const message = require('./message')
 class net {
     constructor() {
-        this.events = {}
         this.clients = []
         require('weimingcommons').logger.ilog = this
     }
@@ -85,7 +85,7 @@ class net {
         })
     }
     async fireFunc(code, data, req, res) {
-        let evt = this.events[code]
+        let evt = message.get(code)
         let msgData = undefined
         if (evt) {
             let result = await evt(data, req, res, code)
@@ -104,9 +104,6 @@ class net {
             msgData = ""
         }
         return msgData
-    }
-    register(code, func) {
-        this.events[code] = func
     }
     sendMessage(code, data) {
         try {
