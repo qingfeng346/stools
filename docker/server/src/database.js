@@ -1,10 +1,12 @@
+const logger = require('log4js').getLogger('database.js')
 const { Sequelize, DataTypes } = require("sequelize")
 
 class database {
     async init() {
         let sequelize = new Sequelize({
             dialect: "sqlite",
-            storage: "./data/data.sqlite"
+            storage: "./data/database/database.sqlite",
+            logging: msg => logger.info(msg)
         })
         this.sequelize = sequelize
         this.config = sequelize.define('config', {

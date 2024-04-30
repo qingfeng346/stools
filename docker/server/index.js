@@ -12,7 +12,7 @@ log4js.configure({
         file: {
             type: 'dateFile',
             encoding: "utf-8",
-            filename: './logs/log',
+            filename: './data/logs/log',
             alwaysIncludePattern: true,
             pattern: "yyyy-MM-dd.log",
             layout: {
