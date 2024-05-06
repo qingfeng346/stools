@@ -4,6 +4,7 @@ const multipart = require('multer')
 const webSocket = require('ws')
 const path = require('path')
 const message = require('./message')
+const FileUtil = require('weimingcommons').FileUtil
 class net {
     constructor() {
         this.clients = []
@@ -69,6 +70,21 @@ class net {
                 this.notifyError(`execute is error, from:${req.ip}  ${code} - ${JSON.stringify(data)} : ${e.stack}`)
             }
             res.end();
+        })
+        app.post("/upload", async (req, res) => {
+            let code = req.body.code
+            let data = JSON.parse(req.body.data)
+            logger.info(`===> [${req.ip}] upload [${code}] : ${JSON.stringify(data)}`)
+            try {
+                let msgData = await this.fireFunc(code, data, req, res, req.files)
+                logger.info(`<=== [${req.ip}] upload [${code}] : ${msgData}`)
+            } catch (e) {
+                this.notifyError(`upload is error, from:${req.ip}  ${code} - ${JSON.stringify(data)} : ${e.stack}`)
+            }
+            for (let file of files) {
+                FileUtil.DeleteFile(file.path)
+            }
+            res.end()
         })
         let port = 4100
         let server = app.listen(port, () => {

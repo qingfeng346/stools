@@ -5,6 +5,7 @@
         <Sider>
           <Menu :active-name="activeMenu" theme="dark" width="auto" @on-select="OnSelectMenu">
             <MenuItem name="build">Build</MenuItem>
+            <MenuItem name="config">配置</MenuItem>
             <MenuItem name="music">音乐</MenuItem>
             <MenuItem name="photo">整体相册</MenuItem>
           </Menu>

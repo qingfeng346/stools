@@ -26,6 +26,13 @@
               <span slot="close">关</span>
             </i-switch>
           </span>
+          <Upload v-else-if="arg.type == 'file'" type="drag" :paste="true" :name="arg.name" action :before-upload="CreateBeforeUploadFile(arg.name)">
+            <div style="padding: 5px 0">
+                <Icon type="ios-cloud-upload" size="30" style="color: #3399ff"></Icon>
+                <div v-if="formFile[arg.name]">当前选择文件 : {{ formFile[arg.name].name }}</div>
+                <div v-else>选择文件</div>
+              </div>
+          </Upload>
         </FormItem>
       </div>
       <FormItem label="最终命令">
@@ -42,20 +49,21 @@
 <script>
 import code from '../scripts/code.js';
 const { RequestCode, ConfigType } = code;
-// import { RequestCode, ConfigType } from '../scripts/code.js';
 import net from '../scripts/net';
 import util from '../scripts/util';
+const StorageLastCommand = "PageBuild_StorageLastCommand"
+const StorageCommandCache = "PageBuild_StorageCommandCache_";
 export default {
   data() {
     return {
       formData : {},              //当前选中的命令参数
-      commandConfig : {},         //全局命令参数
-      params : {},                //当前显示的参数
-      finishCommand : "",         //最终命令字符串
-      command : "",               //当前选中的命令
-      commandList : [],           //所有命令列表
-      commandInfo : {},           //当前命令信息
+      formFile : {},              //当前选中的文件
+      argInfos : {},              //所有参数的信息
       args: [],                   //当前命令参数
+      commandConfig : {},         //全局命令参数
+      commandList : [],           //所有命令列表
+      command : "",               //当前选中的命令
+      finishCommand : "",         //最终命令字符串
     };
   },
   mounted() {
@@ -63,8 +71,11 @@ export default {
   },
   methods: {
     async UpdateCommandList() {
+      util.CleanConfigCache()
+      util.CleanCommandCache()
       this.commandConfig = await util.GetConfig(ConfigType.CommandConfig)
-      let list = await net.request(RequestCode.GetCommandList)
+      let list = await util.GetCommandList()
+      if (list == null) return;
       for (let v of list) {
         v.info = JSON.parse(v.info)
       }
@@ -80,32 +91,35 @@ export default {
         }
       }
       if (this.commandList.length > 0) {
-        let command = localStorage.getItem("LastCommand")
+        let command = localStorage.getItem(StorageLastCommand)
         this.command = this.commandList.indexOf(command) >= 0 ? command : this.commandList[0]
         await this.OnChangeCommand(this.command)
       }
     },
     async OnChangeCommand(name) {
-      localStorage.setItem("LastCommand", this.command)
-      let config = localStorage.getItem(`CommandCache_${name}`)
-      let commandInfo = await util.GetCommandInfo(name)
+      localStorage.setItem(StorageLastCommand, this.command)
+      let commandInfo = await util.GetCommand(name)
+      let saveConfigStr = localStorage.getItem(`${StorageCommandCache}${name}`)
+      let saveConfig = saveConfigStr == null ? {} : JSON.parse(saveConfigStr)
+
       this.commandInfo = commandInfo.content
-      let saveConfig = config == null ? {} : JSON.parse(config)
+      
       this.formData = {}
-      this.params = {}
+      this.argInfos = {}
       this.args = [...this.commandInfo.args]
       if (commandInfo.info.skipFlag == true && 
           commandInfo.execute.Execute != null &&
           commandInfo.execute.Execute.length > 1) {
-        let skipFlag = { name: "skipFlag", label: "跳过执行列表", type: "flag", options: [] }
-        for (let i = 0; i < commandInfo.execute.Execute.length; i++) {
-          skipFlag.options.push({ label: `${commandInfo.execute.Execute[i]}(${i})`, value: i })
-        }
-        this.args.push(skipFlag)
+          let skipFlag = { name: "skipFlag", label: "跳过执行列表", type: "flag", options: [] }
+          for (let i = 0; i < commandInfo.execute.Execute.length; i++) {
+            skipFlag.options.push({ label: `${commandInfo.execute.Execute[i]}(${i})`, value: i })
+          }
+          this.args.push(skipFlag)
       }
       for (let arg of this.args) {
-        this.params[arg.name] = arg
-        this.formData[arg.name] = this.GetArgValue(arg, saveConfig[arg.name])
+        this.argInfos[arg.name] = arg
+        if (arg.type != "file")
+          this.formData[arg.name] = this.GetArgValue(arg, saveConfig[arg.name])
       }
       this.UpdateCommand_impl()
     },
@@ -163,31 +177,23 @@ export default {
       return result
     },
     CheckCondition(condition) {
-      if (util.CheckCondition(condition)) {
-        if (condition == null) return true
-        if (condition.commands != null && condition.commands.indexOf(this.command) < 0) return false
-        if (condition["!commands"] != null && condition["!commands"].indexOf(this.command) >= 0) return false
-        if (condition.func != null && this[condition.func] != null && !this[condition.func]()) return false
-        return true;
-      }
-      return false;
+      return util.checkCondition(condition)
     },
-    
     IsShow(arg) {
-      if (!this.CheckCondition(arg?.condition)) {
-        return false
-      }
-      return true
-    },
-    IsCommand(arg) {
-      return arg.isCommand == null || arg.isCommand == true
+      return this.CheckCondition(arg?.condition)
     },
     IsFlag(flag, value) {
-      return util.HasBase64Flag(flag, value)
+      return util.hasBase64Flag(flag, value)
     },
     OnChangeFlag(name, value, state) {
-      this.formData[name] = util.SetBase64Flag(this.formData[name], value, state)
+      this.formData[name] = util.setBase64Flag(this.formData[name], value, state)
       this.UpdateCommand()
+    },
+    CreateBeforeUploadFile(name) {
+      return (file) => {
+        this.formFile[name] = file
+        return false;
+      }
     },
     GetValue(key) {
       let value = this.formData[key];
@@ -199,7 +205,7 @@ export default {
     GetCommand(space) {
       let command = "";
       for (let key in this.formData) {
-        if (!this.IsShow(this.params[key]) || !this.IsCommand(this.params[key])) { continue; }
+        if (!this.IsShow(this.argInfos[key])) { continue; }
         let value = this.GetValue(key)
         if (`${value}` == "") { continue; }
         command += `-${key} ${value}${space}`;
@@ -209,13 +215,14 @@ export default {
     async UpdateCommand() {
       await util.sleep(0.1)
       for (let arg of this.args) {
-        this.formData[arg.name] = this.GetArgValue(arg, this.formData[arg.name])
+        if (arg.type != "file")
+          this.formData[arg.name] = this.GetArgValue(arg, this.formData[arg.name])
       }
       this.UpdateCommand_impl()
       this.$forceUpdate()
     },
     UpdateCommand_impl() {
-      localStorage.setItem(`CommandCache_${this.command}`, JSON.stringify(this.formData))
+      localStorage.setItem(`${StorageCommandCache}${this.command}`, JSON.stringify(this.formData))
       this.finishCommand = `-operate ${this.command} ` + this.GetCommand(" ")
     },
     OnClickAdd() {
@@ -229,86 +236,9 @@ export default {
       });
     },
     async OnClickAddOK() {
-      if (this.formData.updateEntry == true && this.IsShow(this.params["updateEntry"])) {
-        util.confirmEntry(this.formData.platform, this.formData.environment, this.formData.unity, async (entryData, updateEntryList) => {
-          let id = await this.ExecuteCommand_impl()
-          await util.operateHistory(id, HistoryOperate.updateEntry, { entry: entryData.Name, updateEntryList: updateEntryList })
-        })
-      } else {
-        await this.ExecuteCommand_impl()
-      }
-    },
-    OnClickAddSchedule() {
-      this.isShowSchedule = true
-    },
-    async OnClickAddScheduleOk() {
-      let data = {}
-      data.title = this.scheduleTitle ?? ""
-      data.timeType = 0
-      data.timeData = this.scheduleDate.valueOf().toString()
-      data.taskType = 0
-      let operateData = []
-      for (let arg of this.args) {
-        if (arg.name != "updateEntry" && this.formData[arg.name] == true && !this.IsCommand(arg)) {
-          operateData.push({
-            userId: net.user.id, 
-            code : RequestCode.operateHistory, 
-            data : {
-              type: arg.name 
-            }
-          })
-        }
-      }
-      data.taskData = JSON.stringify({
-        postUrl: `${net.ServerUrl}/execute`,
-        postData: JSON.stringify({
-          userId: net.user.id,
-          code: RequestCode.executeCommand,
-          data: {
-            command: `${this.finishCommand} -url ${net.ServerUrl}`
-          }
-        }),
-        operateData: JSON.stringify(operateData)
-      })
-      data.username = util.user.id
-      data.enabled = true
-      let taksId = await util.schedulePost(`add`, data);
-      util.successMessage(`添加定时任务成功 : ${taksId}`)
-    },
-    async ExecuteCommand_impl() {
-        let id = await util.executeCommand(this.finishCommand);
-        for (let arg of this.args) {
-          if (arg.name != "updateEntry" && this.formData[arg.name] == true && !this.IsCommand(arg)) {
-            await util.operateHistory(id, arg.name)
-          }
-        }
-        return id
-    },
-
-
-
-
-    IsAndroid() {
-      return this.formData.platform.toLowerCase() == "android"
-    },
-    IsIOS() {
-      return this.formData.platform.toLowerCase() == "ios"
-    },
-    IsGooglePC() {
-      return this.formData.environment == null || this.formData.environment.indexOf("googlepc") >= 0
-    },
-    IsAmazonOrGooglePC() {
-      return this.formData.environment != null && (this.formData.environment.indexOf("googlepc") >= 0 || this.formData.environment.indexOf("amazon") >= 0)
-    },
-    IsNotGooglePC() {
-      return this.formData.environment == null || this.formData.environment.indexOf("googlepc") < 0
-    },
-    IsNotAmazonOrGooglePC() {
-      return !this.IsAmazonOrGooglePC()
-    },
-    IsUploadCDN() {
-      return this.formData.uploadAssetsCDN == true
-    },
+      console.log(JSON.stringify(this.formData))
+      // return await util.executeCommand(this.formData);
+    }
   },
 };
 </script>

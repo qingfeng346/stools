@@ -10,9 +10,10 @@ class database {
         })
         this.sequelize = sequelize
         this.config = sequelize.define('config', {
-            key: {
+            name: {
                 type: DataTypes.STRING(64),
-                primaryKey: true
+                primaryKey: true,
+                comment: "Name",
             },
             value: DataTypes.TEXT,
         }, {

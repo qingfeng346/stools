@@ -1,10 +1,10 @@
-import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import home from '@/components/home.vue'
 import music from '@/components/music.vue'
 import photo from '@/components/photo.vue'
 import PageBuild from '@/components/PageBuild.vue'
+import PageConfig from '@/components/PageConfig.vue'
 const router = createRouter({
-  // history: createWebHistory(import.meta.env.BASE_URL),
   history: createWebHashHistory(),
   routes: [
     {
@@ -27,6 +27,11 @@ const router = createRouter({
           name: "build",
           path: "build",
           component: PageBuild,
+        },
+        {
+          name: "config",
+          path: "config",
+          component: PageConfig,
         },
         {
           name: "music",

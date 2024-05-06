@@ -26,8 +26,8 @@ class net {
         }
         ws.onmessage = this.onMessage.bind(this)
         ws.onclose = (evt) => {
-            logger.log(`链接 ${url} 断开, 5 秒后重连 : ${evt.code}`)
-            setTimeout(() => { this.startWebSocket() }, 5000)
+            logger.log(`链接 ${url} 断开, 10 秒后重连 : ${evt.code}`)
+            setTimeout(() => { this.startWebSocket() }, 10000)
         }
     }
     onMessage(evt) {
@@ -41,7 +41,7 @@ class net {
         this.event.register(code, func)
     }
     //向服务器发送一个请求
-    async request(code, data) {
+    async execute(code, data) {
         let postData = { code: code, data: data }
         let strData = JSON.stringify(postData)
         try {
@@ -51,6 +51,31 @@ class net {
             return result.data
         } catch (e) {
             console.error(`发送请求出错 [${code}] : ${strData} : ${e}`)
+        }
+        return null
+    }
+    //上传一个文件给服务器
+    async upload(code, data, files, uploadProgress) {
+        let strData = JSON.stringify(data)
+        try {
+            let params = new FormData();
+            for (let name of files) {
+                params.append(name, files[name])
+            }
+            params.set("code", code)
+            params.set("data", strData)
+            let config = {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                onUploadProgress: uploadProgress
+            }
+            console.log(`正在上传文件 [${code}] : [${strData}]`)
+            let result = await axios.post(`${this.ServerUrl}/upload`, params, config)
+            console.log(`请求返回 [${code}] : ${JSON.stringify(result.data)}`)
+            return result.data
+        } catch (e) {
+            console.error(`上传文件出错 [${code}] : [${strData}] : ${e}`)
         }
         return null
     }
