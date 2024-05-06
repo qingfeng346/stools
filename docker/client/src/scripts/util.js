@@ -106,6 +106,17 @@ class util {
         builder[offset] = base64[number];
         return builder.join("");
     }
+    checkCondition(condition) {
+        // if (condition == null) { return true }
+        // let serverName = this.serverName
+        // if (condition.servers != null && condition.servers.indexOf(serverName) < 0) return false
+        // if (condition["!servers"] != null && condition["!servers"].indexOf(serverName) >= 0) return false
+        // if (condition.excludeServers != null && condition.excludeServers.indexOf(serverName) >= 0) return false
+        // let authName = this.user.authName
+        // if (condition.users != null && condition.users.indexOf(authName) < 0) return false
+        // if (condition["!users"] != null && condition["!users"].indexOf(authName) >= 0) return false
+        return true
+    }
     CleanConfigCache() {
         this.configs = {}
     }
@@ -183,16 +194,10 @@ class util {
         await net.execute(RequestCode.DelCommand, { name: name })
         delete this.configs[name]
     }
-    checkCondition(condition) {
-        // if (condition == null) { return true }
-        // let serverName = this.serverName
-        // if (condition.servers != null && condition.servers.indexOf(serverName) < 0) return false
-        // if (condition["!servers"] != null && condition["!servers"].indexOf(serverName) >= 0) return false
-        // if (condition.excludeServers != null && condition.excludeServers.indexOf(serverName) >= 0) return false
-        // let authName = this.user.authName
-        // if (condition.users != null && condition.users.indexOf(authName) < 0) return false
-        // if (condition["!users"] != null && condition["!users"].indexOf(authName) >= 0) return false
-        return true
+    //执行命令
+    async ExecuteCommand(name, data, files) {
+        console.log("-------- " + files)
+        await net.upload(RequestCode.ExecuteCommand, { name: name, data: data }, files)
     }
 }
 export default new util()

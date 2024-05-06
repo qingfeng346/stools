@@ -27,8 +27,8 @@
             </i-switch>
           </span>
           <Upload v-else-if="arg.type == 'file'" type="drag" :paste="true" :name="arg.name" action :before-upload="CreateBeforeUploadFile(arg.name)">
-            <div style="padding: 5px 0">
-                <Icon type="ios-cloud-upload" size="30" style="color: #3399ff"></Icon>
+            <div style="padding: 2px 0">
+                <Icon type="ios-cloud-upload" size="40" style="color: #3399ff"></Icon>
                 <div v-if="formFile[arg.name]">当前选择文件 : {{ formFile[arg.name].name }}</div>
                 <div v-else>选择文件</div>
               </div>
@@ -48,8 +48,7 @@
 </template>
 <script>
 import code from '../scripts/code.js';
-const { RequestCode, ConfigType } = code;
-import net from '../scripts/net';
+const { ConfigType } = code;
 import util from '../scripts/util';
 const StorageLastCommand = "PageBuild_StorageLastCommand"
 const StorageCommandCache = "PageBuild_StorageCommandCache_";
@@ -236,8 +235,10 @@ export default {
       });
     },
     async OnClickAddOK() {
-      console.log(JSON.stringify(this.formData))
-      // return await util.executeCommand(this.formData);
+      for (let n in this.formFile) {
+        console.log("----------------" + n)
+      }
+      await util.ExecuteCommand(this.command, this.formData, this.formFile)
     }
   },
 };

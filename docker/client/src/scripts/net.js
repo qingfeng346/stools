@@ -59,7 +59,7 @@ class net {
         let strData = JSON.stringify(data)
         try {
             let params = new FormData();
-            for (let name of files) {
+            for (let name in files) {
                 params.append(name, files[name])
             }
             params.set("code", code)

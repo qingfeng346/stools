@@ -11,6 +11,7 @@ const RequestCode = {
     GetCommand: "GetCommand",           //请求命令配置
     SetCommand: "SetCommand",           //设置命令
     DelCommand: "DelCommand",           //删除命令
+    ExecuteCommand: "ExecuteCommand",   //执行命令
 }
 const Result = {
     ConfigType,
