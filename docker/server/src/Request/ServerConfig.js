@@ -1,4 +1,4 @@
-const { RequestCode } = require('../code')
+const { RequestCode, ConfigType } = require('../code')
 const message = require('../message')
 const database = require('../database')
 class ServerConfig {
@@ -9,15 +9,25 @@ class ServerConfig {
         message.register(RequestCode.DelConfig, this.OnDelConfig.bind(this))
 
         message.register(RequestCode.GetCommandList, this.OnGetCommandList.bind(this))
-        message.register(RequestCode.GetCommand, this.GetCommand.bind(this))
-        message.register(RequestCode.SetCommand, this.SetCommand.bind(this))
-        message.register(RequestCode.DelCommand, this.DelCommand.bind(this))
+        message.register(RequestCode.GetCommand, this.OnGetCommand.bind(this))
+        message.register(RequestCode.SetCommand, this.OnSetCommand.bind(this))
+        message.register(RequestCode.DelCommand, this.OnDelCommand.bind(this))
     }
+    async GetConfig(name) {
+        return JSON.parse((await database.config.findOrCreate({ defaults: { value: "{}" }, where: { name: name } }))[0].dataValues.value)
+    }
+    async GetBuildConfig() {
+        return await this.GetConfig(ConfigType.BuildConfig)
+    }
+    async GetCommand(name) {
+        return await database.command.findOne({ where: { name: name } })
+    }
+
     async OnGetConfigList() {
         return await database.config.findAll({ attributes: ['name'] })
     }
     async OnGetConfig(data) {
-        return (await database.config.findOrCreate({ defaults: { value: "{}" }, where: { name: data.name } }))[0].dataValues.value
+        return await this.GetConfig(data.name)
     }
     async OnSetConfig(data) {
         let name = data.name
@@ -33,10 +43,10 @@ class ServerConfig {
     async OnGetCommandList() {
         return await database.command.findAll({ attributes: ['name', 'info'] })
     }
-    async GetCommand(data) {
-        return await database.command.findOne({ where: { name: data.name } })
+    async OnGetCommand(data) {
+        return await this.GetCommand(data.name)
     }
-    async SetCommand(data) {
+    async OnSetCommand(data) {
         let info = data.info
         let content = data.content
         let execute = data.execute
@@ -47,7 +57,7 @@ class ServerConfig {
         if (typeof(operate) != "string") { operate = JSON.stringify(operate) }
         await database.command.upsert({ name: data.name, info: info, content: content, execute: execute, operate: operate }, { where: { name: data.name } });
     }
-    async DelCommand(data) {
+    async OnDelCommand(data) {
         await database.command.destroy({ where: { name: data.name } })
     }
 }

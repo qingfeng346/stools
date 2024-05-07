@@ -48,13 +48,17 @@ class database {
                 type: DataTypes.CHAR(128),
                 comment: "服务器地址",
             },
-            operate: {
+            name: {
                 type: DataTypes.CHAR(64),
                 comment: "操作类型",
             },
-            command: {
+            args: {
                 type: DataTypes.STRING(2048),
-                comment: "命令"
+                comment: "所有参数"
+            },
+            files: {
+                type: DataTypes.STRING(2048),
+                comment: "所有文件"
             },
             status: {
                 type: DataTypes.CHAR(32),

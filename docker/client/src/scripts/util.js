@@ -195,9 +195,8 @@ class util {
         delete this.configs[name]
     }
     //执行命令
-    async ExecuteCommand(name, data, files) {
-        console.log("-------- " + files)
-        await net.upload(RequestCode.ExecuteCommand, { name: name, data: data }, files)
+    async ExecuteCommand(name, args, files) {
+        await net.upload(RequestCode.ExecuteCommand, { name: name, args: args }, files)
     }
 }
 export default new util()

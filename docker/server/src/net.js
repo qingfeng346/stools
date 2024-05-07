@@ -53,7 +53,7 @@ class net {
         })
         app.use(express.json())
         app.use(express.text())
-        app.use(multipart({ dest: "temp" }).any())                //设置上传文件存放的地址
+        app.use(multipart({ dest: "./data/temp" }).any())                              //设置上传文件存放的地址
         app.use("/client", express.static(path.join(__dirname, "client")))
         app.get("/", (_req, res) => {
             res.writeHead(301, { 'Location': '/client' });
@@ -64,7 +64,7 @@ class net {
             let data = req.body.data;
             logger.info(`===> [${req.ip}] execute [${code}] : ${JSON.stringify(data)}`)
             try {
-                let msgData = await this.fireFunc(code, data, req, res, null)
+                let msgData = await this.fireFunc(code, data, null, req, res)
                 logger.info(`<=== [${req.ip}] execute [${code}] : ${msgData}`)
             } catch (e) {
                 this.notifyError(`execute is error, from:${req.ip}  ${code} - ${JSON.stringify(data)} : ${e.stack}`)
@@ -76,13 +76,10 @@ class net {
             let data = JSON.parse(req.body.data)
             logger.info(`===> [${req.ip}] upload [${code}] : ${JSON.stringify(data)}`)
             try {
-                let msgData = await this.fireFunc(code, data, req, res, req.files)
+                let msgData = await this.fireFunc(code, data, req.files, req, res)
                 logger.info(`<=== [${req.ip}] upload [${code}] : ${msgData}`)
             } catch (e) {
                 this.notifyError(`upload is error, from:${req.ip}  ${code} - ${JSON.stringify(data)} : ${e.stack}`)
-            }
-            for (let file of files) {
-                FileUtil.DeleteFile(file.path)
             }
             res.end()
         })
@@ -100,11 +97,11 @@ class net {
             }
         })
     }
-    async fireFunc(code, data, req, res) {
+    async fireFunc(code, data, files, req, res) {
         let evt = message.get(code)
         let msgData = undefined
         if (evt) {
-            let result = await evt(data, req, res, code)
+            let result = await evt(data, files, code)
             if (result) {
                 msgData = typeof (result) == "string" ? result : JSON.stringify(result)
             }

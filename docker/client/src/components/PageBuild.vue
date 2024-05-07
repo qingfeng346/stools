@@ -235,9 +235,6 @@ export default {
       });
     },
     async OnClickAddOK() {
-      for (let n in this.formFile) {
-        console.log("----------------" + n)
-      }
       await util.ExecuteCommand(this.command, this.formData, this.formFile)
     }
   },
