@@ -18,10 +18,11 @@ class Build {
             this.id = this.commandInfo.Id
             console.log(`====================开始执行命令 ${this.commandInfo.Name}====================`)
             console.log(`命令信息 : ${JSON.stringify(this.commandInfo, null, 2)}`)
-            let tempPath = `${Util.getTempPath()}/${this.id}`
-            FileUtil.CreateDirectory(tempPath)
-            console.log(`临时操作目录 : ${tempPath}`)
-            FileUtil.DeleteFolder(tempPath)
+            this.tempPath = `${Util.getTempPath()}/${this.id}`
+            console.log(`临时操作目录 : ${this.tempPath}`)
+            FileUtil.CreateDirectory(this.tempPath)
+            
+            FileUtil.DeleteFolder(this.tempPath)
             console.log(`执行成功`)
             this.saveSuccessResult()
         } catch (e) {
