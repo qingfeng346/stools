@@ -1,3 +1,10 @@
+//任务状态
+const Status = {
+    Wait: "Wait",              //等待执行任务
+    Process: "Process",        //正在执行任务
+    Success: "Success",        //执行任务成功
+    Fail: "Fail",              //任务执行失败
+}
 const ConfigType = {
     ServerConfig: "ServerConfig",       //服务器配置
     CommandConfig: "CommandConfig",     //命令配置
@@ -12,8 +19,10 @@ const RequestCode = {
     SetCommand: "SetCommand",           //设置命令
     DelCommand: "DelCommand",           //删除命令
     ExecuteCommand: "ExecuteCommand",   //执行命令
+    GetHistorys: "GetHistorys",         //获取历史记录
 }
 const Result = {
+    Status,
     ConfigType,
     RequestCode
 }

@@ -20,13 +20,13 @@ class net {
     startWebSocket() {
         let url = this.ServerSocket
         let ws = new WebSocket(url)
-        logger.log(`开始连接 websocket : [${url}]`)
-        ws.onopen = () => { 
+        // logger.log(`开始连接 websocket : [${url}]`)
+        ws.onopen = () => {
             logger.log(`连接 ${url} 成功`)
         }
         ws.onmessage = this.onMessage.bind(this)
         ws.onclose = (evt) => {
-            logger.log(`链接 ${url} 断开, 10 秒后重连 : ${evt.code}`)
+            // logger.log(`链接 ${url} 断开, 10 秒后重连 : ${evt.code}`)
             setTimeout(() => { this.startWebSocket() }, 10000)
         }
     }

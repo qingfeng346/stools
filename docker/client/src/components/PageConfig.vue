@@ -51,7 +51,7 @@
 </template>
 <script>
 import code from '../scripts/code.js';
-const { RequestCode, ConfigType } = code;
+const { RequestCode } = code;
 import net from '../scripts/net';
 import util from '../scripts/util';
 const StorageSelectedConfig = "PageConfig_StorageSelectedConfig"

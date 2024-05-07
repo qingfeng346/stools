@@ -67,7 +67,7 @@ class net {
                 let msgData = await this.fireFunc(code, data, null, req, res)
                 logger.info(`<=== [${req.ip}] execute [${code}] : ${msgData}`)
             } catch (e) {
-                this.notifyError(`execute is error, from:${req.ip}  ${code} - ${JSON.stringify(data)} : ${e.stack}`)
+                this.notifyError(`execute is error, from:${req.ip}  ${code} - ${JSON.stringify(data)} : ${e.message}\n${e.stack}`)
             }
             res.end();
         })
@@ -79,7 +79,7 @@ class net {
                 let msgData = await this.fireFunc(code, data, req.files, req, res)
                 logger.info(`<=== [${req.ip}] upload [${code}] : ${msgData}`)
             } catch (e) {
-                this.notifyError(`upload is error, from:${req.ip}  ${code} - ${JSON.stringify(data)} : ${e.stack}`)
+                this.notifyError(`upload is error, from:${req.ip}  ${code} - ${JSON.stringify(data)} : ${e.message}\n${e.stack}`)
             }
             res.end()
         })

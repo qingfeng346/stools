@@ -1,13 +1,15 @@
 const { Util, logger, FileUtil } = require("weimingcommons")
 const { RequestCode, Status } = require("../code")
+const { Op } = require("sequelize")
 const message = require("../message")
 const database = require("../database")
-const ServerConfig = require("./ServerConfig")                    
+const ServerConfig = require("./ServerConfig")
 const { HistorysPath, CommandPath } = require("../config")
 class HistoryManager {
     constructor() {
         this.executingMap = {}
         message.register(RequestCode.ExecuteCommand, this.OnExecuteCommand.bind(this))
+        message.register(RequestCode.GetHistorys, this.OnGetHistorys.bind(this))
     }
     async init() {
 
@@ -103,12 +105,35 @@ class HistoryManager {
                 logger.notifyError(`任务 : ${id} 执行错误`)
             }
         } catch (e) {
-            logger.error(`ExecuteCommand is error : ${e.stack}`)
+            logger.error(`ExecuteCommand is error : ${e.message}\n${e.stack}`)
         } finally {
             this.isExecuting = false
             this.executingMap[id] = null
         }
         this.CheckExecuteCommand()
+    }
+    async OnGetHistorys(data) {
+        let pageSize = 20
+        let page = data.page
+        let searchValue = ""
+        let condition = {
+            limit: pageSize,
+            offset: (page - 1) * pageSize,
+            order: [["createTime", "DESC"]],
+            where: {
+                id: {
+                    [Op.like]: `%${searchValue}%`
+                }
+            }
+        }
+        let total = await database.history.count(condition)
+        let datas = await database.history.findAll(condition)
+        let result = {}
+        result.pageTotal = total
+        result.pageSize = pageSize
+        result.page = page
+        result.datas = datas
+        return result
     }
 }
 module.exports = new HistoryManager()

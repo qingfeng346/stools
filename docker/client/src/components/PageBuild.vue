@@ -105,7 +105,7 @@ export default {
       
       this.formData = {}
       this.argInfos = {}
-      this.args = [...this.commandInfo.args]
+      this.args = this.commandInfo.args == null ? [] : [...this.commandInfo.args]
       if (commandInfo.info.skipFlag == true && 
           commandInfo.execute.Execute != null &&
           commandInfo.execute.Execute.length > 1) {

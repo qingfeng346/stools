@@ -9,7 +9,6 @@
         :loading="loading"
       />
       <div class="bottom">
-        <Input v-model="searchValue" class="search" search @on-search="OnClickSearch" />
         <Page
           class="page"
           v-if="!loading"
@@ -25,20 +24,23 @@
   </Layout>
 </template>
 <script>
-import RowHistory from "./row/RowHistory";
+import RowHistory from "./row/RowHistory.vue";
 import net from "../scripts/net";
 import util from "../scripts/util";
-import { Status, MsgCode } from "../scripts/code";
+import code from '../scripts/code.js';
+const { RequestCode, Status } = code;
+
+
 export default {
   data() {
     return {
+      loading: false, //是否正在加载
+      columns: [],
+      datas: [], //所有数据
       page: 1, //当前页数
       pageTotal: 1, //总页数
       pageSize: 1, //每一页显示条数,服务器决定
-      loading: false, //是否正在加载
       tableHeight: 1, //窗口高度
-      searchValue: "", //搜索关键字
-      datas: [], //所有数据
     };
   },
   beforeMount() {
@@ -49,7 +51,6 @@ export default {
         render: (h, params) => {
           return h(RowHistory, {
             props: {
-              formData: params.row.infos,
               history: params.row,
             },
           });
@@ -75,56 +76,15 @@ export default {
           );
         },
       },
-      { title: "平台", key: "platform", width: 90 },
-      { title: "分支", key: "branch", width: 100 },
-      { title: "环境", key: "environment", width: 150 },
-      { 
-        title: "服务器", 
-        key: "serverLabel",
-        width: 200,
-        render: (h, params) => {
-          return h(
-            "a", {
-              attrs: {
-                href: params.row.serverUrl,
-                target: "_blank"
-              },
-              style: {
-                color: "white",
-                "text-decoration": "underline",
-              },
-            },
-            params.row.serverLabel
-          );
-        },
-      },
-      { title: "类型", key: "operate", minWidth: 140 },
-      { 
-        title: "提交用户",
-        key: "address",
-        minWidth: 120,
-        render: (h, params) => {
-          var users = params.row.address.split(",");
-          var datas = [];
-          for (var i = 0; i < users.length; i++) {
-            if (i > 0)
-              datas.push(h("br"));
-              datas.push(h("span", users[i]));
-          }
-          return h("span", datas);
-        }
-      },
-    ];
-    if (util.HasAuth("0202")) {
-      this.columns.push({
+      { title: "操作类型", key: "name", minWidth: 140 },
+      {
         title: "操作",
         key: "operateRow",
         width: 100,
         render: (h, params) => {
           return h("div", [
             h(
-              "Button",
-              {
+              "Button", {
                 props: { type: "error" },
                 on: {
                   click: () => {
@@ -136,45 +96,36 @@ export default {
             ),
           ]);
         },
-      });
-    }
+      }
+    ];
   },
   mounted() {
-    util.registerOnResize(this, [{ name: "tableHeight", value: 70 }]);
-    this.RefreshTable();
-    net.registerMessage(MsgCode.refreshHistorys, () => {
-      this.RefreshTable();
-    });
+    util.registerOnResize(this, [{ name: "tableHeight", value: 70 }])
+    this.RefreshTable()
   },
   methods: {
     //刷新所有信息
     async RefreshTable() {
       this.loading = true;
-      let data = await util.requestHistorys(
-        this.page,
-        this.searchValue,
-        this.filters
-      );
+      let result = await net.execute(RequestCode.GetHistorys, { page: this.page })
       this.loading = false;
-      if (!data) {
-        return;
-      }
-      this.pageTotal = data.pageTotal;
-      this.pageSize = data.pageSize;
+      if (result == null) { return; }
+      this.pageTotal = result.pageTotal;
+      this.pageSize = result.pageSize;
       this.datas = [];
-      for (let history of data.datas) {
+      for (let history of result.datas) {
         this.datas.push(await util.parseHistory(history));
       }
     },
     //每一行的背景显示
     GetClassName(row, index) {
-      if (row.status == Status.success) {
+      if (row.status == Status.Success) {
         return "table-row-success";
-      } else if (row.status == Status.fail) {
+      } else if (row.status == Status.Fail) {
         return "table-row-error";
-      } else if (row.status == Status.process) {
+      } else if (row.status == Status.Process) {
         return "table-row-info";
-      } else if (row.status == Status.wait) {
+      } else if (row.status == Status.Wait) {
         return "table-row-wait";
       }
       return "table-row-error";
@@ -197,17 +148,10 @@ export default {
       this.page = page;
       this.RefreshTable();
     },
-    //点击搜索
-    OnClickSearch() {
-      this.RefreshTable();
-    },
   },
 };
 </script>
 <style>
-.search {
-  width: 300px;
-}
 .ivu-table .table-row-wait td {
   background-color: #c2c2c2;
   color: rgb(255, 255, 255);
