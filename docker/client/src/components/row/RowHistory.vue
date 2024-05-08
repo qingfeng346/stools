@@ -64,6 +64,7 @@ export default {
   },
   methods: {
     async Init() {
+      console.log("------------------ " + history)
       while (this.history.id == null) {
         await util.sleep(10)
       }

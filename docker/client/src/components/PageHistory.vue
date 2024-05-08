@@ -100,7 +100,7 @@ export default {
     ];
   },
   mounted() {
-    util.registerOnResize(this, [{ name: "tableHeight", value: 70 }])
+    util.registerOnResize(this, [{ name: "tableHeight", value: 0 }])
     this.RefreshTable()
   },
   methods: {

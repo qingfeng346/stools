@@ -27,7 +27,7 @@ class net {
         ws.onmessage = this.onMessage.bind(this)
         ws.onclose = (evt) => {
             // logger.log(`链接 ${url} 断开, 10 秒后重连 : ${evt.code}`)
-            setTimeout(() => { this.startWebSocket() }, 10000)
+            setTimeout(() => { this.startWebSocket() }, 5000)
         }
     }
     onMessage(evt) {
