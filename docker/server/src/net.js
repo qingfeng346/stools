@@ -4,7 +4,7 @@ const multipart = require('multer')
 const webSocket = require('ws')
 const path = require('path')
 const message = require('./message')
-const { UploadPath, AssetsPath } = require('./config')
+const { UploadPath, AssetsPath, ClientPath } = require('./config')
 class net {
     constructor() {
         this.clients = []
@@ -43,6 +43,8 @@ class net {
         this.sendMessage("notice", { type: "error", msg: str })
     }
     async init() {
+        console.log(`AssetsPath : ${AssetsPath}`)
+        console.log(`AssetsPath : ${ClientPath}`)
         let app = express()
         app.all("*", (_req, res, next) => {
             res.header('Access-Control-Allow-Origin', '*');
@@ -55,7 +57,7 @@ class net {
         app.use(express.text())
         app.use(multipart({ dest: UploadPath }).any())                              //设置上传文件存放的地址
         app.use("/assets", express.static(AssetsPath))
-        app.use("/client", express.static(path.join(__dirname, "client")))
+        app.use("/client", express.static(ClientPath))
         app.get("/", (_req, res) => {
             res.writeHead(301, { 'Location': '/client' });
             res.end();
