@@ -127,7 +127,7 @@ COPY . .
 
 # CMD [ "sh", "start.sh" ]
 
-RUN cd server
+WORKDIR /app/server
 
 RUN npm install
 
