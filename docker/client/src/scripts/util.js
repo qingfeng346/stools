@@ -228,6 +228,14 @@ class util {
     async ExecuteCommand(name, args, files) {
         await net.upload(RequestCode.ExecuteCommand, { name: name, args: args }, files)
     }
+    //获取历史记录
+    async GetHistorys(page) {
+        return await net.execute(RequestCode.GetHistorys, { page: page })
+    }
+    //删除历史记录
+    async DelHistory(id) {
+        await net.execute(RequestCode.DelHistory, { id: id })
+    }
 
     //解析一条历史记录
     async parseHistory(rawData) {

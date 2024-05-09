@@ -21,6 +21,7 @@ const RequestCode = {
     DelCommand: "DelCommand",           //删除命令
     ExecuteCommand: "ExecuteCommand",   //执行命令
     GetHistorys: "GetHistorys",         //获取历史记录
+    DelHistory: "DelHistory",           //删除历史记录
 }
 const Result = {
     Status,

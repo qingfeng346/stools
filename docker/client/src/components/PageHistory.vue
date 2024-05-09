@@ -86,7 +86,7 @@ export default {
     //刷新所有信息
     async RefreshTable() {
       this.loading = true;
-      let result = await net.execute(RequestCode.GetHistorys, { page: this.page })
+      let result = await util.GetHistorys(this.page)
       this.loading = false;
       if (result == null) { return; }
       this.pageTotal = result.pageTotal;
@@ -120,7 +120,7 @@ export default {
         okText: "删除",
         cancelText: "取消",
         onOk: async () => {
-          await util.deleteHistory(row.id);
+          await util.DelHistory(row.id)
           this.RefreshTable();
         },
       });

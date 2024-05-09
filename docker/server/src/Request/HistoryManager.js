@@ -10,6 +10,7 @@ class HistoryManager {
         this.executingMap = {}
         message.register(RequestCode.ExecuteCommand, this.OnExecuteCommand.bind(this))
         message.register(RequestCode.GetHistorys, this.OnGetHistorys.bind(this))
+        message.register(RequestCode.DelHistory, this.OnDelHistory.bind(this))
     }
     async init() {
 
@@ -150,6 +151,9 @@ class HistoryManager {
         result.page = page
         result.datas = datas
         return result
+    }
+    async OnDelHistory(data) {
+        await database.history.destroy({ where: { id: data.id } })
     }
 }
 module.exports = new HistoryManager()
