@@ -35,9 +35,6 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="pwsh -Command Copy-Item -Path &quot;./bash/*&quot; -Destination &quot;$(TargetDir)/&quot;" />
-  </Target>
   <ItemGroup>
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
   </ItemGroup>
