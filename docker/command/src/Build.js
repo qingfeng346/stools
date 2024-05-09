@@ -1,4 +1,5 @@
 const { Util, FileUtil } = require('weimingcommons')
+const path = require('path')
 const console = require('./logger')
 class Build {
     async startBuild(jsonFile) {
@@ -35,11 +36,8 @@ class Build {
                         execute = this.FormatExecute(executeKey)
                     }
                     console.log(`开始执行 ${i+1}/${length} ${JSON.stringify(execute)} : ${Util.NowTimeString}`)
-                    if (execute.type == "unity") {
-                        await this.buildPostprocessor(await util.execUnityOperate(execute.path, execute.buildTarget), i < length - 1)
-                    } else if (execute.type == "func") {
-                        let funcBuilder = new FuncBuilder(this)
-                        await funcBuilder[execute.func](execute)
+                    if (execute.type == "stools") {
+                        await this.execStools(execute, param)
                     }
                 }
             }
@@ -74,6 +72,16 @@ class Build {
     }
     FormatExecute(execute) {
         return execute
+    }
+    async execStools(execute, param) {
+        const stoolsPath = path.join(process.cwd(), "stools");
+        let args = [execute.command]
+        for (let key in param.Args) {
+            args.push(`-${key}`)
+            args.push(param.Args[key])
+        }
+        console.log(`运行stools命令 : ${JSON.stringify(args)}`)
+        await Util.execAsync("dotnet", stoolsPath, args)
     }
 }
 module.exports = new Build()
