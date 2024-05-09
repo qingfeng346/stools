@@ -13,15 +13,36 @@ class Build {
             process.on('unhandledRejection', function(err, promise){
                 console.error(`未捕获的promise异常 ${err?.stack}`)
             })
-            this.commandInfo = FileUtil.GetFileJson(jsonFile)
-            this.resultFile = this.commandInfo.ResultFile
-            this.id = this.commandInfo.Id
-            console.log(`====================开始执行命令 ${this.commandInfo.Name}====================`)
-            console.log(`命令信息 : ${JSON.stringify(this.commandInfo, null, 2)}`)
+            let param = FileUtil.GetFileJson(jsonFile)
+            await this.init(param)
+            this.resultFile = param.ResultFile
+            this.id = param.Id
+            console.log(`====================开始执行命令 ${param.Name}====================`)
+            console.log(`参数 : ${JSON.stringify(param, null, 2)}`)
             this.tempPath = `${Util.getTempPath()}/${this.id}`
             console.log(`临时操作目录 : ${this.tempPath}`)
             FileUtil.CreateDirectory(this.tempPath)
-            
+            let commandInfo = param.Execute
+            if (commandInfo.Execute && commandInfo.Execute.length > 0) {
+                console.log(`执行列表 ${JSON.stringify(commandInfo.Execute)}`)
+                let length = commandInfo.Execute.length
+                for (let i = 0; i < length; i++) {
+                    let executeKey = commandInfo.Execute[i]
+                    let execute = null
+                    if (typeof executeKey == "string") {
+                        execute = this.executes[executeKey]
+                    } else {
+                        execute = this.FormatExecute(executeKey)
+                    }
+                    console.log(`开始执行 ${i+1}/${length} ${JSON.stringify(execute)} : ${Util.NowTimeString}`)
+                    if (execute.type == "unity") {
+                        await this.buildPostprocessor(await util.execUnityOperate(execute.path, execute.buildTarget), i < length - 1)
+                    } else if (execute.type == "func") {
+                        let funcBuilder = new FuncBuilder(this)
+                        await funcBuilder[execute.func](execute)
+                    }
+                }
+            }
             FileUtil.DeleteFolder(this.tempPath)
             console.log(`执行成功`)
             this.saveSuccessResult()
@@ -40,6 +61,19 @@ class Build {
         this.results["code"] = 1
         this.results["error"] = error
         FileUtil.CreateFileJson(this.resultFile, this.results)
+    }
+    async init(param) {
+        this.executes = {}
+        if (param.BuildConfig.Executes != null) {
+            for (let key in param.BuildConfig.Executes) {
+                let value = this.FormatExecute(param.BuildConfig.Executes[key])
+                this.executes[key] = value
+                console.log(`添加公共 execute ${key} : ${JSON.stringify(value)}`)
+            }
+        }
+    }
+    FormatExecute(execute) {
+        return execute
     }
 }
 module.exports = new Build()
