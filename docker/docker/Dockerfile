@@ -116,7 +116,7 @@
 FROM node:16-alpine
 
 EXPOSE 4100
-VOLUME [ "/app/data", "/app/music" ]
+VOLUME [ "/app/server/data" ]
 
 RUN apk add dotnet7-sdk
 # RUN apk add dotnet7-runtime
@@ -126,6 +126,9 @@ WORKDIR /app
 COPY . .
 
 # CMD [ "sh", "start.sh" ]
+
+RUN cd server
+
 RUN npm install
 
 CMD [ "node", "index.js" ]
