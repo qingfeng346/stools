@@ -116,7 +116,7 @@
 FROM node:16-alpine
 
 EXPOSE 4100
-VOLUME [ "/app/server/data" ]
+VOLUME [ "/app/server/data", "/app/command" ]
 
 RUN apk add dotnet7-sdk
 # RUN apk add dotnet7-runtime
