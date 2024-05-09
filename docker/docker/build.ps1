@@ -16,5 +16,5 @@ Copy-Item -Path ../../stools/stools/stools.csproj -Destination ./stools/stools.c
 Copy-Item -Path ../command/src/ -Destination ./command/src/ -Recurse -Force
 Copy-Item -Path ../command/index.js -Destination ./command/index.js -Recurse -Force
 Copy-Item -Path ../command/package.json -Destination ./command/package.json -Recurse -Force
-# docker build -t stools .
-# docker save -o ../stools.tar stools
+docker build -t stools .
+docker save -o ../stools.tar stools
