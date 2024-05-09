@@ -120,6 +120,8 @@ class HistoryManager {
             }
         } catch (e) {
             logger.error(`${id} ExecuteCommand is error : ${e.message}\n${e.stack}`)
+            await database.history.update({ endTime: Util.NowDate, status: Status.Fail, result: "" }, { where: { id: id } })
+            logger.notifyError(`任务 : ${id} 执行错误`)
         } finally {
             this.isExecuting = false
             this.executingMap[id] = null
