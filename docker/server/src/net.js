@@ -4,7 +4,7 @@ const multipart = require('multer')
 const webSocket = require('ws')
 const path = require('path')
 const message = require('./message')
-const FileUtil = require('weimingcommons').FileUtil
+const { UploadPath, AssetsPath } = require('./config')
 class net {
     constructor() {
         this.clients = []
@@ -53,7 +53,8 @@ class net {
         })
         app.use(express.json())
         app.use(express.text())
-        app.use(multipart({ dest: "./data/temp" }).any())                              //设置上传文件存放的地址
+        app.use(multipart({ dest: UploadPath }).any())                              //设置上传文件存放的地址
+        app.use("/assets", express.static(AssetsPath))
         app.use("/client", express.static(path.join(__dirname, "client")))
         app.get("/", (_req, res) => {
             res.writeHead(301, { 'Location': '/client' });

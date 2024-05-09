@@ -1,4 +1,3 @@
-import events from 'events'
 import net from './net'
 import code from '../scripts/code.js';
 import { Util } from 'weimingcommons';
@@ -6,9 +5,11 @@ const { RequestCode, Status } = code;
 const base64 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@";
 class util {
     constructor() {
-        this.event = new events.EventEmitter()
+        this.events = {}
         this.historys = new Map()
-        window.onresize = () => { this.fireEvent("onResize") }
+        window.onresize = () => { 
+            this.fireEvent("onResize")
+        }
     }
     //开发者模式
     get IsDevelopment() { return process.env.NODE_ENV == "development" }
@@ -21,12 +22,14 @@ class util {
     }
     //注册一个event
     registerEvent(eventName, func) {
-        this.event.removeAllListeners(eventName)
-        this.event.on(eventName, func)
+        this.events[eventName] = func
     }
     //触发一个event
     fireEvent(eventName, ...args) {
-        this.event.emit(eventName, args)
+        let func = this.events[eventName]
+        if (func != null) {
+            func(...args)
+        }
     }
     registerOnResize(page, datas) {
         let update = () => {
@@ -44,8 +47,8 @@ class util {
     miniJson(text) {
         return this.isNullOrEmpty(text) ? "" : JSON.stringify(eval(`(${text})`))
     }
-    formatJson(text) {
-        return this.isNullOrEmpty(text) ? "" : JSON.stringify(eval(`(${text})`), null, 4)
+    formatJson(text, space) {
+        return this.isNullOrEmpty(text) ? "" : JSON.stringify(eval(`(${text})`), null, space ?? 4)
     }
     successMessage(info) {
         this.log(`successMessage : ${info}`)
@@ -253,6 +256,7 @@ class util {
         }
         let consoleUrl = `${serverUrl}/assets/historys/${rawData.id}/logs/console.log`
         results.push({ name: "执行日志", label: `<a href="${consoleUrl}" target="_blank"'>${consoleUrl}</a>` })
+        results.push({ name: "命令参数", label: this.formatJson(data.args, 2), type: 4 })
         if (data.result) {
             results.push({ name: "执行结果", label: JSON.stringify(data.result, null, 2), type: 4 })
         }

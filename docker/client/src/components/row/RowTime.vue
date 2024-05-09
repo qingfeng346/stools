@@ -2,11 +2,12 @@
   <span>{{ date }}</span>
 </template>
 <script>
+import { ref } from "vue"
 import { Util } from "weimingcommons";
 export default {
   props: {
     time: {
-      type: [Number, Date, String],
+      type: Number,
       required: true,
     },
     interval: {
@@ -14,16 +15,11 @@ export default {
       default: 1,
     },
   },
-  data() {
+  setup() {
+    const date = ref("")
     return {
-      date: "",
-    };
-  },
-  methods: {
-    setTime() {
-      let startTime = Util.formatDate(this.time);
-      this.date = `${startTime}  至今, 已耗时 ${Util.getElapsedTimeString(this.time)}`;
-    },
+      date,
+    }
   },
   mounted() {
     this.setTime();
@@ -31,8 +27,13 @@ export default {
       this.setTime();
     }, 1000 * this.interval);
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.timer) clearInterval(this.timer);
+  },
+  methods: {
+    setTime() {
+      this.date = `${Util.formatDate(new Date(this.time))} 至今, 已耗时 ${Util.getElapsedTime(this.time)}`;
+    },
   },
 };
 </script>

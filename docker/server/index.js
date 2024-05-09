@@ -1,5 +1,7 @@
 const log4js = require('log4js')
 const axios = require('axios')
+const { FileUtil } = require('weimingcommons')
+const { UploadPath } = require('./src/config')
 log4js.configure({
     appenders: {
         console: {

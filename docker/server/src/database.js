@@ -95,5 +95,10 @@ class database {
         })
         await this.command.sync()
     }
+    async sync() {
+        await this.config.sync({alter: true})
+        await this.history.sync({alter: true})
+        await this.command.sync({alter: true})
+    }
 }
 module.exports = new database()

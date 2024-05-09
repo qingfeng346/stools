@@ -6,8 +6,11 @@
         :height="tableHeight"
         :row-class-name="GetClassName"
         :data="datas"
-        :loading="loading"
-      />
+        :loading="loading">
+        <template #id="{row}">
+          <router-link :to="GetHistoryInfoLink(row)" style="color: white text-decoration: underline">{{ row.id }}</router-link>
+        </template>
+      </Table>
       <div class="bottom">
         <Page
           class="page"
@@ -25,11 +28,12 @@
 </template>
 <script>
 import RowHistory from "./row/RowHistory.vue";
+import RowTime from "./row/RowTime.vue"
 import net from "../scripts/net";
 import util from "../scripts/util";
 import code from '../scripts/code.js';
 const { RequestCode, Status } = code;
-
+import { resolveComponent } from 'vue';
 
 export default {
   data() {
@@ -50,47 +54,22 @@ export default {
         width: 30,
         render: (h, params) => {
           return h(RowHistory, {
-            props: {
-              history: params.row,
-            },
+            history: params.row,
           });
         },
       },
-      {
-        title: "ID",
-        key: "id",
-        width: 160,
-        render: (h, params) => {
-          return h(
-            "router-link",
-            {
-              attrs: {
-                to: `/home/historyinfo?id=${params.row.id}`,
-              },
-              style: {
-                color: "white",
-                "text-decoration": "underline",
-              },
-            },
-            params.row.id
-          );
-        },
-      },
+      { title: "ID", slot: "id", width: 160 },
       { title: "操作类型", key: "name", minWidth: 140 },
       {
         title: "操作",
-        key: "operateRow",
         width: 100,
         render: (h, params) => {
           return h("div", [
-            h(
-              "Button", {
-                props: { type: "error" },
-                on: {
-                  click: () => {
-                    this.OnClickDeleteHistory(params.row);
-                  },
-                },
+            h(resolveComponent("Button"), {
+                type: "error",
+                onClick: () => {
+                  this.OnClickDeleteHistory(params.row)
+                }
               },
               "删除"
             ),
@@ -116,6 +95,9 @@ export default {
       for (let history of result.datas) {
         this.datas.push(await util.parseHistory(history));
       }
+    },
+    GetHistoryInfoLink(row) {
+      return `/home/historyinfo?id=${row.id}`
     },
     //每一行的背景显示
     GetClassName(row, index) {

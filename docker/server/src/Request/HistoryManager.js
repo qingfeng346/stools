@@ -33,16 +33,19 @@ class HistoryManager {
         try {
             this.isCreateExecute = true
             let newID = await this.CreateExecuteID()
-            let file = {}
-            for (let key in files) {
-                file[key] = files[key].path
+            let allFiles = {}
+            for (let file of files) {
+                allFiles[file.fieldname] = {
+                    originalname: file.originalname,
+                    path: file.path
+                }
             }
             let data = {
                 id: newID.id,
                 createTime: newID.date,
                 name: name,
                 args: JSON.stringify(args),
-                files: JSON.stringify(file),
+                files: JSON.stringify(allFiles),
                 status: Status.Wait,
                 result: "",
             }
@@ -52,7 +55,7 @@ class HistoryManager {
         }
     }
     async OnExecuteCommand(data, files) {
-        let execute = await this.AddExecute(data.name, data.args, files)
+        let execute = await this.AddExecute(data.name, data.args ?? {}, files ?? {})
         this.CheckExecuteCommand()
         return execute.id
     }
@@ -72,14 +75,17 @@ class HistoryManager {
             execute.startTime = Util.NowDate
             await database.history.update({ status: execute.status, startTime: execute.startTime }, { where: { id: id } })
             logger.notify(`开始执行任务:${execute.name}\n任务ID : ${id}`)
-            let historyLogFile = `${HistorysPath}/${id}/logs/console.log`
-            let resultFile = `${HistorysPath}/${id}/result/result.json`
+            let hisotryPath = `${HistorysPath}/${id}`
+            let historyLogFile = `${hisotryPath}/logs/console.log`
+            let resultFile = `${hisotryPath}/result/result.json`
             let buildConfig = await ServerConfig.GetBuildConfig()
             let commandInfo = await ServerConfig.GetCommand(execute.name)
             let commandJson = {
                 Id: id,
                 Name: execute.name,
                 Time: execute.createTime,
+                Args: JSON.parse(execute.args),
+                Files: JSON.parse(execute.files),
                 ResultFile: resultFile,
                 BuildConfig: buildConfig,
                 Info: Util.isNullOrEmpty(commandInfo.info) ? {} : JSON.parse(commandInfo.info),
@@ -98,14 +104,18 @@ class HistoryManager {
                 execute.result = ""
             }
             await FileUtil.DeleteFileAsync(resultFile)
+            FileUtil.DeleteEmptyFolder(hisotryPath)
             await database.history.update({ endTime: execute.endTime, status: execute.status, result: execute.result}, { where: { id: id } })
             if (execute.status == Status.Success) {
                 logger.notifySuccess(`任务 : ${id} 执行成功`)
             } else {
                 logger.notifyError(`任务 : ${id} 执行错误`)
             }
+            for (let key in execute.files) {
+                await FileUtil.DeleteFileAsync(execute.files[key])
+            }
         } catch (e) {
-            logger.error(`ExecuteCommand is error : ${e.message}\n${e.stack}`)
+            logger.error(`${id} ExecuteCommand is error : ${e.message}\n${e.stack}`)
         } finally {
             this.isExecuting = false
             this.executingMap[id] = null
