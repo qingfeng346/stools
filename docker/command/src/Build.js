@@ -75,12 +75,12 @@ class Build {
     }
     async execStools(execute, param) {
         const stoolsPath = path.join(process.cwd(), "stools");
-        let args = [execute.command]
+        let args = ["run", execute.command]
         for (let key in param.Args) {
             args.push(`-${key}`)
             args.push(param.Args[key])
         }
-        console.log(`运行stools命令 : ${JSON.stringify(args)}`)
+        console.log(`运行stools命令:${stoolsPath} : ${JSON.stringify(args)}`)
         await Util.execAsync("dotnet", stoolsPath, args)
     }
 }
