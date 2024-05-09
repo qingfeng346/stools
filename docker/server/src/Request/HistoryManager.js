@@ -93,10 +93,13 @@ class HistoryManager {
             }
             let buildJsonFile = Util.getTempFile()
             await FileUtil.CreateFileJsonAsync(buildJsonFile, commandJson)
-            await Util.execAsyncLog("node", CommandPath, ["install"],                 { encoding: "utf8" }, historyLogFile)
-            await Util.execAsyncLog("node", CommandPath, ["index.js", buildJsonFile], { encoding: "utf8" }, historyLogFile, (sp) => { this.executingMap[id] = sp })
+            let npmName = Util.IsWindows ? "npm.cmd" : "npm"
+            let result = await Util.execAsyncLog(npmName, CommandPath, ["install"],   { encoding: Util.IsWindows ? "gbk" : "utf8", shell: true }, historyLogFile)
+            if (result.code == 0) {
+                await Util.execAsyncLog("node", CommandPath, ["index.js", buildJsonFile], { encoding: "utf8", shell: true }, historyLogFile, (sp) => { this.executingMap[id] = sp })
+            }
             execute.endTime = Util.NowDate
-            let result = await FileUtil.GetFileJsonAsync(resultFile)
+            result = await FileUtil.GetFileJsonAsync(resultFile)
             if (result?.code == 0) {
                 execute.status = Status.Success
                 execute.result = JSON.stringify(result)
