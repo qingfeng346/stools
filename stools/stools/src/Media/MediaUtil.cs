@@ -91,6 +91,7 @@ namespace Scorpio.stools {
                 var file = files[i];
                 var musicInfo = Util.GetMusicInfo(file);
                 if (musicInfo == null || musicInfo is TagLib.Jpeg.File) {
+                    logger.info($"{file} 不是正常的音频文件 : {musicInfo}");
                     continue;
                 }
                 var performers = new HashSet<string>();
@@ -121,8 +122,13 @@ namespace Scorpio.stools {
                         if (first.performers.Overlaps(data.performers)) {
                             foreach (var file in data.files) {
                                 var targetFile = $"{first.path}/{Path.GetFileName(file)}";
-                                logger.info($"移动文件 : {file} -> {targetFile}");
-                                FileUtil.MoveFile(file, targetFile, true);
+                                var targetFileLength = File.Exists(targetFile) ? new FileInfo(targetFile).Length : 0;
+                                if (new FileInfo(file).Length > targetFileLength) {
+                                    logger.info($"移动文件 : {file} -> {targetFile}");
+                                    FileUtil.MoveFile(file, targetFile, true);
+                                } else {
+                                    logger.info($"目标文件大小大于原始文件,直接删除:{file},  目标文件:{targetFile}");
+                                }
                             }
                             album.datas.RemoveAt(i);
                         } else {
