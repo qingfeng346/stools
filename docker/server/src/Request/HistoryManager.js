@@ -153,6 +153,7 @@ class HistoryManager {
         return result
     }
     async OnDelHistory(data) {
+        FileUtil.DeleteFolder(`${HistorysPath}/${data.id}`)
         await database.history.destroy({ where: { id: data.id } })
     }
 }

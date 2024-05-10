@@ -94,11 +94,24 @@ class database {
             timestamps: false,
         })
         await this.command.sync()
+        this.storage = sequelize.define("storage", {
+            name: {
+                type: DataTypes.STRING(64),
+                primaryKey: true,
+                comment: "Name",
+            },
+            value: DataTypes.TEXT,
+        }, {
+            tableName: "storage",
+            timestamps: false,
+        })
+        await this.storage.sync()
     }
     async sync() {
         await this.config.sync({alter: true})
         await this.history.sync({alter: true})
         await this.command.sync({alter: true})
+        await this.storage.sync({alter: true})
     }
 }
 module.exports = new database()

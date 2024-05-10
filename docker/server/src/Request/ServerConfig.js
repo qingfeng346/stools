@@ -12,6 +12,10 @@ class ServerConfig {
         message.register(RequestCode.GetCommand, this.OnGetCommand.bind(this))
         message.register(RequestCode.SetCommand, this.OnSetCommand.bind(this))
         message.register(RequestCode.DelCommand, this.OnDelCommand.bind(this))
+
+        message.register(RequestCode.GetStorage, this.OnGetStorage.bind(this))
+        message.register(RequestCode.SetStorage, this.OnSetStorage.bind(this))
+        message.register(RequestCode.DelStorage, this.OnDelStorage.bind(this))
     }
     async GetConfig(name) {
         return JSON.parse((await database.config.findOrCreate({ defaults: { value: "{}" }, where: { name: name } }))[0].dataValues.value)
@@ -59,6 +63,16 @@ class ServerConfig {
     }
     async OnDelCommand(data) {
         await database.command.destroy({ where: { name: data.name } })
+    }
+
+    async OnGetStorage(data) {
+        return await database.storage.findOne({where: { name: data.name }})
+    }
+    async OnSetStorage(data) {
+        await database.storage.upsert({ name: data.name, value: data.value, }, { where: { name: data.name } })
+    }
+    async OnDelStorage(data) {
+        await database.storage.destroy({ where: { name: data.name } })
     }
 }
 module.exports = new ServerConfig()

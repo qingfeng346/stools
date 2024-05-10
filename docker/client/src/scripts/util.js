@@ -271,5 +271,15 @@ class util {
         data.infos = results
         return data
     }
+
+    async GetStorage(name) {
+        return (await net.execute(RequestCode.GetStorage, { name: name }))?.value
+    }
+    async SetStorage(name, value) {
+        await net.execute(RequestCode.SetStorage, { name: name, value: value})
+    }
+    async DelStorage(name) {
+        await net.execute(RequestCode.DelStorage, { name: name })
+    }
 }
 export default new util()
