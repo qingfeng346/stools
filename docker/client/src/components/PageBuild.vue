@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <Form :model="formData" label-position="left" :label-width="150">
+    <Form :model="formData" label-position="left" :label-width="150" >
       <FormItem label="命令">
         <RadioGroup v-model="command" @on-change="OnChangeCommand" >
           <Radio v-for="command in commandList" :key="command" :label="command">{{ command }}</Radio>
@@ -14,17 +14,25 @@
           <CheckboxGroup v-else-if="arg.type == 'checkbox'" v-model="formData[arg.name]" @on-change="UpdateCommand">
             <Checkbox v-for="item in GetOptionList(arg)" :key="item.name" :label="item.name">{{ item.label }}</Checkbox>
           </CheckboxGroup>
-          <i-switch v-else-if="arg.type == 'switch'" v-model="formData[arg.name]" size="large" @on-change="UpdateCommand">
-            <span slot="open">On</span>
-            <span slot="close">Off</span>
-          </i-switch>
+          <Switch v-else-if="arg.type == 'switch'" v-model="formData[arg.name]" size="large" @on-change="UpdateCommand">
+            <template #open>
+              <span>开</span>
+            </template>
+            <template #close>
+              <span>关</span>
+            </template>
+          </Switch>
           <Input v-else-if="arg.type == 'input'" v-model="formData[arg.name]" @on-change="UpdateCommand" />
           <span v-else-if="arg.type == 'flag'" v-for="option in GetOptionList(arg)">
             {{option.label}}
-            <i-switch :value="IsFlag(formData[arg.name], option.value)" @on-change="OnChangeFlag(arg.name, option.value, $event)">
-              <span slot="open">开</span>
-              <span slot="close">关</span>
-            </i-switch>
+            <Switch :value="IsFlag(formData[arg.name], option.value)" @on-change="OnChangeFlag(arg.name, option.value, $event)">
+              <template #open>
+                <span>开</span>
+              </template>
+              <template #close>
+                <span>关</span>
+              </template>
+            </Switch>
           </span>
           <Upload v-else-if="arg.type == 'file'" type="drag" :paste="true" :name="arg.name" action :before-upload="CreateBeforeUploadFile(arg.name)">
             <div style="padding: 2px 0">

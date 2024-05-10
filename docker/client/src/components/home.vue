@@ -1,14 +1,18 @@
 <template>
   <div class="layout">
     <Layout style="height: 100%; width: 100%">
-      <Layout style="width: 100%;">
-        <Sider>
+      <Header style="margin:0px; padding:0px 10px;height:64px">
+        <div style="float:left;display:inline">
+          <a @click="OnClickCollapsedMenu"><Icon :class="rotateIcon" style="margin:16px 16px" type="md-menu" size="32"/></a>
+          <span class="title">工具</span>
+        </div>
+      </Header>
+      <Layout style="width: 100%; height: calc(100% - 64px);">
+        <Sider v-if="showMenu">
           <Menu :active-name="activeMenu" theme="dark" width="auto" @on-select="OnSelectMenu">
             <MenuItem name="build">Build</MenuItem>
             <MenuItem name="history">历史记录</MenuItem>
             <MenuItem name="config">配置</MenuItem>
-            <!-- <MenuItem name="music">音乐</MenuItem>
-            <MenuItem name="photo">整体相册</MenuItem> -->
           </Menu>
         </Sider>
         <Layout>
@@ -34,6 +38,7 @@ import util from '../scripts/util'
 export default {
   data() {
     return {
+      showMenu: true,
       activeMenu: "",
       showLog: false,
       logValue: "",
@@ -54,12 +59,20 @@ export default {
     net.registerMessage("notice", this.OnNotice.bind(this));
     this.UpdateScroll();
   },
+  computed: {
+    rotateIcon() {
+      return ["menu-icon", this.showMenu ? "" : "rotate-icon"];
+    },
+  },
   methods: {
     UpdateMenu() {
       let url = this.$route.fullPath;
       let index = url.lastIndexOf("/");
       let name = url.substring(index + 1);
       this.activeMenu = name;
+    },
+    OnClickCollapsedMenu() {
+      this.showMenu = !this.showMenu;
     },
     OnSelectMenu(name) {
       if (name == this.activeMenu) {
@@ -115,6 +128,18 @@ export default {
   position: relative;
   border-radius: 4px;
   overflow: hidden;
+}
+.menu-icon {
+  color: white;
+  transition: all 0.3s;
+}
+.rotate-icon {
+  transform: rotate(-90deg);
+}
+.title {
+  text-align: center;
+  font-size: 18px;
+  color: #fff;
 }
 .content {
   margin: 20px;
