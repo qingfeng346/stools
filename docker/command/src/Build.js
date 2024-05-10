@@ -23,6 +23,7 @@ class Build {
             this.tempPath = `${Util.getTempPath()}/${this.id}`
             console.log(`临时操作目录 : ${this.tempPath}`)
             FileUtil.CreateDirectory(this.tempPath)
+            await Util.sleep(60000)
             let commandInfo = param.Execute
             if (commandInfo.Execute && commandInfo.Execute.length > 0) {
                 console.log(`执行列表 ${JSON.stringify(commandInfo.Execute)}`)
