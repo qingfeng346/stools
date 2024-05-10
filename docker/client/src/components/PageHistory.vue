@@ -8,7 +8,7 @@
         :data="datas"
         :loading="loading">
         <template #id="{row}">
-          <router-link :to="GetHistoryInfoLink(row)" style="color: white text-decoration: underline">{{ row.id }}</router-link>
+          <router-link :to="GetHistoryInfoLink(row)" style="color: white; text-decoration: underline">{{ row.id }}</router-link>
         </template>
       </Table>
       <div class="bottom">
@@ -28,7 +28,6 @@
 </template>
 <script>
 import RowHistory from "./row/RowHistory.vue";
-import RowTime from "./row/RowTime.vue"
 import net from "../scripts/net";
 import util from "../scripts/util";
 import code from '../scripts/code.js';
@@ -71,7 +70,7 @@ export default {
                   this.OnClickDeleteHistory(params.row)
                 }
               },
-              "删除"
+              () => "删除"
             ),
           ]);
         },
@@ -97,7 +96,8 @@ export default {
       }
     },
     GetHistoryInfoLink(row) {
-      return `/home/historyinfo?id=${row.id}`
+      return ""
+      // return `/client/historyinfo?id=${row.id}`
     },
     //每一行的背景显示
     GetClassName(row, index) {

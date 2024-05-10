@@ -37,6 +37,9 @@
 import RowTime from "./RowTime.vue";
 import util from "../../scripts/util";
 export default {
+  components : {
+    RowTime,
+  },
   props: {
     history: {
       type: Object,
@@ -105,6 +108,9 @@ export default {
       // }
       this.isShowMoreOperate = this.operates.length > 0
     },
+    async OnClickMore() {
+
+    }
   }
 };
 </script>

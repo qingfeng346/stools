@@ -153,8 +153,13 @@ class HistoryManager {
         return result
     }
     async OnDelHistory(data) {
-        FileUtil.DeleteFolder(`${HistorysPath}/${data.id}`)
-        await database.history.destroy({ where: { id: data.id } })
+        let id = data.id
+        if (this.executingMap[id] != null) {
+            logger.notifyError("只能删除正在排队或已完成的任务,不能删除正在执行的任务")
+            return
+        }
+        FileUtil.DeleteFolder(`${HistorysPath}/${id}`)
+        await database.history.destroy({ where: { id: id } })
     }
 }
 module.exports = new HistoryManager()

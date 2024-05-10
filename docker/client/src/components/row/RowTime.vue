@@ -5,6 +5,12 @@
 import { ref } from "vue"
 import { Util } from "weimingcommons";
 export default {
+  setup(props) {
+    const date = ref("")
+    return {
+      date,
+    }
+  },
   props: {
     time: {
       type: Number,
@@ -14,12 +20,6 @@ export default {
       type: Number,
       default: 1,
     },
-  },
-  setup() {
-    const date = ref("")
-    return {
-      date,
-    }
   },
   mounted() {
     this.setTime();
