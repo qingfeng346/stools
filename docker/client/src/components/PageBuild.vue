@@ -106,8 +106,7 @@ export default {
     async OnChangeCommand(name) {
       localStorage.setItem(StorageLastCommand, this.command)
       let commandInfo = await util.GetCommand(name)
-      let saveConfigStr = localStorage.getItem(`${StorageCommandCache}${name}`)
-      let saveConfig = saveConfigStr == null ? {} : JSON.parse(saveConfigStr)
+
 
       this.commandInfo = commandInfo.content
       
@@ -123,6 +122,8 @@ export default {
           }
           this.args.push(skipFlag)
       }
+      let saveConfigStr = await util.GetStorage(`${StorageCommandCache}${name}`)
+      let saveConfig = saveConfigStr == null ? {} : JSON.parse(saveConfigStr)
       for (let arg of this.args) {
         this.argInfos[arg.name] = arg
         if (arg.type != "file")
@@ -229,7 +230,6 @@ export default {
       this.$forceUpdate()
     },
     UpdateCommand_impl() {
-      localStorage.setItem(`${StorageCommandCache}${this.command}`, JSON.stringify(this.formData))
       this.finishCommand = `-operate ${this.command} ` + this.GetCommand(" ")
     },
     OnClickAdd() {
@@ -243,6 +243,7 @@ export default {
       });
     },
     async OnClickAddOK() {
+      await util.SetStorage(`${StorageCommandCache}${this.command}`, JSON.stringify(this.formData))
       await util.ExecuteCommand(this.command, this.formData, this.formFile)
     }
   },
