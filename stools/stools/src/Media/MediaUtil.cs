@@ -158,8 +158,9 @@ namespace Scorpio.stools {
                 while (album.datas.Count > 1) {
                     album.datas.Sort((a, b) => b.files.Count.CompareTo(a.files.Count));
                     var first = album.datas[0];
+                    album.datas.RemoveAt(0);
                     logger.info($"first数量 : " + first.files.Count);
-                    for (var i = 1; i < album.datas.Count; ++i ) {
+                    for (var i = 0; i < album.datas.Count; ++i ) {
                         var data = album.datas[i];
                         logger.info($"其他数量 : " + data.files.Count);
                         if (first.performers.Overlaps(data.performers)) {
