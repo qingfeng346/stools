@@ -119,32 +119,40 @@ namespace Scorpio.stools {
             }
             if (clear) FileUtil.DeleteFolder(target);
             if (FileUtil.PathExist(target)) {
-                foreach (var file in FileUtil.GetFiles(target, "*", SearchOption.AllDirectories)) {
+                var files = FileUtil.GetFiles(target, "*", SearchOption.AllDirectories);
+                var progress = new Progress(files.Count, "读取原数据 : ");
+                for (var i = 0; i < files.Count; ++i) {
+                    progress.SetProgress(i);
+                    var file = files[i];
                     var musicInfo = Util.GetMusicInfo(file);
                     if (musicInfo == null || musicInfo is TagLib.Jpeg.File) continue;
                     AddMusic(musicInfo.Tag, file);
                 }
             }
-            var files = FileUtil.GetFiles(source, "*", SearchOption.AllDirectories);
-            var total = files.Count;
             var invalidCount = 0;
             var repeatCount = 0;
-            var progress = new Progress(total);
-            for (var i = 0; i < total; ++i) {
-                progress.SetProgress(i);
-                var sourceFile = files[i];
-                var musicInfo = Util.GetMusicInfo(sourceFile);
-                if (musicInfo == null || musicInfo is TagLib.Jpeg.File) {
-                    invalidCount++;
-                    continue;
+            var fileCount = 0;
+            {
+                var files = FileUtil.GetFiles(source, "*", SearchOption.AllDirectories);
+                fileCount = files.Count;
+                var progress = new Progress(fileCount, "复制文件 : ");
+                for (var i = 0; i < fileCount; ++i) {
+                    progress.SetProgress(i);
+                    var sourceFile = files[i];
+                    var musicInfo = Util.GetMusicInfo(sourceFile);
+                    if (musicInfo == null || musicInfo is TagLib.Jpeg.File) {
+                        invalidCount++;
+                        continue;
+                    }
+                    var albumName = musicInfo.Tag.Album;
+                    var performers = new HashSet<string>();
+                    Array.ForEach(musicInfo.Tag.Performers, x => performers.UnionWith(x.Split("&")));
+                    var singer = string.Join("&", performers);
+                    var targetFile = $"{target}/{singer}/{albumName}/{singer}-{musicInfo.Tag.Title}{Path.GetExtension(sourceFile)}";
+                    if (MoveFile(sourceFile, targetFile))
+                        repeatCount++;
+                    AddMusic(musicInfo.Tag, targetFile);
                 }
-                var albumName = musicInfo.Tag.Album;
-                var performers = new HashSet<string>();
-                Array.ForEach(musicInfo.Tag.Performers, x => performers.UnionWith(x.Split("&")));
-                var singer = string.Join("&", performers);
-                var targetFile = $"{target}/{singer}/{albumName}/{singer}-{musicInfo.Tag.Title}{Path.GetExtension(sourceFile)}";
-                MoveFile(sourceFile, targetFile);
-                AddMusic(musicInfo.Tag, targetFile);
             }
             void SortAlbum(Album album) {
                 while (album.datas.Count > 1) {
@@ -162,11 +170,17 @@ namespace Scorpio.stools {
                     }
                 }
             }
-            foreach (var pair in albums) {
-                SortAlbum(pair.Value);
+            {
+                var progress = new Progress(albums.Count, "整理专辑 : ");
+                var index = 0;
+                foreach (var pair in albums) {
+                    progress.SetProgress(index++);
+                    SortAlbum(pair.Value);
+                }
             }
+            logger.info("清理空目录");
             FileUtil.DeleteEmptyFolder(target, true);
-            logger.info($"整理完成,所有文件:{files.Count},无效文件:{invalidCount},重复文件:{repeatCount}");
+            logger.info($"整理完成,所有文件:{fileCount},无效文件:{invalidCount},重复文件:{repeatCount}");
         }
     }
 }

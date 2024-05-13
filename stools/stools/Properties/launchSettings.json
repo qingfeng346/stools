@@ -45,7 +45,7 @@
     },
     "sortmusic": {
       "commandName": "Project",
-      "commandLineArgs": "sortmusic -source D:/KwDownload/song -output D:/KwDownload/target -clear true"
+      "commandLineArgs": "sortmusic -source C:\\Users\\qingf\\Downloads\\音乐 -output C:\\Users\\qingf\\Downloads\\整理音乐 -clear false -move true"
     }
   }
 }
