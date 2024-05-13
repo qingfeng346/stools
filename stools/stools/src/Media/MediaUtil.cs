@@ -166,6 +166,7 @@ namespace Scorpio.stools {
                 SortAlbum(pair.Value);
             }
             FileUtil.DeleteEmptyFolder(target, true);
+            logger.info($"整理完成,所有文件:{files.Count},无效文件:{invalidCount},重复文件:{repeatCount}");
         }
     }
 }
