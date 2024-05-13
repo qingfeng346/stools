@@ -7,15 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Apis.AndroidPublisher.v3" Version="1.67.0.3374" />
-    <PackageReference Include="Google.Apis.Drive.v3" Version="1.67.0.3373" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.60" />
+    <PackageReference Include="Google.Apis.AndroidPublisher.v3" Version="1.68.0.3416" />
+    <PackageReference Include="Google.Apis.Drive.v3" Version="1.68.0.3373" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.61" />
     <PackageReference Include="MetadataExtractor" Version="2.8.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="RestSharp" Version="110.2.0" />
     <PackageReference Include="Scorpio-CSharp" Version="2.6.0" />
     <PackageReference Include="Scorpio.Commons" Version="1.1.29" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.3" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.4" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
   </ItemGroup>

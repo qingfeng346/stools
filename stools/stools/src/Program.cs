@@ -29,6 +29,7 @@ namespace Scorpio.stools {
         private const string ParameterQueue = "--queue|-queue|-q";
         private const string ParameterSource = "--source|-source|-s";
         private const string ParameterClear = "--clear|-clear|-c";
+        private const string ParameterMove = "--move|-move";
         unsafe static void Main(string[] args) {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var perform = new Perform();
@@ -231,7 +232,7 @@ namespace Scorpio.stools {
                         }
                     }
                 }
-                throw new System.Exception($"{data.Name} 下载失败 : {builder.ToString()}");
+                throw new System.Exception($"{data.Name} 下载失败 : {builder}");
             }, queue);
             File.WriteAllLines($"{tsBase}/file.m3u8", lines.ToArray());
             FileUtil.DeleteFile(output);
@@ -251,8 +252,9 @@ namespace Scorpio.stools {
         }
         static void SortMusic([ParamterInfo(Label = "起始目录", Param = ParameterSource)] string source,
                               [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target, 
-                              [ParamterInfo(Label = "清理目录", Param = ParameterClear, Required = false)] bool clear) {
-            MediaUtil.SortMusic(source, target, clear);
+                              [ParamterInfo(Label = "清理目录", Param = ParameterClear, Required = false)] bool clear,
+                              [ParamterInfo(Label = "移动文件", Param = ParameterMove, Required = false)] bool move) {
+            MediaUtil.SortMusic(source, target, clear, move);
         }
     }
 }

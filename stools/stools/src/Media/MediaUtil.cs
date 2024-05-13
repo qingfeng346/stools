@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Scorpio.Commons;
 using System.IO;
-using System.Runtime.ConstrainedExecution;
 
 namespace Scorpio.stools {
     public class MediaUtil {
@@ -80,59 +79,85 @@ namespace Scorpio.stools {
                 }
             }
         }
-        public static void SortMusic(string source, string target, bool clear) {
+        
+        public static void SortMusic(string source, string target, bool clear, bool move) {
             var albums = new Dictionary<string, Album>();
-            var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories);
-            var total = files.Length;
-            if (clear) FileUtil.DeleteFolder(target);
-            var progress = new Progress(total);
-            for (var i = 0; i < total; ++i) {
-                progress.SetProgress(i);
-                var file = files[i];
-                var musicInfo = Util.GetMusicInfo(file);
-                if (musicInfo == null || musicInfo is TagLib.Jpeg.File) {
-                    logger.info($"{file} 不是正常的音频文件 : {musicInfo}");
-                    continue;
-                }
+            void AddMusic(TagLib.Tag tag, string file) {
+                var albumName = tag.Album;
                 var performers = new HashSet<string>();
-                Array.ForEach(musicInfo.Tag.Performers, x => performers.UnionWith(x.Split("&")));
+                Array.ForEach(tag.Performers, x => performers.UnionWith(x.Split("&")));
                 var singer = string.Join("&", performers);
-                var albumName = musicInfo.Tag.Album;
-                var targetPath = $"{target}/{singer}/{albumName}/";
-                var targetFile = $"{targetPath}{singer}-{musicInfo.Tag.Title}{Path.GetExtension(file)}";
-                FileUtil.CopyFile(file, targetFile, true);
-                if (string.IsNullOrEmpty(albumName)) continue;
+                if (string.IsNullOrEmpty(albumName)) return;
                 if (!albums.TryGetValue(albumName, out var album)) {
                     album = albums[albumName] = new Album();
                 }
                 var data = album.GetData(singer);
                 if (data == null) {
-                    data = new Album.Data() { singer = singer, performers = performers, path = targetPath };
+                    data = new Album.Data() { singer = singer, performers = performers, path = Path.GetDirectoryName(file) };
                     album.datas.Add(data);
                 }
-                data.files.Add(targetFile);
+                data.files.Add(file);
+            }
+            bool MoveFile(string sourceFile, string targetFile) {
+                if (File.Exists(targetFile)) {
+                    if (new FileInfo(sourceFile).Length > new FileInfo(targetFile).Length) {
+                        if (move)
+                            FileUtil.MoveFile(sourceFile, targetFile, true);
+                        else
+                            FileUtil.CopyFile(sourceFile, targetFile, true);
+                    } else if (move) {
+                        FileUtil.DeleteFile(sourceFile);
+                    }
+                    return true;
+                } else {
+                    if (move)
+                        FileUtil.MoveFile(sourceFile, targetFile, true);
+                    else
+                        FileUtil.CopyFile(sourceFile, targetFile, true);
+                    return false;
+                }
+            }
+            if (clear) FileUtil.DeleteFolder(target);
+            if (FileUtil.PathExist(target)) {
+                foreach (var file in FileUtil.GetFiles(target, "*", SearchOption.AllDirectories)) {
+                    var musicInfo = Util.GetMusicInfo(file);
+                    if (musicInfo == null || musicInfo is TagLib.Jpeg.File) continue;
+                    AddMusic(musicInfo.Tag, file);
+                }
+            }
+            var files = FileUtil.GetFiles(source, "*", SearchOption.AllDirectories);
+            var total = files.Count;
+            var invalidCount = 0;
+            var repeatCount = 0;
+            var progress = new Progress(total);
+            for (var i = 0; i < total; ++i) {
+                progress.SetProgress(i);
+                var sourceFile = files[i];
+                var musicInfo = Util.GetMusicInfo(sourceFile);
+                if (musicInfo == null || musicInfo is TagLib.Jpeg.File) {
+                    invalidCount++;
+                    continue;
+                }
+                var albumName = musicInfo.Tag.Album;
+                var performers = new HashSet<string>();
+                Array.ForEach(musicInfo.Tag.Performers, x => performers.UnionWith(x.Split("&")));
+                var singer = string.Join("&", performers);
+                var targetFile = $"{target}/{singer}/{albumName}/{singer}-{musicInfo.Tag.Title}{Path.GetExtension(sourceFile)}";
+                MoveFile(sourceFile, targetFile);
+                AddMusic(musicInfo.Tag, targetFile);
             }
             void SortAlbum(Album album) {
                 while (album.datas.Count > 1) {
                     album.datas.Sort((a, b) => b.files.Count.CompareTo(a.files.Count));
                     var first = album.datas[0];
-                    album.datas.RemoveAt(0);
-                    for (var i = 0; i < album.datas.Count; ) {
+                    for (var i = 1; i < album.datas.Count; ++i ) {
                         var data = album.datas[i];
                         if (first.performers.Overlaps(data.performers)) {
                             foreach (var file in data.files) {
-                                var targetFile = $"{first.path}/{Path.GetFileName(file)}";
-                                var targetFileLength = File.Exists(targetFile) ? new FileInfo(targetFile).Length : 0;
-                                if (new FileInfo(file).Length > targetFileLength) {
-                                    logger.info($"移动文件 : {file} -> {targetFile}");
-                                    FileUtil.MoveFile(file, targetFile, true);
-                                } else {
-                                    logger.info($"目标文件大小大于原始文件,直接删除:{file},  目标文件:{targetFile}");
+                                if (MoveFile(file, $"{first.path}/{Path.GetFileName(file)}")) {
+                                    repeatCount++;
                                 }
                             }
-                            album.datas.RemoveAt(i);
-                        } else {
-                            ++i;
                         }
                     }
                 }
@@ -142,35 +167,5 @@ namespace Scorpio.stools {
             }
             FileUtil.DeleteEmptyFolder(target, true);
         }
-        //public static void Distinct(string source, string backup) {
-        //    var hashFiles = new Dictionary<MediaInfo, DistinctFile>();
-        //    var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories);
-        //    var total = files.Length;
-        //    var progress = new Progress(total);
-        //    for (var i = 0; i < total; i++) {
-        //        progress.SetProgress(i);
-        //        var file = files[i];
-        //        var mediaInfo = Util.GetMediaInfo(file);
-        //        if (mediaInfo == null) {
-        //            logger.info($"{file} 文件不是有效的媒体文件");
-        //            continue;
-        //        }
-        //        if (!hashFiles.TryGetValue(mediaInfo, out var distinctFile)) {
-        //            hashFiles.Add(mediaInfo, new DistinctFile() { file = file });
-        //            continue;
-        //        }
-        //        if (!FileUtil.CompareFile(distinctFile.file, file)) {
-        //            continue;
-        //        }
-        //        var pathName = (mediaInfo.isImage ? "图片/" : "视频/") + Path.GetFileNameWithoutExtension(distinctFile.file);
-        //        var extension = Path.GetExtension(distinctFile.file);
-        //        if (!distinctFile.isBackup) {
-        //            distinctFile.isBackup = true;
-        //            FileUtil.CopyFile(distinctFile.file, $"{backup}/{pathName}/{Guid.NewGuid()}{extension}");
-        //        }
-        //        FileUtil.MoveFile(file, $"{backup}/{pathName}/{Guid.NewGuid()}{extension}", true);
-        //        logger.info($"发现重复文件 {file} -> {distinctFile.file}");
-        //    }
-        //}
     }
 }
