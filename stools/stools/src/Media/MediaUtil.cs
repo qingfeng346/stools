@@ -1,7 +1,9 @@
 ﻿using Scorpio.Commons;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using static MusicKugou;
 
 namespace Scorpio.stools {
     public class MediaUtil {
@@ -87,16 +89,20 @@ namespace Scorpio.stools {
                 var performers = new HashSet<string>();
                 Array.ForEach(tag.Performers, x => performers.UnionWith(x.Split("&")));
                 var singer = string.Join("&", performers);
+                var targetFile = $"{target}/{singer}/{albumName}/{singer}-{tag.Title}{Path.GetExtension(file)}";
+                if (Path.GetFullPath(file) != Path.GetFullPath(targetFile)) {
+                    FileUtil.MoveFile(file, targetFile, true);
+                }
                 if (string.IsNullOrEmpty(albumName)) return;
                 if (!albums.TryGetValue(albumName, out var album)) {
                     album = albums[albumName] = new Album();
                 }
                 var data = album.GetData(singer);
                 if (data == null) {
-                    data = new Album.Data() { singer = singer, performers = performers, path = Path.GetDirectoryName(file) };
+                    data = new Album.Data() { singer = singer, performers = performers, path = Path.GetDirectoryName(targetFile) };
                     album.datas.Add(data);
                 }
-                data.files.Add(file);
+                data.files.Add(targetFile);
             }
             bool MoveFile(string sourceFile, string targetFile, bool forceMove) {
                 var m = move || forceMove;
@@ -133,7 +139,7 @@ namespace Scorpio.stools {
             var invalidCount = 0;
             var repeatCount = 0;
             var fileCount = 0;
-            {
+            if (FileUtil.PathExist(source) && Path.GetFullPath(source) != Path.GetFullPath(target)) {
                 var files = FileUtil.GetFiles(source, "*", SearchOption.AllDirectories);
                 fileCount = files.Count;
                 var progress = new Progress(fileCount, "复制文件 : ");
