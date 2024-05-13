@@ -105,6 +105,8 @@ namespace Scorpio.stools {
                 data.files.Add(targetFile);
             }
             bool MoveFile(string sourceFile, string targetFile, bool forceMove) {
+                if (!File.Exists(sourceFile))
+                    return false;
                 var m = move || forceMove;
                 if (File.Exists(targetFile)) {
                     if (new FileInfo(sourceFile).Length > new FileInfo(targetFile).Length) {
