@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Scorpio.Commons;
+using System;
 using System.Collections.Generic;
-using Scorpio.Commons;
 using System.IO;
 
 namespace Scorpio.stools {
@@ -158,8 +158,10 @@ namespace Scorpio.stools {
                 while (album.datas.Count > 1) {
                     album.datas.Sort((a, b) => b.files.Count.CompareTo(a.files.Count));
                     var first = album.datas[0];
+                    logger.info($"first数量 : " + first.files.Count);
                     for (var i = 1; i < album.datas.Count; ++i ) {
                         var data = album.datas[i];
+                        logger.info($"其他数量 : " + data.files.Count);
                         if (first.performers.Overlaps(data.performers)) {
                             foreach (var file in data.files) {
                                 if (MoveFile(file, $"{first.path}/{Path.GetFileName(file)}")) {
@@ -175,6 +177,7 @@ namespace Scorpio.stools {
                 var index = 0;
                 foreach (var pair in albums) {
                     progress.SetProgress(index++);
+                    logger.info($"整理专辑 : " + pair.Key);
                     SortAlbum(pair.Value);
                 }
             }
