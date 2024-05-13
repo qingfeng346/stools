@@ -98,19 +98,20 @@ namespace Scorpio.stools {
                 }
                 data.files.Add(file);
             }
-            bool MoveFile(string sourceFile, string targetFile) {
+            bool MoveFile(string sourceFile, string targetFile, bool forceMove) {
+                var m = move || forceMove;
                 if (File.Exists(targetFile)) {
                     if (new FileInfo(sourceFile).Length > new FileInfo(targetFile).Length) {
-                        if (move)
+                        if (m)
                             FileUtil.MoveFile(sourceFile, targetFile, true);
                         else
                             FileUtil.CopyFile(sourceFile, targetFile, true);
-                    } else if (move) {
+                    } else if (m) {
                         FileUtil.DeleteFile(sourceFile);
                     }
                     return true;
                 } else {
-                    if (move)
+                    if (m)
                         FileUtil.MoveFile(sourceFile, targetFile, true);
                     else
                         FileUtil.CopyFile(sourceFile, targetFile, true);
@@ -149,7 +150,7 @@ namespace Scorpio.stools {
                     Array.ForEach(musicInfo.Tag.Performers, x => performers.UnionWith(x.Split("&")));
                     var singer = string.Join("&", performers);
                     var targetFile = $"{target}/{singer}/{albumName}/{singer}-{musicInfo.Tag.Title}{Path.GetExtension(sourceFile)}";
-                    if (MoveFile(sourceFile, targetFile))
+                    if (MoveFile(sourceFile, targetFile, false))
                         repeatCount++;
                     AddMusic(musicInfo.Tag, targetFile);
                 }
@@ -159,13 +160,13 @@ namespace Scorpio.stools {
                     album.datas.Sort((a, b) => b.files.Count.CompareTo(a.files.Count));
                     var first = album.datas[0];
                     album.datas.RemoveAt(0);
-                    logger.info($"first数量 : " + first.files.Count);
                     for (var i = 0; i < album.datas.Count; ++i ) {
                         var data = album.datas[i];
-                        logger.info($"其他数量 : " + data.files.Count);
                         if (first.performers.Overlaps(data.performers)) {
                             foreach (var file in data.files) {
-                                if (MoveFile(file, $"{first.path}/{Path.GetFileName(file)}")) {
+                                var targetFile = $"{first.path}/{Path.GetFileName(file)}";
+                                logger.info($"移动文件 {file} -> {targetFile}");
+                                if (MoveFile(file, targetFile, true)) {
                                     repeatCount++;
                                 }
                             }
@@ -178,7 +179,6 @@ namespace Scorpio.stools {
                 var index = 0;
                 foreach (var pair in albums) {
                     progress.SetProgress(index++);
-                    logger.info($"整理专辑 : " + pair.Key);
                     SortAlbum(pair.Value);
                 }
             }
