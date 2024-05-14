@@ -36,7 +36,7 @@
     },
     "sortmedia": {
       "commandName": "Project",
-      "commandLineArgs": "sortmedia -source C:/Users/qingf/Downloads/Source -output C:/Users/qingf/Downloads/Target",
+      "commandLineArgs": "sortmedia -source C:\\Users\\qingf\\Downloads\\相册 -output C:\\Users\\qingf\\Downloads\\整理相册 -clear false -move false",
       "workingDirectory": "$(ProjectDir)"
     },
     "wget": {

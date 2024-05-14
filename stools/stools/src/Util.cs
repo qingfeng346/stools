@@ -16,6 +16,11 @@ using System.Globalization;
 using MetadataExtractor.Formats.QuickTime;
 using System.Collections;
 using Newtonsoft.Json;
+using System.IO.Compression;
+using MetadataExtractor.Util;
+
+
+
 
 #if NET35
 using DirectoryList = System.Collections.Generic.IList<MetadataExtractor.Directory>;
@@ -112,31 +117,58 @@ namespace Scorpio.stools {
             }
             return -1;
         }
-        public static MediaInfo GetMediaInfo(string fileName) {
-            DirectoryList metadata;
+        static DirectoryList ReadMetadata(string fileName) {
             try {
-                metadata = ImageMetadataReader.ReadMetadata(fileName);
-            } catch (System.Exception) {
-                //不是媒体类型
-                return null;
-            }
+                return ImageMetadataReader.ReadMetadata(fileName);
+            } catch (System.Exception) { }
+            try {
+                if (fileName.EndsWith(".livp")) {
+                    using (var fileStream = File.OpenRead(fileName)) {
+                        using (var zipArchive =  new ZipArchive(fileStream)) {
+                            foreach (var entry in zipArchive.Entries) {
+                                var tempFile = Path.GetTempFileName();
+                                using (var tempStream = File.OpenWrite(tempFile)) {
+                                    using (var entryStream = entry.Open()) {
+                                        entryStream.CopyTo(tempStream);
+                                    }
+                                }
+                                try {
+                                    var list = ImageMetadataReader.ReadMetadata(tempFile);
+                                    var fileType = list.OfType<FileTypeDirectory>().FirstOrDefault().GetDescription(FileTypeDirectory.TagDetectedFileMimeType);
+                                    if (fileType.Contains("image"))
+                                        return list;
+                                } catch (System.Exception e) {
+                                    logger.error("读取Entry信息失败 : " + entry.Name + " " + e.ToString());
+                                } finally {
+                                    FileUtil.DeleteFile(tempFile);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (System.Exception) { }
+            return null;
+        }
+        public static MediaInfo GetMediaInfo(string fileName) {
+            var metadata = ReadMetadata(fileName);
+            if (metadata == null) return null;
             var mediaInfo = new MediaInfo();
             mediaInfo.fileName = fileName;
-            var fileType = metadata.OfType<FileTypeDirectory>().FirstOrDefault().GetDescription(3);
+            var fileType = metadata.OfType<FileTypeDirectory>().FirstOrDefault().GetDescription(FileTypeDirectory.TagDetectedFileMimeType);
             mediaInfo.mediaType = fileType;
             var fileInfo = new FileInfo(fileName);
             if (fileType.Contains("image")) {
                 mediaInfo.isImage = true;
                 var info = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
                 if (info != null) {
-                    var time = info.GetDescription(36867);
+                    var time = info.GetDescription(ExifDirectoryBase.TagDateTimeOriginal);
                     if (DateTime.TryParseExact(time, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var createTime)) {
                         mediaInfo.createTime = createTime;
                     } else {
                         mediaInfo.createTime = fileInfo.LastWriteTime;
                     }
-                    mediaInfo.width = Convert.ToDecimal(info.GetObject(40962));
-                    mediaInfo.height = Convert.ToDecimal(info.GetObject(40963));
+                    mediaInfo.width = Convert.ToDecimal(info.GetObject(ExifDirectoryBase.TagExifImageWidth));
+                    mediaInfo.height = Convert.ToDecimal(info.GetObject(ExifDirectoryBase.TagExifImageHeight));
                 } else {
                     mediaInfo.createTime = fileInfo.LastWriteTime;
                 }
@@ -144,7 +176,7 @@ namespace Scorpio.stools {
                 mediaInfo.isImage = false;
                 var info = metadata.OfType<QuickTimeTrackHeaderDirectory>().FirstOrDefault();
                 if (info != null) {
-                    var time = info.GetObject(3);
+                    var time = info.GetObject(QuickTimeTrackHeaderDirectory.TagCreated);
                     if (time != null) {
                         mediaInfo.createTime = (DateTime)time;
                         if (mediaInfo.createTime.Kind != DateTimeKind.Local) {
@@ -153,8 +185,8 @@ namespace Scorpio.stools {
                     } else {
                         mediaInfo.createTime = fileInfo.LastWriteTime;
                     }
-                    mediaInfo.width = Convert.ToDecimal(info.GetObject(10));
-                    mediaInfo.height = Convert.ToDecimal(info.GetObject(11));
+                    mediaInfo.width = Convert.ToDecimal(info.GetObject(QuickTimeTrackHeaderDirectory.TagWidth));
+                    mediaInfo.height = Convert.ToDecimal(info.GetObject(QuickTimeTrackHeaderDirectory.TagHeight));
                 } else {
                     mediaInfo.createTime = fileInfo.LastWriteTime;
                 }

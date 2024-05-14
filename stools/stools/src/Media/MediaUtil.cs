@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using static MusicKugou;
 
 namespace Scorpio.stools {
@@ -35,11 +36,8 @@ namespace Scorpio.stools {
         }
         public static void SortMedia(string source, string target, bool clear) {
             var distinctFiles = new Dictionary<MediaInfo, string>();
-            var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories);
-            var total = files.Length;
-            if (clear) {
-                FileUtil.DeleteFolder(target);
-            } else if (FileUtil.PathExist($"{target}/整理文件")) {
+            if (clear) FileUtil.DeleteFolder(target);
+            if (FileUtil.PathExist($"{target}/整理文件")) {
                 foreach (var file in Directory.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories)) {
                     var mediaInfo = Util.GetMediaInfo(file);
                     if (mediaInfo != null) {
@@ -47,6 +45,8 @@ namespace Scorpio.stools {
                     }
                 }
             }
+            var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories);
+            var total = files.Length;
             var progress = new Progress(total);
             FileUtil.CreateFile($"{target}/number.txt", $"总数量 : {total}");
             for (var i = 0; i < total; ++i) {
@@ -83,6 +83,7 @@ namespace Scorpio.stools {
         }
         
         public static void SortMusic(string source, string target, bool clear, bool move) {
+            ZipArchive e;
             var albums = new Dictionary<string, Album>();
             void AddMusic(TagLib.Tag tag, string file) {
                 var albumName = tag.Album;
