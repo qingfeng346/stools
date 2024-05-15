@@ -41,26 +41,33 @@ namespace Scorpio.stools {
                 var files = FileUtil.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories);
                 var progress = new Progress(files.Count, "整理已有文件");
                 for (var i = 0 ; i < files.Count; ++i) {
+                    progress.SetProgress(i);
                     var mediaInfo = Util.GetMediaInfo(files[i]);
                     if (mediaInfo != null) {
                         distinctFiles[mediaInfo] = files[i];
                     }
                 }
+                logger.info($"已有文件数量:{files.Count},有效文件数量:{distinctFiles.Count}");
             }
             {
                 var files = FileUtil.GetFiles(source, "*", SearchOption.AllDirectories);
                 var progress = new Progress(files.Count, "复制文件");
+                var invalidCount = 0;
+                var repeatCount = 0;
+                var validCount = 0;
                 for (var i = 0; i < files.Count; ++i) {
                     progress.SetProgress(i);
                     var file = files[i];
                     var mediaInfo = Util.GetMediaInfo(file);
                     if (mediaInfo == null) {
+                        invalidCount++;
                         var errorPath = $"{target}/错误文件/";
                         var count = Directory.Exists(errorPath) ? Directory.GetFiles(errorPath).Length : 0;
                         FileUtil.CopyFile(file, $"{errorPath}{count}{Path.GetExtension(file)}", true);
                         continue;
                     }
                     if (distinctFiles.TryGetValue(mediaInfo, out var origin)) {
+                        repeatCount++;
                         var dateTime = mediaInfo.createTime;
                         var extension = Path.GetExtension(file);
                         var mediaType = mediaInfo.isImage ? "重复照片" : "重复视频";
@@ -74,6 +81,7 @@ namespace Scorpio.stools {
                             FileUtil.CopyFile(origin, $"{targetPath}/origin{extension}", true);
                         }
                     } else {
+                        validCount ++;
                         var dateTime = mediaInfo.createTime;
                         var mediaType = mediaInfo.isImage ? "照片" : "视频";
                         var targetFile = GetFileName($"{target}/整理文件/{mediaType}/{dateTime.ToString(PathFormat)}/", dateTime, Path.GetExtension(file));
@@ -81,6 +89,7 @@ namespace Scorpio.stools {
                         FileUtil.CopyFile(file, targetFile, true);
                     }
                 }
+                logger.info($"总文件数量:{files.Count},成功文件:{validCount},重复文件:{repeatCount},无效文件:{invalidCount}");
             }
         }
         
