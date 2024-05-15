@@ -38,52 +38,53 @@ namespace Scorpio.stools {
             var distinctFiles = new Dictionary<MediaInfo, string>();
             if (clear) FileUtil.DeleteFolder(target);
             if (FileUtil.PathExist($"{target}/整理文件")) {
-                foreach (var file in Directory.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories)) {
-                    var mediaInfo = Util.GetMediaInfo(file);
+                var files = FileUtil.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories);
+                var progress = new Progress(files.Count, "整理已有文件");
+                for (var i = 0 ; i < files.Count; ++i) {
+                    var mediaInfo = Util.GetMediaInfo(files[i]);
                     if (mediaInfo != null) {
-                        distinctFiles[mediaInfo] = file;
+                        distinctFiles[mediaInfo] = files[i];
                     }
                 }
             }
-            var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories);
-            var total = files.Length;
-            var progress = new Progress(total);
-            FileUtil.CreateFile($"{target}/number.txt", $"总数量 : {total}");
-            for (var i = 0; i < total; ++i) {
-                progress.SetProgress(i);
-                var file = files[i];
-                var mediaInfo = Util.GetMediaInfo(file);
-                if (mediaInfo == null) {
-                    var errorPath = $"{target}/错误文件/";
-                    var count = Directory.Exists(errorPath) ? Directory.GetFiles(errorPath).Length : 0;
-                    FileUtil.CopyFile(file, $"{errorPath}{count}{Path.GetExtension(file)}", true);
-                    continue;
-                }
-                if (distinctFiles.TryGetValue(mediaInfo, out var origin)) {
-                    var dateTime = mediaInfo.createTime;
-                    var extension = Path.GetExtension(file);
-                    var mediaType = mediaInfo.isImage ? "重复照片" : "重复视频";
-                    var targetPath = $"{target}/重复文件/{mediaType}/{dateTime.ToString(PathFormat)}/{mediaInfo.md5}_{mediaInfo.size}/";
-                    var targetFile = GetFileName(targetPath, dateTime, extension);
-                    FileUtil.CopyFile(file, targetFile, true);
-                    if (!FileUtil.FileExist($"{targetPath}/info.txt")) {
-                        FileUtil.CreateFile($"{targetPath}/info.txt", origin);
+            {
+                var files = FileUtil.GetFiles(source, "*", SearchOption.AllDirectories);
+                var progress = new Progress(files.Count, "复制文件");
+                for (var i = 0; i < files.Count; ++i) {
+                    progress.SetProgress(i);
+                    var file = files[i];
+                    var mediaInfo = Util.GetMediaInfo(file);
+                    if (mediaInfo == null) {
+                        var errorPath = $"{target}/错误文件/";
+                        var count = Directory.Exists(errorPath) ? Directory.GetFiles(errorPath).Length : 0;
+                        FileUtil.CopyFile(file, $"{errorPath}{count}{Path.GetExtension(file)}", true);
+                        continue;
                     }
-                    if (!FileUtil.FileExist($"{targetPath}/origin{extension}")) {
-                        FileUtil.CopyFile(origin, $"{targetPath}/origin{extension}", true);
+                    if (distinctFiles.TryGetValue(mediaInfo, out var origin)) {
+                        var dateTime = mediaInfo.createTime;
+                        var extension = Path.GetExtension(file);
+                        var mediaType = mediaInfo.isImage ? "重复照片" : "重复视频";
+                        var targetPath = $"{target}/重复文件/{mediaType}/{dateTime.ToString(PathFormat)}/{mediaInfo.md5}_{mediaInfo.size}/";
+                        var targetFile = GetFileName(targetPath, dateTime, extension);
+                        FileUtil.CopyFile(file, targetFile, true);
+                        if (!FileUtil.FileExist($"{targetPath}/info.txt")) {
+                            FileUtil.CreateFile($"{targetPath}/info.txt", origin);
+                        }
+                        if (!FileUtil.FileExist($"{targetPath}/origin{extension}")) {
+                            FileUtil.CopyFile(origin, $"{targetPath}/origin{extension}", true);
+                        }
+                    } else {
+                        var dateTime = mediaInfo.createTime;
+                        var mediaType = mediaInfo.isImage ? "照片" : "视频";
+                        var targetFile = GetFileName($"{target}/整理文件/{mediaType}/{dateTime.ToString(PathFormat)}/", dateTime, Path.GetExtension(file));
+                        distinctFiles[mediaInfo] = targetFile;
+                        FileUtil.CopyFile(file, targetFile, true);
                     }
-                } else {
-                    var dateTime = mediaInfo.createTime;
-                    var mediaType = mediaInfo.isImage ? "照片" : "视频";
-                    var targetFile = GetFileName($"{target}/整理文件/{mediaType}/{dateTime.ToString(PathFormat)}/", dateTime, Path.GetExtension(file));
-                    distinctFiles[mediaInfo] = targetFile;
-                    FileUtil.CopyFile(file, targetFile, true);
                 }
             }
         }
         
         public static void SortMusic(string source, string target, bool clear, bool move) {
-            ZipArchive e;
             var albums = new Dictionary<string, Album>();
             void AddMusic(TagLib.Tag tag, string file) {
                 var albumName = tag.Album;
