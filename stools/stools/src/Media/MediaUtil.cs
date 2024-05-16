@@ -41,10 +41,15 @@ namespace Scorpio.stools {
             if (FileUtil.PathExist($"{target}/整理文件")) {
                 var files = FileUtil.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories);
                 var progress = new Progress(files.Count, "整理已有文件");
-                for (var i = 0 ; i < files.Count; ++i) {
-                    progress.SetProgress(i);
-                    distinctFiles[Util.GetMediaInfo(files[i])] = files[i];
-                }
+                var index = 0;
+                var sync = new object();
+                ScorpioUtil.StartQueue(files, async (file, _) => {
+                    var mediaInfo = Util.GetMediaInfo(file);
+                    lock(sync) {
+                        progress.SetProgress(index++);
+                        distinctFiles[mediaInfo] = file;
+                    }
+                });
                 originFileCount = files.Count;
                 logger.info($"已有文件数量:{files.Count},有效文件数量:{distinctFiles.Count}");
             }
@@ -89,7 +94,7 @@ namespace Scorpio.stools {
                     }
                 }
                 logger.info($"总文件数量:{files.Count},成功文件:{validCount},重复文件:{repeatCount},无效文件:{invalidCount}");
-                logger.info($"目前照片总数量:{validCount + originFileCount}");
+                logger.info($"目前文件总数量:{validCount + originFileCount}");
             }
         }
         
