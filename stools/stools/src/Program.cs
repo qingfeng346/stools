@@ -254,7 +254,7 @@ namespace Scorpio.stools {
                               [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target, 
                               [ParamterInfo(Label = "清理目录", Param = ParameterClear, Required = false)] bool clear,
                               [ParamterInfo(Label = "移动文件", Param = ParameterMove, Required = false)] bool move) {
-            MediaUtil.SortMusic(source, target, clear, move);
+            MusicUtil.SortMusic(source, target, clear, move);
         }
     }
 }
