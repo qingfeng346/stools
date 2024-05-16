@@ -37,16 +37,15 @@ namespace Scorpio.stools {
         public static void SortMedia(string source, string target, bool clear) {
             var distinctFiles = new Dictionary<MediaInfo, string>();
             if (clear) FileUtil.DeleteFolder(target);
+            var originFileCount = 0;
             if (FileUtil.PathExist($"{target}/整理文件")) {
                 var files = FileUtil.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories);
                 var progress = new Progress(files.Count, "整理已有文件");
                 for (var i = 0 ; i < files.Count; ++i) {
                     progress.SetProgress(i);
-                    var mediaInfo = Util.GetMediaInfo(files[i]);
-                    if (mediaInfo != null) {
-                        distinctFiles[mediaInfo] = files[i];
-                    }
+                    distinctFiles[Util.GetMediaInfo(files[i])] = files[i];
                 }
+                originFileCount = files.Count;
                 logger.info($"已有文件数量:{files.Count},有效文件数量:{distinctFiles.Count}");
             }
             {
@@ -90,6 +89,7 @@ namespace Scorpio.stools {
                     }
                 }
                 logger.info($"总文件数量:{files.Count},成功文件:{validCount},重复文件:{repeatCount},无效文件:{invalidCount}");
+                logger.info($"目前照片总数量:{validCount + originFileCount}");
             }
         }
         
