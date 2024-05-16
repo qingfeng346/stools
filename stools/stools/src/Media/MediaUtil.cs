@@ -52,8 +52,14 @@ namespace Scorpio.stools {
                     if (mediaInfo == null) {
                         invalidCount++;
                         var errorPath = $"{target}/错误文件/";
-                        var count = Directory.Exists(errorPath) ? Directory.GetFiles(errorPath).Length : 0;
-                        FileUtil.CopyFile(file, $"{errorPath}{count}{Path.GetExtension(file)}", true);
+                        var fileName = Path.GetFileName(file);
+                        var errorFilePath = $"{errorPath}/{fileName}";
+                        var index = 1;
+                        while (FileUtil.FileExist(errorFilePath)) {
+                            errorFilePath = $"{errorPath}/{fileName}.{index++}";
+                        }
+                        FileUtil.CopyFile(file, errorFilePath, true);
+                        FileUtil.CreateFile($"{errorFilePath}.txt", file);
                         continue;
                     }
                     if (distinctFiles.TryGetValue(mediaInfo, out var origin)) {
