@@ -1,4 +1,5 @@
-﻿using Scorpio.Commons;
+﻿using System;
+using Scorpio.Commons;
 public class Progress {
     private int total;
     private int phase;
@@ -10,12 +11,16 @@ public class Progress {
         this.phase = total / phase;
         this.next = this.phase;
     }
-    public void SetProgress(int progress) {
+    public void SetProgress(int progress, Func<string> func = null) {
         progress += 1;
         if (progress == total || progress >= next) {
             next += phase;
             var p = string.Format("{0:00.00}", progress * 100f / total);
-            logger.info($"{prefix}进度:{progress}/{total}({p}%)");
+            if (func != null) {
+                logger.info($"{prefix}进度:{progress}/{total}({p}%) - {func.Invoke()}");
+            } else {
+                logger.info($"{prefix}进度:{progress}/{total}({p}%)");
+            }
         }
     }
 }

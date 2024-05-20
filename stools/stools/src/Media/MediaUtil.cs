@@ -27,17 +27,40 @@ namespace Scorpio.stools {
             if (FileUtil.PathExist($"{target}/整理文件")) {
                 var files = FileUtil.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories);
                 var progress = new Progress(files.Count, "整理已有文件");
-                var index = 0;
-                var sync = new object();
-                ScorpioUtil.StartQueue(files, async (file, _) => {
+                long imageSize = 0;
+                long imageCount = 0;
+                long mediaSize = 0;
+                long mediaCount = 0;
+                for (var i = 0; i < files.Count; ++i) {
+                    var file = files[i];
                     var mediaInfo = Util.GetMediaInfo(file);
-                    lock(sync) {
-                        progress.SetProgress(index++);
-                        distinctFiles[mediaInfo] = file;
+                    distinctFiles[mediaInfo] = file;
+                    if (mediaInfo.isImage) {
+                        imageSize += mediaInfo.size;
+                        imageCount++;
+                    } else {
+                        mediaSize += mediaInfo.size;
+                        mediaCount++;
                     }
-                });
+                    progress.SetProgress(i, () => {
+                        var result = $"图片数量:{imageCount},大小:{ScorpioUtil.GetMemory(imageSize)} 视频数量:{mediaCount},大小:{mediaSize}";
+                        imageSize = imageCount = mediaSize = mediaCount = 0;
+                        return result;
+                    });
+                }
+                imageSize = imageCount = mediaSize = mediaCount = 0;
+                foreach (var pair in distinctFiles) {
+                    var mediaInfo = pair.Key;
+                    if (mediaInfo.isImage) {
+                        imageSize += mediaInfo.size;
+                        imageCount++;
+                    } else {
+                        mediaSize += mediaInfo.size;
+                        mediaCount++;
+                    }
+                }
                 originFileCount = files.Count;
-                logger.info($"已有文件数量:{files.Count},有效文件数量:{distinctFiles.Count}");
+                logger.info($"已有文件数量:{files.Count},有效文件数量:{distinctFiles.Count},图片数量:{imageCount},大小:{ScorpioUtil.GetMemory(imageSize)} 视频数量:{mediaCount},大小:{mediaSize}");
             }
             {
                 var files = FileUtil.GetFiles(source, "*", SearchOption.AllDirectories);
