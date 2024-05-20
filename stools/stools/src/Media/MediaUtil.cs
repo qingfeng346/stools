@@ -42,25 +42,12 @@ namespace Scorpio.stools {
                         mediaSize += mediaInfo.size;
                         mediaCount++;
                     }
+                    originFileCount++;
                     progress.SetProgress(i, () => {
-                        var result = $"图片数量:{imageCount},大小:{ScorpioUtil.GetMemory(imageSize)} 视频数量:{mediaCount},大小:{mediaSize}";
-                        imageSize = imageCount = mediaSize = mediaCount = 0;
-                        return result;
+                        return $"总文件数量:{originFileCount} 图片数量:{imageCount},大小:{ScorpioUtil.GetMemory(imageSize)} 视频数量:{mediaCount},大小:{ScorpioUtil.GetMemory(mediaSize)}";
                     });
                 }
-                imageSize = imageCount = mediaSize = mediaCount = 0;
-                foreach (var pair in distinctFiles) {
-                    var mediaInfo = pair.Key;
-                    if (mediaInfo.isImage) {
-                        imageSize += mediaInfo.size;
-                        imageCount++;
-                    } else {
-                        mediaSize += mediaInfo.size;
-                        mediaCount++;
-                    }
-                }
-                originFileCount = files.Count;
-                logger.info($"已有文件数量:{files.Count},有效文件数量:{distinctFiles.Count},图片数量:{imageCount},大小:{ScorpioUtil.GetMemory(imageSize)} 视频数量:{mediaCount},大小:{mediaSize}");
+                logger.info($"总文件数量:{originFileCount},有效文件数量:{distinctFiles.Count} 图片数量:{imageCount},大小:{ScorpioUtil.GetMemory(imageSize)} 视频数量:{mediaCount},大小:{ScorpioUtil.GetMemory(mediaSize)}");
             }
             {
                 var files = FileUtil.GetFiles(source, "*", SearchOption.AllDirectories);
