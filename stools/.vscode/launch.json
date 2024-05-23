@@ -5,39 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "lookupMobileprovision",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/stools/bin/Debug/net6.0/stools.dll",
-            "args": ["lookupMobileprovision", "-f", "${workspaceFolder}/test.mobileprovision"],
-            "cwd": "${workspaceFolder}/stools",
-            "stopAtEntry": false,
-            "console": "internalConsole"
-        },
-        {
-            "name": "lookupMetadata",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/stools/bin/Debug/net6.0/stools.dll",
-            "args": ["lookupMetadata", "-u", "linyuan.yang@centurygame.com", "-p", "wahq-zjkx-aqrs-oead", "-id", "1515511378", "-output", "./"],
-            "cwd": "${workspaceFolder}/stools",
-            "console": "internalConsole",
-            "stopAtEntry": false
-        },
-        {
-            "name": "resign",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/stools/bin/Debug/net6.0/stools.dll",
-            "args": ["resign", "-ipa", "${workspaceFolder}/test.ipa", "-p", "${workspaceFolder}/test.mobileprovision", "-output", "${workspaceFolder}/"],
-            "cwd": "${workspaceFolder}/stools",
-            "console": "internalConsole",
-            "stopAtEntry": false
-        },
-        {
             "name": "downloadmusic",
             "type": "coreclr",
             "request": "launch",
@@ -64,7 +31,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/stools/bin/Debug/net6.0/stools.dll",
+            "program": "${workspaceFolder}/stools/bin/Debug/net7.0/stools.dll",
             "args": ["downloadalbum", "http://kuwo.cn/album_detail/29593612", "-output", "~/"],
             "cwd": "${workspaceFolder}/stools",
             "console": "internalConsole",
@@ -75,11 +42,22 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/stools/bin/Debug/net6.0/stools.dll",
+            "program": "${workspaceFolder}/stools/bin/Debug/net7.0/stools.dll",
             "args": ["downloadm3u8", "https://new.iskcd.com/20220422/x6wRl3BY/1100kb/hls/index.m3u8", "-output", "../aaa.mp4"],
             "cwd": "${workspaceFolder}/stools",
             "console": "internalConsole",
             "stopAtEntry": false
-        }
+        },
+        {
+            "name": "sortmedia",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/stools/bin/Debug/net7.0/stools.dll",
+            "args": ["sortmedia", "-source", "./media", "-output", "./mediaoutput"],
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
     ]
 }

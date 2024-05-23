@@ -159,8 +159,18 @@ namespace Scorpio.stools {
             var fileInfo = new FileInfo(fileName);
             if (fileType.Contains("image")) {
                 mediaInfo.isImage = true;
+                foreach (var www in metadata.OfType<ExifIfd0Directory>()) {
+                    Console.WriteLine("-----------");
+                    foreach (var tag in www.Tags) {
+                        Console.WriteLine($"{tag.Type} = {tag}");
+                    }
+                }
                 var info = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
                 if (info != null) {
+                    foreach (var tag in info.Tags) {
+                        Console.WriteLine(tag.ToString());
+                    }
+                    // 
                     var time = info.GetDescription(ExifDirectoryBase.TagDateTimeOriginal);
                     if (DateTime.TryParseExact(time, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var createTime)) {
                         mediaInfo.createTime = createTime;
