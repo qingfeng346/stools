@@ -6,18 +6,19 @@ using System.IO;
 namespace Scorpio.stools {
     public class MediaUtil {
         private const string FileNameFormat = "yyyyMMdd_HHmmss";
-        private const string PathFormat = "yyyy/MM";
+        private const string RepeatPathFormat = "yyyy/MM/dd/HHmmss";
+        private const string PathFormat = "yyyy/MM/dd";
         public class DistinctFile {
             public string file;
             public bool isBackup;
         }
 
-        static string GetFileName(string path, DateTime dateTime, string extension) {
+        static string GetFileName(string path, DateTime? dateTime, string extension) {
             while (true) {
-                var file = $"{path}{dateTime.ToString(FileNameFormat)}{extension}";
+                var file = $"{path}{dateTime.Value.ToString(FileNameFormat)}{extension}";
                 if (!File.Exists(file))
                     return file;
-                dateTime = dateTime.AddSeconds(1);
+                dateTime = dateTime.Value.AddSeconds(1);
             }
         }
         public static void SortMedia(string source, string target, bool clear) {
@@ -77,7 +78,7 @@ namespace Scorpio.stools {
                         var dateTime = mediaInfo.createTime;
                         var extension = Path.GetExtension(file);
                         var mediaType = mediaInfo.isImage ? "重复照片" : "重复视频";
-                        var targetPath = $"{target}/重复文件/{mediaType}/{dateTime.ToString(PathFormat)}/{mediaInfo.md5}_{mediaInfo.size}/";
+                        var targetPath = $"{target}/重复文件/{mediaType}/{dateTime.Value.ToString(RepeatPathFormat)}/{mediaInfo.md5}_{mediaInfo.size}/";
                         var targetFile = GetFileName(targetPath, dateTime, extension);
                         FileUtil.CopyFile(file, targetFile, true);
                         if (!FileUtil.FileExist($"{targetPath}/info.txt")) {
@@ -90,7 +91,7 @@ namespace Scorpio.stools {
                         validCount ++;
                         var dateTime = mediaInfo.createTime;
                         var mediaType = mediaInfo.isImage ? "照片" : "视频";
-                        var targetFile = GetFileName($"{target}/整理文件/{mediaType}/{dateTime.ToString(PathFormat)}/", dateTime, Path.GetExtension(file));
+                        var targetFile = GetFileName($"{target}/整理文件/{mediaType}/{dateTime.Value.ToString(PathFormat)}/", dateTime, Path.GetExtension(file));
                         distinctFiles[mediaInfo] = targetFile;
                         FileUtil.CopyFile(file, targetFile, true);
                     }
