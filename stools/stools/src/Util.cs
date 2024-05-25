@@ -19,10 +19,7 @@ using Newtonsoft.Json;
 using System.IO.Compression;
 using MetadataExtractor.Util;
 using MetadataExtractor.Formats.Jpeg;
-
-
-
-
+using MetadataExtractor.Formats.Png;
 
 #if NET35
 using DirectoryList = System.Collections.Generic.IList<MetadataExtractor.Directory>;
@@ -43,6 +40,7 @@ namespace Scorpio.stools {
     public class MediaInfo {
         public string fileName;             //文件路径
         public bool isImage;                //是否是图片
+        public bool isTime;                 //是否拍摄时间
         public string mediaType;            //媒体类型
         public DateTime? createTime;        //媒体创建时间
         public long? width;                 //宽度
@@ -177,6 +175,7 @@ namespace Scorpio.stools {
                         }
                         if (time != null) {
                             if (DateTime.TryParseExact(time.ToString(), "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var createTime)) {
+                                mediaInfo.isTime = true;
                                 mediaInfo.createTime = createTime;
                             }
                         }
@@ -192,6 +191,9 @@ namespace Scorpio.stools {
                         } else if (info is JpegDirectory) {
                             width = info.GetObject(JpegDirectory.TagImageWidth);
                             height = info.GetObject(JpegDirectory.TagImageHeight);
+                        } else if (info is PngDirectory) {
+                            width = info.GetObject(PngDirectory.TagImageWidth);
+                            height = info.GetObject(PngDirectory.TagImageHeight);
                         }
                         if (width != null && height != null) {
                             mediaInfo.width = Convert.ToInt64(width);
@@ -200,6 +202,7 @@ namespace Scorpio.stools {
                     }
                 }
                 if (mediaInfo.createTime == null) {
+                    mediaInfo.isTime = false;
                     var lastWriteTime = fileInfo.LastWriteTime;
                     logger.info($"读取图片拍摄时间失败[{fileName}],自动设置为最后修改时间:{lastWriteTime}");
                     mediaInfo.createTime = lastWriteTime;
@@ -218,6 +221,7 @@ namespace Scorpio.stools {
                             time = info.GetDescription(QuickTimeMovieHeaderDirectory.TagCreated);
                         }
                         if (time != null) {
+                            mediaInfo.isImage = true;
                             mediaInfo.createTime = (DateTime)time;
                         }
                     }
@@ -233,6 +237,7 @@ namespace Scorpio.stools {
                         }
                     }
                     if (mediaInfo.createTime == null) {
+                        mediaInfo.isTime = false;
                         var lastWriteTime = fileInfo.LastWriteTime;
                         logger.info($"读取视频拍摄时间失败[{fileName}],自动设置为最后修改时间:{lastWriteTime}");
                         mediaInfo.createTime = lastWriteTime;
