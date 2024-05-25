@@ -20,6 +20,8 @@ using System.IO.Compression;
 using MetadataExtractor.Util;
 using MetadataExtractor.Formats.Jpeg;
 using MetadataExtractor.Formats.Png;
+using MetadataExtractor.Formats.Bmp;
+
 
 #if NET35
 using DirectoryList = System.Collections.Generic.IList<MetadataExtractor.Directory>;
@@ -194,6 +196,9 @@ namespace Scorpio.stools {
                         } else if (info is PngDirectory) {
                             width = info.GetObject(PngDirectory.TagImageWidth);
                             height = info.GetObject(PngDirectory.TagImageHeight);
+                        } else if (info is BmpHeaderDirectory) {
+                            width = info.GetObject(BmpHeaderDirectory.TagImageWidth);
+                            height = info.GetObject(BmpHeaderDirectory.TagImageHeight);
                         }
                         if (width != null && height != null) {
                             mediaInfo.width = Convert.ToInt64(width);
