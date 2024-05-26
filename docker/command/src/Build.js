@@ -82,7 +82,7 @@ class Build {
             args.push(param.Args[key])
         }
         console.log(`运行stools命令:${stoolsPath} : ${JSON.stringify(args)}`)
-        await Util.execAsync("dotnet", stoolsPath, args)
+        return await Util.execAsync("dotnet", stoolsPath, args)
     }
 }
 module.exports = new Build()
