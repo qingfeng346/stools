@@ -181,10 +181,13 @@ namespace Scorpio.stools {
                                 }
                             }
                             if (time != null) {
-                                mediaInfo.isTime = true;
-                                mediaInfo.createTime = DateTime.ParseExact(time.ToString(), "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None);
-                                // if (DateTime.TryParseExact(time.ToString(), "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var createTime)) {
-                                // }
+                                if ((time is StringValue || time is string) && !string.IsNullOrWhiteSpace(time.ToString())) {
+                                    mediaInfo.isTime = true;
+                                    mediaInfo.createTime = DateTime.ParseExact(time.ToString(), "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None);
+                                } else if (time is DateTime) {
+                                    mediaInfo.isTime = true;
+                                    mediaInfo.createTime = (DateTime)time;
+                                }
                             }
                         }
                         if (mediaInfo.width == null) {
@@ -242,7 +245,7 @@ namespace Scorpio.stools {
                             if (time != null) {
                                 mediaInfo.isImage = true;
                                 if (time is string) {
-                                    mediaInfo.createTime = DateTime.ParseExact((string)time, "ddd MMM dd HH:mm:ss yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None);
+                                    mediaInfo.createTime = DateTime.ParseExact(time.ToString(), "ddd MMM dd HH:mm:ss yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None);
                                 } else if (time is DateTime) {
                                     mediaInfo.createTime = (DateTime)time;
                                 } else {
