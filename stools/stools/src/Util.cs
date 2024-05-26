@@ -23,6 +23,8 @@ using MetadataExtractor.Formats.Png;
 using MetadataExtractor.Formats.Bmp;
 using MetadataExtractor.Formats.Gif;
 using MetadataExtractor.Formats.WebP;
+using MetadataExtractor.Formats.Avi;
+
 
 
 
@@ -238,9 +240,11 @@ namespace Scorpio.stools {
                         if (mediaInfo.createTime == null) {
                             object? time = null;
                             if (info is QuickTimeTrackHeaderDirectory) {
-                                time = info.GetDescription(QuickTimeTrackHeaderDirectory.TagCreated);
+                                time = info.GetObject(QuickTimeTrackHeaderDirectory.TagCreated);
                             } else if (info is QuickTimeMovieHeaderDirectory) {
-                                time = info.GetDescription(QuickTimeMovieHeaderDirectory.TagCreated);
+                                time = info.GetObject(QuickTimeMovieHeaderDirectory.TagCreated);
+                            } else if (info is AviDirectory) {
+                                time = info.GetObject(AviDirectory.TagDateTimeOriginal);
                             }
                             if (time != null) {
                                 mediaInfo.isImage = true;
@@ -258,6 +262,9 @@ namespace Scorpio.stools {
                             if (info is QuickTimeTrackHeaderDirectory) {
                                 width = info.GetObject(QuickTimeTrackHeaderDirectory.TagWidth);
                                 height = info.GetObject(QuickTimeTrackHeaderDirectory.TagHeight);
+                            } else if (info is AviDirectory) {
+                                width = info.GetObject(AviDirectory.TagWidth);
+                                height = info.GetObject(AviDirectory.TagHeight);
                             }
                             if (width != null && height != null && Convert.ToInt64(width) != 0 && Convert.ToInt64(height) > 0) {
                                 mediaInfo.width = Convert.ToInt64(width);
