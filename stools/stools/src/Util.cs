@@ -158,117 +158,128 @@ namespace Scorpio.stools {
         public static MediaInfo GetMediaInfo(string fileName) {
             var metadata = ReadMetadata(fileName);
             if (metadata == null) return null;
-            var mediaInfo = new MediaInfo();
-            mediaInfo.fileName = fileName;
-            var fileType = metadata.OfType<FileTypeDirectory>().FirstOrDefault().GetDescription(FileTypeDirectory.TagDetectedFileMimeType);
-            mediaInfo.mediaType = fileType;
-            var fileInfo = new FileInfo(fileName);
-            if (fileType.Contains("image")) {
-                mediaInfo.isImage = true;
-                foreach (var info in metadata) {
-                    if (mediaInfo.createTime == null) {
-                        object? time = null;
-                        if (info is ExifIfd0Directory) {
-                            time = info.GetObject(ExifDirectoryBase.TagDateTimeOriginal);
-                            if (time == null) {
-                                time = info.GetObject(ExifDirectoryBase.TagDateTime);
+            try {
+                var mediaInfo = new MediaInfo();
+                mediaInfo.fileName = fileName;
+                var fileType = metadata.OfType<FileTypeDirectory>().FirstOrDefault().GetDescription(FileTypeDirectory.TagDetectedFileMimeType);
+                mediaInfo.mediaType = fileType;
+                var fileInfo = new FileInfo(fileName);
+                if (fileType.Contains("image")) {
+                    mediaInfo.isImage = true;
+                    foreach (var info in metadata) {
+                        if (mediaInfo.createTime == null) {
+                            object? time = null;
+                            if (info is ExifIfd0Directory) {
+                                time = info.GetObject(ExifDirectoryBase.TagDateTimeOriginal);
+                                if (time == null) {
+                                    time = info.GetObject(ExifDirectoryBase.TagDateTime);
+                                }
+                            } else if (info is ExifSubIfdDirectory) {
+                                time = info.GetObject(ExifDirectoryBase.TagDateTimeOriginal);
+                                if (time == null) {
+                                    time = info.GetObject(ExifDirectoryBase.TagDateTime);
+                                }
                             }
-                        } else if (info is ExifSubIfdDirectory) {
-                            time = info.GetObject(ExifDirectoryBase.TagDateTimeOriginal);
-                            if (time == null) {
-                                time = info.GetObject(ExifDirectoryBase.TagDateTime);
-                            }
-                        }
-                        if (time != null) {
-                            if (DateTime.TryParseExact(time.ToString(), "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var createTime)) {
+                            if (time != null) {
                                 mediaInfo.isTime = true;
-                                mediaInfo.createTime = createTime;
+                                mediaInfo.createTime = DateTime.ParseExact(time.ToString(), "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None);
+                                // if (DateTime.TryParseExact(time.ToString(), "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var createTime)) {
+                                // }
+                            }
+                        }
+                        if (mediaInfo.width == null) {
+                            object? width = null, height = null;
+                            if (info is ExifIfd0Directory) {
+                                width = info.GetObject(ExifDirectoryBase.TagImageWidth);
+                                height = info.GetObject(ExifDirectoryBase.TagImageHeight);
+                            } else if (info is ExifSubIfdDirectory) {
+                                width = info.GetObject(ExifDirectoryBase.TagExifImageWidth);
+                                height = info.GetObject(ExifDirectoryBase.TagExifImageHeight);
+                            } else if (info is JpegDirectory) {
+                                width = info.GetObject(JpegDirectory.TagImageWidth);
+                                height = info.GetObject(JpegDirectory.TagImageHeight);
+                            } else if (info is PngDirectory) {
+                                width = info.GetObject(PngDirectory.TagImageWidth);
+                                height = info.GetObject(PngDirectory.TagImageHeight);
+                            } else if (info is BmpHeaderDirectory) {
+                                width = info.GetObject(BmpHeaderDirectory.TagImageWidth);
+                                height = info.GetObject(BmpHeaderDirectory.TagImageHeight);
+                            } else if (info is GifImageDirectory) {
+                                width = info.GetObject(GifImageDirectory.TagWidth);
+                                height = info.GetObject(GifImageDirectory.TagHeight);
+                            } else if (info is GifHeaderDirectory) {
+                                width = info.GetObject(GifHeaderDirectory.TagImageWidth);
+                                height = info.GetObject(GifHeaderDirectory.TagImageHeight);
+                            } else if (info is WebPDirectory) {
+                                width = info.GetObject(WebPDirectory.TagImageWidth);
+                                height = info.GetObject(WebPDirectory.TagImageHeight);
+                            }
+                            if (width != null && height != null) {
+                                mediaInfo.width = Convert.ToInt64(width);
+                                mediaInfo.height = Convert.ToInt64(height);
                             }
                         }
                     }
-                    if (mediaInfo.width == null) {
-                        object? width = null, height = null;
-                        if (info is ExifIfd0Directory) {
-                            width = info.GetObject(ExifDirectoryBase.TagImageWidth);
-                            height = info.GetObject(ExifDirectoryBase.TagImageHeight);
-                        } else if (info is ExifSubIfdDirectory) {
-                            width = info.GetObject(ExifDirectoryBase.TagExifImageWidth);
-                            height = info.GetObject(ExifDirectoryBase.TagExifImageHeight);
-                        } else if (info is JpegDirectory) {
-                            width = info.GetObject(JpegDirectory.TagImageWidth);
-                            height = info.GetObject(JpegDirectory.TagImageHeight);
-                        } else if (info is PngDirectory) {
-                            width = info.GetObject(PngDirectory.TagImageWidth);
-                            height = info.GetObject(PngDirectory.TagImageHeight);
-                        } else if (info is BmpHeaderDirectory) {
-                            width = info.GetObject(BmpHeaderDirectory.TagImageWidth);
-                            height = info.GetObject(BmpHeaderDirectory.TagImageHeight);
-                        } else if (info is GifImageDirectory) {
-                            width = info.GetObject(GifImageDirectory.TagWidth);
-                            height = info.GetObject(GifImageDirectory.TagHeight);
-                        } else if (info is GifHeaderDirectory) {
-                            width = info.GetObject(GifHeaderDirectory.TagImageWidth);
-                            height = info.GetObject(GifHeaderDirectory.TagImageHeight);
-                        } else if (info is WebPDirectory) {
-                            width = info.GetObject(WebPDirectory.TagImageWidth);
-                            height = info.GetObject(WebPDirectory.TagImageHeight);
-                        }
-                        if (width != null && height != null) {
-                            mediaInfo.width = Convert.ToInt64(width);
-                            mediaInfo.height = Convert.ToInt64(height);
-                        }
-                    }
-                }
-                if (mediaInfo.createTime == null) {
-                    mediaInfo.isTime = false;
-                    var lastWriteTime = fileInfo.LastWriteTime;
-                    logger.info($"读取图片拍摄时间失败[{fileName}],自动设置为最后修改时间:{lastWriteTime}");
-                    mediaInfo.createTime = lastWriteTime;
-                }
-                if (mediaInfo.width == null || mediaInfo.height == null) {
-                    throw new System.Exception($"读取图片宽高失败[{fileName}], width:{mediaInfo.width} height:{mediaInfo.height}");
-                }
-            } else {
-                mediaInfo.isImage = false;
-                foreach (var info in metadata) {
                     if (mediaInfo.createTime == null) {
-                        object? time = null;
-                        if (info is QuickTimeTrackHeaderDirectory) {
-                            time = info.GetDescription(QuickTimeTrackHeaderDirectory.TagCreated);
-                        } else if (info is QuickTimeMovieHeaderDirectory) {
-                            time = info.GetDescription(QuickTimeMovieHeaderDirectory.TagCreated);
+                        mediaInfo.isTime = false;
+                        var lastWriteTime = fileInfo.LastWriteTime;
+                        logger.info($"读取图片拍摄时间失败[{fileName}],自动设置为最后修改时间:{lastWriteTime}");
+                        mediaInfo.createTime = lastWriteTime;
+                    }
+                    if (mediaInfo.width == null || mediaInfo.height == null) {
+                        throw new System.Exception($"读取图片宽高失败[{fileName}], width:{mediaInfo.width} height:{mediaInfo.height}");
+                    }
+                } else {
+                    mediaInfo.isImage = false;
+                    foreach (var info in metadata) {
+                        if (mediaInfo.createTime == null) {
+                            object? time = null;
+                            if (info is QuickTimeTrackHeaderDirectory) {
+                                time = info.GetDescription(QuickTimeTrackHeaderDirectory.TagCreated);
+                            } else if (info is QuickTimeMovieHeaderDirectory) {
+                                time = info.GetDescription(QuickTimeMovieHeaderDirectory.TagCreated);
+                            }
+                            if (time != null) {
+                                mediaInfo.isImage = true;
+                                if (time is string) {
+                                    mediaInfo.createTime = DateTime.ParseExact((string)time, "ddd MMM dd HH:mm:ss yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None);
+                                } else if (time is DateTime) {
+                                    mediaInfo.createTime = (DateTime)time;
+                                } else {
+                                    throw new System.Exception($"Time 是一个未知类型:{time.GetType()} - {time}");
+                                }
+                            }
                         }
-                        if (time != null) {
-                            mediaInfo.isImage = true;
-                            mediaInfo.createTime = (DateTime)time;
+                        if (mediaInfo.width == null) {
+                            object? width = null, height = null;
+                            if (info is QuickTimeTrackHeaderDirectory) {
+                                width = info.GetObject(QuickTimeTrackHeaderDirectory.TagWidth);
+                                height = info.GetObject(QuickTimeTrackHeaderDirectory.TagHeight);
+                            }
+                            if (width != null && height != null && Convert.ToInt64(width) != 0 && Convert.ToInt64(height) > 0) {
+                                mediaInfo.width = Convert.ToInt64(width);
+                                mediaInfo.height = Convert.ToInt64(height);
+                            }
                         }
                     }
-                    if (mediaInfo.width == null) {
-                        object? width = null, height = null;
-                        if (info is QuickTimeTrackHeaderDirectory) {
-                            width = info.GetObject(QuickTimeTrackHeaderDirectory.TagWidth);
-                            height = info.GetObject(QuickTimeTrackHeaderDirectory.TagHeight);
-                        }
-                        if (width != null && height != null && Convert.ToInt64(width) != 0 && Convert.ToInt64(height) > 0) {
-                            mediaInfo.width = Convert.ToInt64(width);
-                            mediaInfo.height = Convert.ToInt64(height);
-                        }
+                    if (mediaInfo.createTime == null) {
+                        mediaInfo.isTime = false;
+                        var lastWriteTime = fileInfo.LastWriteTime;
+                        logger.info($"读取视频拍摄时间失败[{fileName}],自动设置为最后修改时间:{lastWriteTime}");
+                        mediaInfo.createTime = lastWriteTime;
+                    }
+                    if (mediaInfo.width == null || mediaInfo.height == null) {
+                        throw new System.Exception($"读取视频宽高失败[{fileName}], width:{mediaInfo.width} height:{mediaInfo.height}");
                     }
                 }
-                if (mediaInfo.createTime == null) {
-                    mediaInfo.isTime = false;
-                    var lastWriteTime = fileInfo.LastWriteTime;
-                    logger.info($"读取视频拍摄时间失败[{fileName}],自动设置为最后修改时间:{lastWriteTime}");
-                    mediaInfo.createTime = lastWriteTime;
-                }
-                if (mediaInfo.width == null || mediaInfo.height == null) {
-                    throw new System.Exception($"读取视频宽高失败[{fileName}], width:{mediaInfo.width} height:{mediaInfo.height}");
-                }
+                //把毫秒置0
+                mediaInfo.createTime = new DateTime(mediaInfo.createTime.Value.Ticks / 10000000 * 10000000, DateTimeKind.Local);
+                mediaInfo.size = fileInfo.Length;
+                return mediaInfo;
+            } catch (System.Exception e) {
+                throw new System.Exception($"文件:{fileName} 解析失败:{e}");
             }
-            //把毫秒置0
-            mediaInfo.createTime = new DateTime(mediaInfo.createTime.Value.Ticks / 10000000 * 10000000, DateTimeKind.Local);
-            mediaInfo.size = fileInfo.Length;
-            return mediaInfo;
+            
         }
         public static TagLib.File GetMusicInfo(string fileName) {
             try {
