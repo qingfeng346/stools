@@ -254,15 +254,15 @@ namespace Scorpio.stools {
                             mediaInfo.height = Convert.ToInt64(height);
                         }
                     }
-                    if (mediaInfo.createTime == null) {
-                        mediaInfo.isTime = false;
-                        var lastWriteTime = fileInfo.LastWriteTime;
-                        logger.info($"读取视频拍摄时间失败[{fileName}],自动设置为最后修改时间:{lastWriteTime}");
-                        mediaInfo.createTime = lastWriteTime;
-                    }
-                    if (mediaInfo.width == null || mediaInfo.height == null) {
-                        throw new System.Exception($"读取视频宽高失败[{fileName}], width:{mediaInfo.width} height:{mediaInfo.height}");
-                    }
+                }
+                if (mediaInfo.createTime == null) {
+                    mediaInfo.isTime = false;
+                    var lastWriteTime = fileInfo.LastWriteTime;
+                    logger.info($"读取视频拍摄时间失败[{fileName}],自动设置为最后修改时间:{lastWriteTime}");
+                    mediaInfo.createTime = lastWriteTime;
+                }
+                if (mediaInfo.width == null || mediaInfo.height == null) {
+                    throw new System.Exception($"读取视频宽高失败[{fileName}], width:{mediaInfo.width} height:{mediaInfo.height}");
                 }
             }
             //把毫秒置0
