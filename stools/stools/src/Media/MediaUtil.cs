@@ -77,8 +77,9 @@ namespace Scorpio.stools {
                         repeatCount++;
                         var dateTime = mediaInfo.createTime;
                         var extension = Path.GetExtension(file);
+                        var timeError = mediaInfo.isTime ? "有效时间" : "无效时间";
                         var mediaType = mediaInfo.isImage ? "重复照片" : "重复视频";
-                        var targetPath = $"{target}/重复文件/{mediaType}/{dateTime.Value.ToString(RepeatPathFormat)}/{mediaInfo.md5}_{mediaInfo.size}/";
+                        var targetPath = $"{target}/重复文件/{timeError}/{mediaType}/{dateTime.Value.ToString(RepeatPathFormat)}/{mediaInfo.md5}_{mediaInfo.size}/";
                         var targetFile = GetFileName(targetPath, dateTime, extension);
                         FileUtil.CopyFile(file, targetFile, true);
                         if (!FileUtil.FileExist($"{targetPath}/info.txt")) {
@@ -90,8 +91,9 @@ namespace Scorpio.stools {
                     } else {
                         validCount ++;
                         var dateTime = mediaInfo.createTime;
+                        var timeError = mediaInfo.isTime ? "有效时间" : "无效时间";
                         var mediaType = mediaInfo.isImage ? "照片" : "视频";
-                        var targetFile = GetFileName($"{target}/整理文件/{mediaType}/{dateTime.Value.ToString(PathFormat)}/", dateTime, Path.GetExtension(file));
+                        var targetFile = GetFileName($"{target}/整理文件/{timeError}/{mediaType}/{dateTime.Value.ToString(PathFormat)}/", dateTime, Path.GetExtension(file));
                         distinctFiles[mediaInfo] = targetFile;
                         FileUtil.CopyFile(file, targetFile, true);
                     }

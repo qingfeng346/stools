@@ -32,6 +32,7 @@ namespace Scorpio.stools {
         private const string ParameterMove = "--move|-move";
         unsafe static void Main(string[] args) {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            logger.SetLogger(new ConsoleLogger());
             var perform = new Perform();
             perform.AddExecute("androidpublisher", "更新Google Play信息", Androidpublisher);
             perform.AddExecute("googledrivedownload", "", GoogleDriveDownload);

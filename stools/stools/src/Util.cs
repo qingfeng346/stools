@@ -21,6 +21,10 @@ using MetadataExtractor.Util;
 using MetadataExtractor.Formats.Jpeg;
 using MetadataExtractor.Formats.Png;
 using MetadataExtractor.Formats.Bmp;
+using MetadataExtractor.Formats.Gif;
+using MetadataExtractor.Formats.WebP;
+
+
 
 
 #if NET35
@@ -199,6 +203,15 @@ namespace Scorpio.stools {
                         } else if (info is BmpHeaderDirectory) {
                             width = info.GetObject(BmpHeaderDirectory.TagImageWidth);
                             height = info.GetObject(BmpHeaderDirectory.TagImageHeight);
+                        } else if (info is GifImageDirectory) {
+                            width = info.GetObject(GifImageDirectory.TagWidth);
+                            height = info.GetObject(GifImageDirectory.TagHeight);
+                        } else if (info is GifHeaderDirectory) {
+                            width = info.GetObject(GifHeaderDirectory.TagImageWidth);
+                            height = info.GetObject(GifHeaderDirectory.TagImageHeight);
+                        } else if (info is WebPDirectory) {
+                            width = info.GetObject(WebPDirectory.TagImageWidth);
+                            height = info.GetObject(WebPDirectory.TagImageHeight);
                         }
                         if (width != null && height != null) {
                             mediaInfo.width = Convert.ToInt64(width);
