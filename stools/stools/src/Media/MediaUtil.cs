@@ -76,12 +76,14 @@ namespace Scorpio.stools {
                 foreach (var pair in distinctFiles) {
                     progress.SetProgress(i++);
                     var mediaInfo = pair.Key;
+                    var filePath = pair.Value;
                     var dateTime = mediaInfo.createTime.Value;
                     var timeError = mediaInfo.isTime ? "有效时间" : "无效时间";
                     var mediaType = mediaInfo.isImage ? "照片" : "视频";
-                    var targetFile = $"{target}/整理文件/{timeError}/{mediaType}/{dateTime.ToString(FullFileFormat)}{Path.GetExtension(pair.Value)}";
-                    if (Path.GetFullPath(pair.Value) != Path.GetFullPath(targetFile)) {
-                        FileUtil.MoveFile(pair.Value, targetFile);
+                    var targetFile = $"{target}/整理文件/{timeError}/{mediaType}/{dateTime.ToString(FullFileFormat)}{Path.GetExtension(filePath)}";
+                    if (Path.GetFullPath(filePath) != Path.GetFullPath(targetFile)) {
+                        FileUtil.MoveFile(filePath, targetFile);
+                        logger.info($"整理文件 : {filePath} -> {targetFile}");
                     }
                     newFiles[pair.Key] = targetFile;
                 }
