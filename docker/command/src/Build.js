@@ -38,7 +38,10 @@ class Build {
                     }
                     console.log(`开始执行 ${i+1}/${length} ${JSON.stringify(execute)} : ${Util.NowTimeString}`)
                     if (execute.type == "stools") {
-                        await this.execStools(execute, param)
+                        let { code, stdout, stderr } = await this.execStools(execute, param)
+                        if (code != 0) {
+                            throw new Error(`exec stools error, code:${code} stdout:${stdout} stderr:${stderr}`)
+                        }
                     }
                 }
             }
@@ -46,7 +49,7 @@ class Build {
             console.log(`执行成功`)
             this.saveSuccessResult()
         } catch (e) {
-            console.error(`执行出错 : ${e?.stack}`)
+            console.error(`执行出错 : ${e?.message}\n${e?.stack}`)
             this.saveErrorResult(e.stack)
         }
         console.log(`====================命令执行完成,耗时 ${Util.getElapsedTime(startDate)}====================`)
