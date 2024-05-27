@@ -8,6 +8,7 @@ namespace Scorpio.stools {
         private const string FileNameFormat = "yyyyMMdd_HHmmss";
         private const string RepeatPathFormat = "yyyy/MM/dd/HHmmss";
         private const string PathFormat = "yyyy/MM/dd";
+        private static string FullFileFormat => $"{PathFormat}/{FileNameFormat}";
         public class DistinctFile {
             public string file;
             public bool isBackup;
@@ -25,6 +26,23 @@ namespace Scorpio.stools {
             var distinctFiles = new Dictionary<MediaInfo, string>();
             if (clear) FileUtil.DeleteFolder(target);
             var originFileCount = 0;
+            var validTimes = new HashSet<DateTime?>();
+            var invalidTimes = new HashSet<DateTime?>();
+            DateTime? GetTime(bool valid, DateTime? time) {
+                if (valid) {
+                    while (validTimes.Contains(time)) {
+                        time = time?.AddSeconds(1);
+                    }
+                    validTimes.Add(time);
+                    return time;
+                } else {
+                    while (invalidTimes.Contains(time)) {
+                        time = time?.AddSeconds(1);
+                    }
+                    invalidTimes.Add(time);
+                    return time;
+                }
+            }
             if (FileUtil.PathExist($"{target}/整理文件")) {
                 var files = FileUtil.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories);
                 var progress = new Progress(files.Count, "获取文件");
@@ -35,6 +53,7 @@ namespace Scorpio.stools {
                 for (var i = 0; i < files.Count; ++i) {
                     var file = files[i];
                     var mediaInfo = Util.GetMediaInfo(file);
+                    mediaInfo.createTime = GetTime(mediaInfo.isTime, mediaInfo.createTime);
                     distinctFiles[mediaInfo] = file;
                     if (mediaInfo.isImage) {
                         imageSize += mediaInfo.size;
@@ -50,22 +69,23 @@ namespace Scorpio.stools {
                 }
                 logger.info($"总文件数量:{originFileCount},有效文件数量:{distinctFiles.Count} 图片数量:{imageCount},大小:{ScorpioUtil.GetMemory(imageSize)} 视频数量:{mediaCount},大小:{ScorpioUtil.GetMemory(mediaSize)}");
             }
-            if (sortExist) {
+            {
                 var progress = new Progress(distinctFiles.Count, "整理文件");
                 var i = 0;
                 var newFiles = new Dictionary<MediaInfo, string>();
                 foreach (var pair in distinctFiles) {
                     progress.SetProgress(i++);
                     var mediaInfo = pair.Key;
-                    var dateTime = mediaInfo.createTime;
+                    var dateTime = mediaInfo.createTime.Value;
                     var timeError = mediaInfo.isTime ? "有效时间" : "无效时间";
                     var mediaType = mediaInfo.isImage ? "照片" : "视频";
-                    var targetFile = GetFileName($"{target}/整理文件Backup/{timeError}/{mediaType}/{dateTime.Value.ToString(PathFormat)}/", dateTime, Path.GetExtension(pair.Value));
-                    FileUtil.MoveFile(pair.Value, targetFile);
-                    newFiles[pair.Key] = targetFile.Replace("/整理文件Backup/", "/整理文件/");
+                    var targetFile = $"{target}/整理文件/{timeError}/{mediaType}/{dateTime.ToString(FullFileFormat)}{Path.GetExtension(pair.Value)}";
+                    if (Path.GetFullPath(pair.Value) != Path.GetFullPath(targetFile)) {
+                        FileUtil.MoveFile(pair.Value, targetFile);
+                    }
+                    newFiles[pair.Key] = targetFile;
                 }
                 distinctFiles = newFiles;
-                FileUtil.MoveFiles($"{target}/整理文件Backup", $"{target}/整理文件", "*", true, true);
             }
             {
                 var files = FileUtil.GetFiles(source, "*", SearchOption.AllDirectories);
@@ -106,7 +126,8 @@ namespace Scorpio.stools {
                             FileUtil.CopyFile(origin, $"{targetPath}/origin{extension}", true);
                         }
                     } else {
-                        validCount ++;
+                        validCount++;
+                        mediaInfo.createTime = GetTime(mediaInfo.isTime, mediaInfo.createTime);
                         var dateTime = mediaInfo.createTime;
                         var timeError = mediaInfo.isTime ? "有效时间" : "无效时间";
                         var mediaType = mediaInfo.isImage ? "照片" : "视频";

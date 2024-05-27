@@ -48,7 +48,7 @@ namespace Scorpio.stools {
     public class MediaInfo {
         public string fileName;             //文件路径
         public bool isImage;                //是否是图片
-        public bool isTime;                 //是否拍摄时间
+        public bool isTime;                 //是否有拍摄时间
         public string mediaType;            //媒体类型
         public DateTime? createTime;        //媒体创建时间
         public long? width;                 //宽度
