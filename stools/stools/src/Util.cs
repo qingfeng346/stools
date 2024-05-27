@@ -247,7 +247,7 @@ namespace Scorpio.stools {
                                 time = info.GetObject(AviDirectory.TagDateTimeOriginal);
                             }
                             if (time != null) {
-                                mediaInfo.isImage = true;
+                                mediaInfo.isTime = true;
                                 if (time is string) {
                                     mediaInfo.createTime = DateTime.ParseExact(time.ToString(), "ddd MMM dd HH:mm:ss yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None);
                                 } else if (time is DateTime) {
