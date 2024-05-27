@@ -36,10 +36,10 @@
           </span>
           <Upload v-else-if="arg.type == 'file'" type="drag" :paste="true" :name="arg.name" action :before-upload="CreateBeforeUploadFile(arg.name)">
             <div style="padding: 2px 0">
-                <Icon type="ios-cloud-upload" size="40" style="color: #3399ff"></Icon>
-                <div v-if="formFile[arg.name]">当前选择文件 : {{ formFile[arg.name].name }}</div>
-                <div v-else>选择文件</div>
-              </div>
+              <Icon type="ios-cloud-upload" size="40" style="color: #3399ff"></Icon>
+              <div v-if="formFile[arg.name]">当前选择文件 : {{ formFile[arg.name].name }}</div>
+              <div v-else>选择文件</div>
+            </div>
           </Upload>
         </FormItem>
       </div>
