@@ -21,13 +21,13 @@ namespace Scorpio.stools {
                 dateTime = dateTime.Value.AddSeconds(1);
             }
         }
-        public static void SortMedia(string source, string target, bool clear) {
+        public static void SortMedia(string source, string target, bool sortExist, bool clear) {
             var distinctFiles = new Dictionary<MediaInfo, string>();
             if (clear) FileUtil.DeleteFolder(target);
             var originFileCount = 0;
             if (FileUtil.PathExist($"{target}/整理文件")) {
                 var files = FileUtil.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories);
-                var progress = new Progress(files.Count, "整理已有文件");
+                var progress = new Progress(files.Count, "获取文件");
                 long imageSize = 0;
                 long imageCount = 0;
                 long mediaSize = 0;
@@ -49,6 +49,23 @@ namespace Scorpio.stools {
                     });
                 }
                 logger.info($"总文件数量:{originFileCount},有效文件数量:{distinctFiles.Count} 图片数量:{imageCount},大小:{ScorpioUtil.GetMemory(imageSize)} 视频数量:{mediaCount},大小:{ScorpioUtil.GetMemory(mediaSize)}");
+            }
+            if (sortExist) {
+                var progress = new Progress(distinctFiles.Count, "整理文件");
+                var i = 0;
+                var newFiles = new Dictionary<MediaInfo, string>();
+                foreach (var pair in distinctFiles) {
+                    progress.SetProgress(i++);
+                    var mediaInfo = pair.Key;
+                    var dateTime = mediaInfo.createTime;
+                    var timeError = mediaInfo.isTime ? "有效时间" : "无效时间";
+                    var mediaType = mediaInfo.isImage ? "照片" : "视频";
+                    var targetFile = GetFileName($"{target}/整理文件Backup/{timeError}/{mediaType}/{dateTime.Value.ToString(PathFormat)}/", dateTime, Path.GetExtension(pair.Value));
+                    FileUtil.MoveFile(pair.Value, targetFile);
+                    newFiles[pair.Key] = targetFile.Replace("/整理文件Backup/", "/整理文件/");
+                }
+                distinctFiles = newFiles;
+                FileUtil.MoveFiles($"{target}/整理文件Backup", $"{target}/整理文件", "*", true, true);
             }
             {
                 var files = FileUtil.GetFiles(source, "*", SearchOption.AllDirectories);

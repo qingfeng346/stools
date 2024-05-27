@@ -29,6 +29,7 @@ namespace Scorpio.stools {
         private const string ParameterQueue = "--queue|-queue|-q";
         private const string ParameterSource = "--source|-source|-s";
         private const string ParameterClear = "--clear|-clear|-c";
+        private const string ParameterSort = "--sort|-sort";
         private const string ParameterMove = "--move|-move";
         unsafe static void Main(string[] args) {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -248,8 +249,9 @@ namespace Scorpio.stools {
         }
         static void SortMedia([ParamterInfo(Label = "起始目录", Param = ParameterSource)] string source,
                               [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target,
+                              [ParamterInfo(Label = "整理已有目录", Param = ParameterSort, Required = false)] bool sortExist,
                               [ParamterInfo(Label = "清理目录", Param = ParameterClear, Required = false)] bool clear) {
-            MediaUtil.SortMedia(source, target, clear);
+            MediaUtil.SortMedia(source, target, sortExist, clear);
         }
         static void SortMusic([ParamterInfo(Label = "起始目录", Param = ParameterSource)] string source,
                               [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target, 

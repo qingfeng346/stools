@@ -54,7 +54,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/stools/bin/Debug/net7.0/stools.dll",
-            "args": ["sortmedia", "-source", "./media", "-output", "./mediaoutput"],
+            "args": ["sortmedia", "-source", "./media", "-output", "./mediaoutput", "-sort", "true"],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "stopAtEntry": false

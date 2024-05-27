@@ -171,15 +171,13 @@ namespace Scorpio.stools {
                     foreach (var info in metadata) {
                         if (mediaInfo.createTime == null) {
                             object? time = null;
-                            if (info is ExifIfd0Directory) {
-                                time = info.GetObject(ExifDirectoryBase.TagDateTimeOriginal);
+                            if (info is ExifIfd0Directory || info is ExifSubIfdDirectory) {
+                                time = info.GetObject(ExifDirectoryBase.TagDateTimeDigitized);
                                 if (time == null) {
-                                    time = info.GetObject(ExifDirectoryBase.TagDateTime);
-                                }
-                            } else if (info is ExifSubIfdDirectory) {
-                                time = info.GetObject(ExifDirectoryBase.TagDateTimeOriginal);
-                                if (time == null) {
-                                    time = info.GetObject(ExifDirectoryBase.TagDateTime);
+                                    time = info.GetObject(ExifDirectoryBase.TagDateTimeOriginal);
+                                    if (time == null) {
+                                        time = info.GetObject(ExifDirectoryBase.TagDateTime);
+                                    }
                                 }
                             }
                             if (time != null) {
