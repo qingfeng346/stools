@@ -17,17 +17,12 @@ using MetadataExtractor.Formats.QuickTime;
 using System.Collections;
 using Newtonsoft.Json;
 using System.IO.Compression;
-using MetadataExtractor.Util;
 using MetadataExtractor.Formats.Jpeg;
 using MetadataExtractor.Formats.Png;
 using MetadataExtractor.Formats.Bmp;
 using MetadataExtractor.Formats.Gif;
 using MetadataExtractor.Formats.WebP;
 using MetadataExtractor.Formats.Avi;
-
-
-
-
 
 #if NET35
 using DirectoryList = System.Collections.Generic.IList<MetadataExtractor.Directory>;
@@ -157,6 +152,21 @@ namespace Scorpio.stools {
             } catch (System.Exception) { }
             return null;
         }
+        static DateTime? GetDateTime(object? value, string format = "yyyy:MM:dd HH:mm:ss") {
+            if (value == null) {
+                return null;
+            } else if ((value is StringValue || value is string) && !string.IsNullOrWhiteSpace(value.ToString())) {
+                if (string.IsNullOrWhiteSpace(value.ToString())) return null;
+                if (DateTime.TryParseExact(value.ToString(), format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var time)) {
+                    return time;
+                }
+                throw new System.Exception($"未知的时间格式 : {value}");
+            } else if (value is DateTime) {
+                return (DateTime)value;
+            } else {
+                throw new System.Exception($"未知的时间类型 : {value.GetType()} - {value}");
+            }
+        }
         public static MediaInfo GetMediaInfo(string fileName) {
             var metadata = ReadMetadata(fileName);
             if (metadata == null) return null;
@@ -170,24 +180,22 @@ namespace Scorpio.stools {
                     mediaInfo.isImage = true;
                     foreach (var info in metadata) {
                         if (mediaInfo.createTime == null) {
-                            object? time = null;
+                            DateTime? time = null;
                             if (info is ExifIfd0Directory || info is ExifSubIfdDirectory) {
-                                time = info.GetObject(ExifDirectoryBase.TagDateTimeDigitized);
-                                if (time == null) {
-                                    time = info.GetObject(ExifDirectoryBase.TagDateTimeOriginal);
-                                    if (time == null) {
-                                        time = info.GetObject(ExifDirectoryBase.TagDateTime);
-                                    }
+                                var time1 = GetDateTime(info.GetObject(ExifDirectoryBase.TagDateTimeDigitized));
+                                var time2 = GetDateTime(info.GetObject(ExifDirectoryBase.TagDateTimeOriginal));
+                                var time3 = GetDateTime(info.GetObject(ExifDirectoryBase.TagDateTime));
+                                time = time1;
+                                if (time2 != null && (time == null || time2 > time)) {
+                                    time = time2;
+                                }
+                                if (time3 != null && (time == null || time3 > time)) {
+                                    time = time3;
                                 }
                             }
                             if (time != null) {
-                                if ((time is StringValue || time is string) && !string.IsNullOrWhiteSpace(time.ToString())) {
-                                    mediaInfo.isTime = true;
-                                    mediaInfo.createTime = DateTime.ParseExact(time.ToString(), "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None);
-                                } else if (time is DateTime) {
-                                    mediaInfo.isTime = true;
-                                    mediaInfo.createTime = (DateTime)time;
-                                }
+                                mediaInfo.isTime = true;
+                                mediaInfo.createTime = time;
                             }
                         }
                         if (mediaInfo.width == null) {
@@ -246,13 +254,7 @@ namespace Scorpio.stools {
                             }
                             if (time != null) {
                                 mediaInfo.isTime = true;
-                                if (time is string) {
-                                    mediaInfo.createTime = DateTime.ParseExact(time.ToString(), "ddd MMM dd HH:mm:ss yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None);
-                                } else if (time is DateTime) {
-                                    mediaInfo.createTime = (DateTime)time;
-                                } else {
-                                    throw new System.Exception($"Time 是一个未知类型:{time.GetType()} - {time}");
-                                }
+                                mediaInfo.createTime = GetDateTime(time, "ddd MMM dd HH:mm:ss yyyy");
                             }
                         }
                         if (mediaInfo.width == null) {
