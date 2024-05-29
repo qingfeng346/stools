@@ -1,0 +1,27 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="ImageViewer.MainWindow"
+        Title="ImageViewer">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open..." Click = "OpenCommand"/>
+                <Separator/>
+                <MenuItem Header="_Exit"/>
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="Copy"/>
+                <MenuItem Header="Paste"/>
+            </MenuItem>
+        </Menu>
+        <TextBlock x:Name="textImageInfo" HorizontalAlignment="Left" VerticalAlignment="Top" DockPanel.Dock="Top"/>
+        <Image x:Name="imagePicture" Stretch="Uniform" DockPanel.Dock="Bottom"/>
+    </DockPanel>
+	<!-- <Grid>
+		<Image x:Name="imagePicture" Stretch="Uniform"/>
+		<Button Click="Button_Click" Content="Image"/>
+	</Grid> -->
+</Window>
