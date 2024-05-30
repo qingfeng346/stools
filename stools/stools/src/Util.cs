@@ -41,7 +41,15 @@ namespace Scorpio.stools {
         public Dictionary<string, HashSet<string>> music = new ();
     }
     public class MediaInfo {
-        public string fileName;             //文件路径
+        private string _fileName;
+        //文件路径
+        public string fileName {
+            get => _fileName;
+            set {
+                _fileName = value;
+                _md5 = null;
+            }
+        }
         public bool isImage;                //是否是图片
         public bool isTime;                 //是否有拍摄时间
         public string mediaType;            //媒体类型

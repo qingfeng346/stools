@@ -22,9 +22,7 @@ namespace Scorpio.stools {
                 dateTime = dateTime.Value.AddSeconds(1);
             }
         }
-        public static void SortMedia(string source, string target, bool sortExist, bool clear) {
-            var distinctFiles = new Dictionary<MediaInfo, string>();
-            var distinctFileToInfo = new Dictionary<string, MediaInfo>();
+        public static void SortMedia(string source, string target, bool clear) {
             if (clear) FileUtil.DeleteFolder(target);
             var originFileCount = 0;
             var validTimes = new HashSet<DateTime?>();
@@ -65,6 +63,8 @@ namespace Scorpio.stools {
                 var mediaType = mediaInfo.isImage ? "照片" : "视频";
                 return Path.GetFullPath($"{target}/整理文件/{timeError}/{mediaType}/{dateTime.ToString(FullFileFormat)}{extension}");
             }
+            var distinctFiles = new Dictionary<MediaInfo, string>();
+            var distinctFileToInfo = new Dictionary<string, MediaInfo>();
             if (FileUtil.PathExist($"{target}/整理文件")) {
                 var files = FileUtil.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories);
                 var progress = new Progress(files.Count, "获取文件");
@@ -112,15 +112,17 @@ namespace Scorpio.stools {
                             FileUtil.MoveFile(filePath, targetFile);
                             FileUtil.MoveFile(temp, filePath);
                             newFiles[targetMediaInfo] = filePath;
+                            targetMediaInfo.fileName = filePath;
                         } else {
                             if (FileUtil.FileExist(targetFile)) {
                                 throw new System.Exception($"目标文件已存在1 : {targetFile}  from : {filePath}");
                             }
                             FileUtil.MoveFile(filePath, targetFile);
                         }
+                        mediaInfo.fileName = targetFile;
                         logger.info($"整理文件 : {filePath} -> {targetFile}");
                     }
-                    newFiles[pair.Key] = targetFile;
+                    newFiles[mediaInfo] = targetFile;
                 }
                 distinctFiles = newFiles;
             }
