@@ -155,7 +155,7 @@ namespace Scorpio.stools {
         static DateTime? GetDateTime(object? value, string format = "yyyy:MM:dd HH:mm:ss") {
             if (value == null) {
                 return null;
-            } else if ((value is StringValue || value is string) && !string.IsNullOrWhiteSpace(value.ToString())) {
+            } else if (value is StringValue || value is string) {
                 if (string.IsNullOrWhiteSpace(value.ToString())) return null;
                 if (DateTime.TryParseExact(value.ToString(), format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var time)) {
                     return time;
