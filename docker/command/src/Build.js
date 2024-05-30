@@ -23,7 +23,6 @@ class Build {
             this.tempPath = `${Util.getTempPath()}/${this.id}`
             console.log(`临时操作目录 : ${this.tempPath}`)
             FileUtil.CreateDirectory(this.tempPath)
-            await Util.sleep(60000)
             let commandInfo = param.Execute
             if (commandInfo.Execute && commandInfo.Execute.length > 0) {
                 console.log(`执行列表 ${JSON.stringify(commandInfo.Execute)}`)
@@ -45,7 +44,8 @@ class Build {
                     }
                 }
             }
-            FileUtil.DeleteFolder(this.tempPath)
+            console.log(`删除临时目录 : ${this.tempPath}`)
+            await FileUtil.DeleteFolderAsync(this.tempPath)
             console.log(`执行成功`)
             this.saveSuccessResult()
         } catch (e) {

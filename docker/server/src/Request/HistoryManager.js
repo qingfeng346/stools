@@ -119,8 +119,12 @@ class HistoryManager {
             } else {
                 logger.notifyError(`任务 : ${id} 执行错误`)
             }
-            for (let key in execute.files) {
-                await FileUtil.DeleteFileAsync(execute.files[key])
+            let files = JSON.parse(execute.files)
+            for (let key in files) {
+                for (let file of files[key]) {
+                    logger.info(`清理临时上传文件 : ${file.path}`)
+                    await FileUtil.DeleteFileAsync(file.path)
+                }
             }
         } catch (e) {
             logger.error(`${id} ExecuteCommand is error : ${e.message}\n${e.stack}`)
