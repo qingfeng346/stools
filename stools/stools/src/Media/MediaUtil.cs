@@ -14,7 +14,7 @@ namespace Scorpio.stools {
             public bool isBackup;
         }
 
-        static string GetFileName(string path, DateTime? dateTime, string extension) {
+        static string GetOnlyFileName(string path, DateTime? dateTime, string extension) {
             while (true) {
                 var file = $"{path}{dateTime.Value.ToString(FileNameFormat)}{extension}";
                 if (!File.Exists(file))
@@ -24,6 +24,7 @@ namespace Scorpio.stools {
         }
         public static void SortMedia(string source, string target, bool sortExist, bool clear) {
             var distinctFiles = new Dictionary<MediaInfo, string>();
+            var distinctFileToInfo = new Dictionary<string, MediaInfo>();
             if (clear) FileUtil.DeleteFolder(target);
             var originFileCount = 0;
             var validTimes = new HashSet<DateTime?>();
@@ -43,6 +44,27 @@ namespace Scorpio.stools {
                     return time;
                 }
             }
+            void MoveRepeatFile(MediaInfo mediaInfo, string originFile, string file) {
+                var dateTime = mediaInfo.createTime;
+                var extension = Path.GetExtension(file);
+                var timeError = mediaInfo.isTime ? "有效时间" : "无效时间";
+                var mediaType = mediaInfo.isImage ? "重复照片" : "重复视频";
+                var targetPath = $"{target}/重复文件/{timeError}/{mediaType}/{dateTime.Value.ToString(RepeatPathFormat)}/{mediaInfo.md5}_{mediaInfo.size}/";
+                var targetFile = GetOnlyFileName(targetPath, dateTime, extension);
+                FileUtil.CopyFile(file, targetFile, true);
+                if (!FileUtil.FileExist($"{targetPath}/info.txt")) {
+                    FileUtil.CreateFile($"{targetPath}/info.txt", originFile);
+                }
+                if (!FileUtil.FileExist($"{targetPath}/origin{extension}")) {
+                    FileUtil.CopyFile(originFile, $"{targetPath}/origin{extension}", true);
+                }
+            }
+            string GetFileName(MediaInfo mediaInfo, string extension) {
+                var dateTime = mediaInfo.createTime.Value;
+                var timeError = mediaInfo.isTime ? "有效时间" : "无效时间";
+                var mediaType = mediaInfo.isImage ? "照片" : "视频";
+                return Path.GetFullPath($"{target}/整理文件/{timeError}/{mediaType}/{dateTime.ToString(FullFileFormat)}{extension}");
+            }
             if (FileUtil.PathExist($"{target}/整理文件")) {
                 var files = FileUtil.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories);
                 var progress = new Progress(files.Count, "获取文件");
@@ -51,10 +73,15 @@ namespace Scorpio.stools {
                 long mediaSize = 0;
                 long mediaCount = 0;
                 for (var i = 0; i < files.Count; ++i) {
-                    var file = files[i];
+                    var file = Path.GetFullPath(files[i]);
                     var mediaInfo = Util.GetMediaInfo(file);
+                    if (distinctFiles.TryGetValue(mediaInfo, out var originFile)) {
+                        MoveRepeatFile(mediaInfo, originFile, file);
+                        continue;
+                    }
                     mediaInfo.createTime = GetTime(mediaInfo.isTime, mediaInfo.createTime);
                     distinctFiles[mediaInfo] = file;
+                    distinctFileToInfo[file] = mediaInfo;
                     if (mediaInfo.isImage) {
                         imageSize += mediaInfo.size;
                         imageCount++;
@@ -76,13 +103,18 @@ namespace Scorpio.stools {
                 foreach (var pair in distinctFiles) {
                     progress.SetProgress(i++);
                     var mediaInfo = pair.Key;
-                    var filePath = pair.Value;
-                    var dateTime = mediaInfo.createTime.Value;
-                    var timeError = mediaInfo.isTime ? "有效时间" : "无效时间";
-                    var mediaType = mediaInfo.isImage ? "照片" : "视频";
-                    var targetFile = $"{target}/整理文件/{timeError}/{mediaType}/{dateTime.ToString(FullFileFormat)}{Path.GetExtension(filePath)}";
-                    if (Path.GetFullPath(filePath) != Path.GetFullPath(targetFile)) {
-                        FileUtil.MoveFile(filePath, targetFile);
+                    var filePath = newFiles.ContainsKey(pair.Key) ? newFiles[pair.Key] : pair.Value;
+                    var targetFile = GetFileName(mediaInfo, Path.GetExtension(filePath));
+                    if (filePath != targetFile) {
+                        if (distinctFileToInfo.TryGetValue(targetFile, out var targetMediaInfo)) {
+                            var temp = Path.GetTempFileName();
+                            FileUtil.MoveFile(targetFile, temp);
+                            FileUtil.MoveFile(filePath, targetFile);
+                            FileUtil.MoveFile(temp, filePath);
+                            newFiles[targetMediaInfo] = filePath;
+                        } else {
+                            FileUtil.MoveFile(filePath, targetFile);
+                        }
                         logger.info($"整理文件 : {filePath} -> {targetFile}");
                     }
                     newFiles[pair.Key] = targetFile;
@@ -112,28 +144,13 @@ namespace Scorpio.stools {
                         FileUtil.CreateFile($"{errorFilePath}.txt", file);
                         continue;
                     }
-                    if (distinctFiles.TryGetValue(mediaInfo, out var origin)) {
+                    if (distinctFiles.TryGetValue(mediaInfo, out var originFile)) {
                         repeatCount++;
-                        var dateTime = mediaInfo.createTime;
-                        var extension = Path.GetExtension(file);
-                        var timeError = mediaInfo.isTime ? "有效时间" : "无效时间";
-                        var mediaType = mediaInfo.isImage ? "重复照片" : "重复视频";
-                        var targetPath = $"{target}/重复文件/{timeError}/{mediaType}/{dateTime.Value.ToString(RepeatPathFormat)}/{mediaInfo.md5}_{mediaInfo.size}/";
-                        var targetFile = GetFileName(targetPath, dateTime, extension);
-                        FileUtil.CopyFile(file, targetFile, true);
-                        if (!FileUtil.FileExist($"{targetPath}/info.txt")) {
-                            FileUtil.CreateFile($"{targetPath}/info.txt", origin);
-                        }
-                        if (!FileUtil.FileExist($"{targetPath}/origin{extension}")) {
-                            FileUtil.CopyFile(origin, $"{targetPath}/origin{extension}", true);
-                        }
+                        MoveRepeatFile(mediaInfo, originFile, file);
                     } else {
                         validCount++;
                         mediaInfo.createTime = GetTime(mediaInfo.isTime, mediaInfo.createTime);
-                        var dateTime = mediaInfo.createTime;
-                        var timeError = mediaInfo.isTime ? "有效时间" : "无效时间";
-                        var mediaType = mediaInfo.isImage ? "照片" : "视频";
-                        var targetFile = GetFileName($"{target}/整理文件/{timeError}/{mediaType}/{dateTime.Value.ToString(PathFormat)}/", dateTime, Path.GetExtension(file));
+                        var targetFile = GetFileName(mediaInfo, Path.GetExtension(file));
                         distinctFiles[mediaInfo] = targetFile;
                         FileUtil.CopyFile(file, targetFile, true);
                     }
