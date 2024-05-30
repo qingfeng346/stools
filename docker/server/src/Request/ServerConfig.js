@@ -16,6 +16,8 @@ class ServerConfig {
         message.register(RequestCode.GetStorage, this.OnGetStorage.bind(this))
         message.register(RequestCode.SetStorage, this.OnSetStorage.bind(this))
         message.register(RequestCode.DelStorage, this.OnDelStorage.bind(this))
+
+        message.register(RequestCode.SyncDatabase, this.OnSyncDatabase.bind(this))
     }
     async GetConfig(name) {
         return JSON.parse((await database.config.findOrCreate({ defaults: { value: "{}" }, where: { name: name } }))[0].dataValues.value)
@@ -73,6 +75,9 @@ class ServerConfig {
     }
     async OnDelStorage(data) {
         await database.storage.destroy({ where: { name: data.name } })
+    }
+    async OnSyncDatabase() {
+        await database.sync()
     }
 }
 module.exports = new ServerConfig()

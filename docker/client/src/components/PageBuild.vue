@@ -34,13 +34,19 @@
               </template>
             </Switch>
           </span>
-          <Upload v-else-if="arg.type == 'file'" type="drag" :paste="true" :name="arg.name" action :before-upload="CreateBeforeUploadFile(arg.name)">
-            <div style="padding: 2px 0">
-              <Icon type="ios-cloud-upload" size="40" style="color: #3399ff"></Icon>
-              <div v-if="formFile[arg.name]">当前选择文件 : {{ formFile[arg.name].name }}</div>
-              <div v-else>选择文件</div>
-            </div>
-          </Upload>
+          <div v-else-if="arg.type == 'file'">
+            <Tooltip v-for="(item, index) in formFile[arg.name]" placement="top" :content="item.name" max-width="300">
+              <Tag type="border" color="primary" closable @on-close="RemoveUploadFile(arg.name, item, index)">
+                {{ GetUploadFileName(item.name) }}
+              </Tag>
+            </Tooltip>
+            <Upload type="drag" :paste="true" :multiple="true" :name="arg.name" action :before-upload="AddUploadFile(arg.name)">
+              <div style="padding: 2px 0">
+                <Icon type="ios-cloud-upload" size="40" style="color: #3399ff"></Icon>
+                <div>选择文件</div>
+              </div>
+            </Upload>
+          </div>
         </FormItem>
       </div>
       <FormItem label="最终命令">
@@ -197,10 +203,23 @@ export default {
       this.formData[name] = util.setBase64Flag(this.formData[name], value, state)
       this.UpdateCommand()
     },
-    CreateBeforeUploadFile(name) {
+    AddUploadFile(name) {
       return (file) => {
-        this.formFile[name] = file
+        if (this.formFile[name] == null) {
+          this.formFile[name] = []
+        }
+        this.formFile[name].push(file)
         return false;
+      }
+    },
+    RemoveUploadFile(name, file, index) {
+      this.formFile[name].splice(index, 1)
+    },
+    GetUploadFileName(name) {
+      if (name.length > 15) {
+        return name.substring(0, 15) + "..."
+      } else {
+        return name
       }
     },
     GetValue(key) {

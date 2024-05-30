@@ -60,7 +60,9 @@ class net {
         try {
             let params = new FormData();
             for (let name in files) {
-                params.append(name, files[name])
+                for (let file of files[name]) {
+                    params.append(name, file)
+                }
             }
             params.set("code", code)
             params.set("data", strData)

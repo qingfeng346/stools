@@ -46,6 +46,9 @@
           </Panel>
         </Collapse>
       </TabPane>
+      <TabPane name="operate" label="操作">
+        <Button @click="OnClickSync">刷新数据库</Button>
+      </TabPane>
     </Tabs>
   </Content>
 </template>
@@ -214,6 +217,9 @@ export default {
         util.errorMessage(`内容不是正确的JSON格式:${e}`);
       }
     },
+    async OnClickSync() {
+      await util.SyncDatabase()
+    }
   },
 };
 </script>

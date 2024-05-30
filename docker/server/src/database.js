@@ -53,11 +53,11 @@ class database {
                 comment: "操作类型",
             },
             args: {
-                type: DataTypes.STRING(2048),
+                type: DataTypes.TEXT,
                 comment: "所有参数"
             },
             files: {
-                type: DataTypes.STRING(2048),
+                type: DataTypes.TEXT,
                 comment: "所有文件"
             },
             status: {
@@ -69,7 +69,7 @@ class database {
                 comment: "返回结果",
             },
             urls: {
-                type: DataTypes.STRING(2048),
+                type: DataTypes.TEXT,
                 allowNull: false,
                 defaultValue: "",
                 comment: "生成的urls",

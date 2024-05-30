@@ -36,10 +36,13 @@ class HistoryManager {
             let newID = await this.CreateExecuteID()
             let allFiles = {}
             for (let file of files) {
-                allFiles[file.fieldname] = {
+                if (allFiles[file.fieldname] == null) {
+                    allFiles[file.fieldname] = []
+                }
+                allFiles[file.fieldname].push({
                     originalname: file.originalname,
                     path: file.path
-                }
+                })
             }
             let data = {
                 id: newID.id,

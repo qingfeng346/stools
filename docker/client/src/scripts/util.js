@@ -236,6 +236,10 @@ class util {
     async DelHistory(id) {
         await net.execute(RequestCode.DelHistory, { id: id })
     }
+    //同步数据库
+    async SyncDatabase() {
+        await net.execute(RequestCode.SyncDatabase)
+    }
 
     //解析一条历史记录
     async parseHistory(rawData) {

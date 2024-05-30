@@ -24,6 +24,7 @@ const RequestCode = {
     SetStorage: "SetStorage",
     GetStorage: "GetStorage",
     DelStorage: "DelStorage",
+    SyncDatabase: "SyncDatabase",
 }
 const Result = {
     Status,
