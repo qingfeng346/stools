@@ -113,6 +113,9 @@ namespace Scorpio.stools {
                             FileUtil.MoveFile(temp, filePath);
                             newFiles[targetMediaInfo] = filePath;
                         } else {
+                            if (FileUtil.FileExist(targetFile)) {
+                                throw new System.Exception($"目标文件已存在1 : {targetFile}  from : {filePath}");
+                            }
                             FileUtil.MoveFile(filePath, targetFile);
                         }
                         logger.info($"整理文件 : {filePath} -> {targetFile}");
@@ -151,6 +154,9 @@ namespace Scorpio.stools {
                         validCount++;
                         mediaInfo.createTime = GetTime(mediaInfo.isTime, mediaInfo.createTime);
                         var targetFile = GetFileName(mediaInfo, Path.GetExtension(file));
+                        if (FileUtil.FileExist(targetFile)) {
+                            throw new System.Exception($"目标文件已存在2 : {targetFile}  from : {file}");
+                        }
                         distinctFiles[mediaInfo] = targetFile;
                         FileUtil.CopyFile(file, targetFile, true);
                     }
