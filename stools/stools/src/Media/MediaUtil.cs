@@ -75,6 +75,10 @@ namespace Scorpio.stools {
                 for (var i = 0; i < files.Count; ++i) {
                     var file = Path.GetFullPath(files[i]);
                     var mediaInfo = Util.GetMediaInfo(file);
+                    if (mediaInfo == null) {
+                        logger.error($"错误文件 : {file}");
+                        continue;
+                    }
                     if (distinctFiles.TryGetValue(mediaInfo, out var originFile)) {
                         MoveRepeatFile(mediaInfo, originFile, file);
                         continue;
