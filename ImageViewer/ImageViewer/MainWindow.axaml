@@ -4,6 +4,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImageViewer.MainWindow"
+		KeyDown="OnKeyDown"
+		KeyUp="OnKeyUp"
         Title="ImageViewer">
     <DockPanel>
         <Menu DockPanel.Dock="Top">
@@ -13,7 +15,10 @@
                 <MenuItem Header="_Exit"/>
             </MenuItem>
         </Menu>
-        <TextBlock x:Name="textImageInfo" DockPanel.Dock="Right" Padding="10"/>
+        <TextBlock x:Name="textImageInfo" DockPanel.Dock="Left" 
+				    Padding="10" 
+					Width="300" 
+					TextWrapping="Wrap" />
         <Image x:Name="imagePicture" Stretch="Uniform"/>
 		<!-- 
 		<Button Click="OnClickLastButton" DockPanel.Dock="Bottom">上一个</Button>
