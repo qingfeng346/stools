@@ -12,14 +12,18 @@
                 <Separator/>
                 <MenuItem Header="_Exit"/>
             </MenuItem>
-            <MenuItem Header="_Edit">
-                <MenuItem Header="Copy"/>
-                <MenuItem Header="Paste"/>
-            </MenuItem>
         </Menu>
-        <TextBlock x:Name="textImageInfo" HorizontalAlignment="Left" VerticalAlignment="Top" DockPanel.Dock="Top"/>
-        <Image x:Name="imagePicture" Stretch="Uniform" DockPanel.Dock="Bottom"/>
-    </DockPanel>
+        <TextBlock x:Name="textImageInfo" DockPanel.Dock="Right" Padding="10"/>
+        <Image x:Name="imagePicture" Stretch="Uniform"/>
+		<!-- 
+		<Button Click="OnClickLastButton" DockPanel.Dock="Bottom">上一个</Button>
+		<Button Click="OnClickNextButton" DockPanel.Dock="Bottom">下一个</Button>
+	    <Grid DockPanel.Dock="Bottom">
+			<Button Click="OnClickLastButton">上一个</Button>
+		    <Button Click="OnClickNextButton">下一个</Button>
+		</Grid>
+		 -->
+	</DockPanel>
 	<!-- <Grid>
 		<Image x:Name="imagePicture" Stretch="Uniform"/>
 		<Button Click="Button_Click" Content="Image"/>

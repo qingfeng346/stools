@@ -6,12 +6,10 @@ using System.Linq;
 using ImageMagick;
 using System.IO;
 using Avalonia.Interactivity;
-using System.Windows.Input;
 
 namespace ImageViewer {
     public partial class MainWindow : Window {
-        // public ICommand OpenCommand { get; } = new CustomCommand();
-        public string ImageInfo {get;private set;} ="fwafwef";
+        public string ImageInfo { get; private set; } = "";
         public MainWindow() {
             InitializeComponent();
         }
@@ -31,27 +29,31 @@ namespace ImageViewer {
             }
         }
         async void OpenFile(string fileName) {
-            textImageInfo.Text = @"fwafweffwe
-            fwafweffawe
-            fewafwaef
-            fawefwef
-            fewfwaefewf
-            fewafwaefwaef
-            fweafwaefawef
-            fweafwaefwef";
             using var magickImage = new MagickImage(fileName);
+            var profiler = magickImage.GetExifProfile();
+            var info = "";
+            foreach (var value in profiler.Values) {
+                info += $@"
+{value.Tag} : {value.GetValue().ToString()}";
+            }
+//            var model = profiler?.GetValue(ExifTag.Model);
+//            var software = profiler?.GetValue(ExifTag.ImageWidth);
+//            var dateTime = profiler?.GetValue(ExifTag.DateTime);
+//            var info = $@"
+//Model : {model}
+//Software : {software}
+//Width : {magickImage.Width}
+//Height : {magickImage.Height}
+//DateTime : {dateTime}
+//";
+            textImageInfo.Text = info;
             var tempFile = Path.GetTempFileName();
             await magickImage.WriteAsync(tempFile, MagickFormat.Jpg);
             imagePicture.Source = new Bitmap(tempFile);
+            ToolTip.SetTip(imagePicture, info);
             File.Delete(tempFile);
-            ToolTip.SetTip(imagePicture, @"fweafwaefawef
-            fwea
-            fewafwaeffew
-            fweafwaef
-            fweafwaefawefwaef
-            waef");
         }
-        public async void OpenCommand(object? sender, RoutedEventArgs e) {
+        async void OpenCommand(object? sender, RoutedEventArgs e) {
             var options = new FilePickerOpenOptions {
                 Title = "选择文件",
                 FileTypeFilter = [
@@ -65,6 +67,12 @@ namespace ImageViewer {
             if (file != null) {
                 OpenFile(file.Path.LocalPath);
             }
+        }
+        async void OnClickLastButton(object? sender, RoutedEventArgs e) {
+
+        }
+        async void OnClickNextButton(object? sender, RoutedEventArgs e) {
+
         }
     }
 }
