@@ -160,7 +160,7 @@ namespace Scorpio.stools {
             } catch (System.Exception) { }
             return null;
         }
-        static DateTime? GetDateTime(object? value, string format = "yyyy:MM:dd HH:mm:ss") {
+        static DateTime? GetDateTime(object value, string format = "yyyy:MM:dd HH:mm:ss") {
             if (value == null) {
                 return null;
             } else if (value is StringValue || value is string) {
@@ -207,7 +207,7 @@ namespace Scorpio.stools {
                             }
                         }
                         if (mediaInfo.width == null) {
-                            object? width = null, height = null;
+                            object width = null, height = null;
                             if (info is ExifIfd0Directory) {
                                 width = info.GetObject(ExifDirectoryBase.TagImageWidth);
                                 height = info.GetObject(ExifDirectoryBase.TagImageHeight);
@@ -252,7 +252,7 @@ namespace Scorpio.stools {
                     mediaInfo.isImage = false;
                     foreach (var info in metadata) {
                         if (mediaInfo.createTime == null) {
-                            object? time = null;
+                            object time = null;
                             if (info is QuickTimeTrackHeaderDirectory) {
                                 time = info.GetObject(QuickTimeTrackHeaderDirectory.TagCreated);
                             } else if (info is QuickTimeMovieHeaderDirectory) {
@@ -266,7 +266,7 @@ namespace Scorpio.stools {
                             }
                         }
                         if (mediaInfo.width == null) {
-                            object? width = null, height = null;
+                            object width = null, height = null;
                             if (info is QuickTimeTrackHeaderDirectory) {
                                 width = info.GetObject(QuickTimeTrackHeaderDirectory.TagWidth);
                                 height = info.GetObject(QuickTimeTrackHeaderDirectory.TagHeight);

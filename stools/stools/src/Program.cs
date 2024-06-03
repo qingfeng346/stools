@@ -249,9 +249,8 @@ namespace Scorpio.stools {
         }
         static void SortMedia([ParamterInfo(Label = "起始目录", Param = ParameterSource)] string source,
                               [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target,
-                              [ParamterInfo(Label = "整理已有目录", Param = ParameterSort, Required = false)] bool sortExist,
                               [ParamterInfo(Label = "清理目录", Param = ParameterClear, Required = false)] bool clear) {
-            MediaUtil.SortMedia(source, target, sortExist, clear);
+            MediaUtil.SortMedia(source, target, clear);
         }
         static void SortMusic([ParamterInfo(Label = "起始目录", Param = ParameterSource)] string source,
                               [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target, 
