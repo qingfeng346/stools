@@ -27,19 +27,19 @@ namespace Scorpio.stools {
             var originFileCount = 0;
             var validTimes = new HashSet<DateTime?>();
             var invalidTimes = new HashSet<DateTime?>();
-            DateTime? GetTime(bool valid, DateTime? time) {
+            DateTime GetTime(bool valid, DateTime? time) {
                 if (valid) {
                     while (validTimes.Contains(time)) {
                         time = time?.AddSeconds(1);
                     }
                     validTimes.Add(time);
-                    return time;
+                    return time.Value;
                 } else {
                     while (invalidTimes.Contains(time)) {
                         time = time?.AddSeconds(1);
                     }
                     invalidTimes.Add(time);
-                    return time;
+                    return time.Value;
                 }
             }
             void MoveRepeatFile(MediaInfo mediaInfo, string originFile, string file) {
@@ -64,7 +64,6 @@ namespace Scorpio.stools {
                 return Path.GetFullPath($"{target}/整理文件/{timeError}/{mediaType}/{dateTime.ToString(FullFileFormat)}{extension}");
             }
             var distinctFiles = new Dictionary<MediaInfo, string>();
-            var distinctFileToInfo = new Dictionary<string, MediaInfo>();
             if (FileUtil.PathExist($"{target}/整理文件")) {
                 var files = FileUtil.GetFiles($"{target}/整理文件", "*", SearchOption.AllDirectories);
                 var progress = new Progress(files.Count, "获取文件");
@@ -85,7 +84,6 @@ namespace Scorpio.stools {
                     }
                     mediaInfo.createTime = GetTime(mediaInfo.isTime, mediaInfo.createTime);
                     distinctFiles[mediaInfo] = file;
-                    distinctFileToInfo[file] = mediaInfo;
                     if (mediaInfo.isImage) {
                         imageSize += mediaInfo.size;
                         imageCount++;
@@ -100,36 +98,25 @@ namespace Scorpio.stools {
                 }
                 logger.info($"总文件数量:{originFileCount},有效文件数量:{distinctFiles.Count} 图片数量:{imageCount},大小:{ScorpioUtil.GetMemory(imageSize)} 视频数量:{mediaCount},大小:{ScorpioUtil.GetMemory(mediaSize)}");
             }
-            {
-                var progress = new Progress(distinctFiles.Count, "整理文件");
-                var i = 0;
-                var newFiles = new Dictionary<MediaInfo, string>();
-                foreach (var pair in distinctFiles) {
-                    progress.SetProgress(i++);
-                    var mediaInfo = pair.Key;
-                    var filePath = newFiles.ContainsKey(pair.Key) ? newFiles[pair.Key] : pair.Value;
-                    var targetFile = GetFileName(mediaInfo, Path.GetExtension(filePath));
-                    if (filePath != targetFile) {
-                        if (distinctFileToInfo.TryGetValue(targetFile, out var targetMediaInfo)) {
-                            var temp = Path.GetTempFileName();
-                            FileUtil.MoveFile(targetFile, temp);
-                            FileUtil.MoveFile(filePath, targetFile);
-                            FileUtil.MoveFile(temp, filePath);
-                            newFiles[targetMediaInfo] = filePath;
-                            targetMediaInfo.fileName = filePath;
-                        } else {
-                            if (FileUtil.FileExist(targetFile)) {
-                                throw new System.Exception($"目标文件已存在1 : {targetFile}  from : {filePath}");
-                            }
-                            FileUtil.MoveFile(filePath, targetFile);
-                        }
-                        mediaInfo.fileName = targetFile;
-                        logger.info($"整理文件 : {filePath} -> {targetFile}");
-                    }
-                    newFiles[mediaInfo] = targetFile;
-                }
-                distinctFiles = newFiles;
-            }
+            //{
+            //    FileUtil.DeleteFolder($"{target}/整理文件Backup");
+            //    var progress = new Progress(distinctFiles.Count, "整理文件");
+            //    var i = 0;
+            //    var newFiles = new Dictionary<MediaInfo, string>();
+            //    foreach (var pair in distinctFiles) {
+            //        progress.SetProgress(i++);
+            //        var mediaInfo = pair.Key;
+            //        var filePath = pair.Value;
+            //        var targetFile = GetFileName(mediaInfo, Path.GetExtension(filePath));
+            //        if (filePath != targetFile) {
+            //            FileUtil.CopyFile(filePath, targetFile.Replace("整理文件", "整理文件Backup"));
+            //            mediaInfo.fileName = targetFile;
+            //            logger.info($"整理文件 : {filePath} -> {targetFile}");
+            //        }
+            //        newFiles[mediaInfo] = targetFile;
+            //    }
+            //    distinctFiles = newFiles;
+            //}
             {
                 var files = FileUtil.GetFiles(source, "*", SearchOption.AllDirectories);
                 var progress = new Progress(files.Count, "复制文件");
@@ -161,7 +148,7 @@ namespace Scorpio.stools {
                         mediaInfo.createTime = GetTime(mediaInfo.isTime, mediaInfo.createTime);
                         var targetFile = GetFileName(mediaInfo, Path.GetExtension(file));
                         if (FileUtil.FileExist(targetFile)) {
-                            throw new System.Exception($"目标文件已存在2 : {targetFile}  from : {file}");
+                            throw new System.Exception($"目标文件已存在 : {targetFile}  from : {file}");
                         }
                         distinctFiles[mediaInfo] = targetFile;
                         FileUtil.CopyFile(file, targetFile, true);
