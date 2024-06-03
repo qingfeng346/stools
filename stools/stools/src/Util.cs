@@ -160,13 +160,16 @@ namespace Scorpio.stools {
             } catch (System.Exception) { }
             return null;
         }
-        static DateTime? GetDateTime(object value, string format = "yyyy:MM:dd HH:mm:ss") {
+        static DateTime? GetDateTime(object value) {
             if (value == null) {
                 return null;
             } else if (value is StringValue || value is string) {
                 if (string.IsNullOrWhiteSpace(value.ToString())) return null;
-                if (DateTime.TryParseExact(value.ToString(), format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var time)) {
-                    return time;
+                var formats = new string[]{"yyyy:MM:dd HH:mm:ss", "ddd MMM dd HH:mm:ss yyyy", "yyyy:MM:dd HH:mm:ss tt"};
+                foreach (var format in formats) {
+                    if (DateTime.TryParseExact(value.ToString(), format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var time)) {
+                        return time;
+                    }
                 }
                 throw new System.Exception($"未知的时间格式 : {value}");
             } else if (value is DateTime) {
@@ -262,7 +265,7 @@ namespace Scorpio.stools {
                             }
                             if (time != null) {
                                 mediaInfo.isTime = true;
-                                mediaInfo.createTime = GetDateTime(time, "ddd MMM dd HH:mm:ss yyyy");
+                                mediaInfo.createTime = GetDateTime(time);
                             }
                         }
                         if (mediaInfo.width == null) {
