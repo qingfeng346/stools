@@ -165,7 +165,11 @@ namespace Scorpio.stools {
                 return null;
             } else if (value is StringValue || value is string) {
                 if (string.IsNullOrWhiteSpace(value.ToString())) return null;
-                var formats = new string[]{"yyyy:MM:dd HH:mm:ss", "ddd MMM dd HH:mm:ss yyyy", "yyyy:MM:dd HH:mm:ss tt"};
+                var info = CultureInfo.CurrentCulture;
+                var wwww = DateTime.Now;
+                var eee = wwww.ToString("yyyy:MM:dd HH:mm:sstt", info);
+                
+                var formats = new string[]{"yyyy:MM:dd HH:mm:ss", "ddd MMM dd HH:mm:ss yyyy", "yyyy:MM:dd HH:mm:sstt"};
                 foreach (var format in formats) {
                     if (DateTime.TryParseExact(value.ToString(), format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var time)) {
                         return time;
