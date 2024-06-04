@@ -26,12 +26,8 @@ namespace ImageViewer {
             try {
                 file = Path.GetFullPath(fileName);
                 using var magickImage = new MagickImage(file);
-                if (loadPathFiles) {
-                    files = FileUtil.GetFiles(Path.GetDirectoryName(file), ["*.jpg", "*.png", "*.livp", "*.bmp", "*.heic"], SearchOption.TopDirectoryOnly);
-                }
-                var info = $@"文件名 : {Path.GetFileName(file)} ({files.IndexOf(file) + 1}/{files.Count})
-大小 : {ScorpioUtil.GetMemory(new FileInfo(file).Length)}
-尺寸 : {magickImage.Width}x{magickImage.Height}";
+                var info = $@"大小 : {ScorpioUtil.GetMemory(new FileInfo(file).Length)}
+宽高 : {magickImage.Width}x{magickImage.Height}";
                 var profiler = magickImage.GetExifProfile();
                 if (profiler != null) {
                     foreach (var value in profiler.Values) {
@@ -48,8 +44,11 @@ namespace ImageViewer {
                 var tempFile = Path.GetTempFileName();
                 await magickImage.WriteAsync(tempFile, MagickFormat.Jpg);
                 imagePicture.Source = new Bitmap(tempFile);
-                //ToolTip.SetTip(imagePicture, info);
                 File.Delete(tempFile);
+                if (loadPathFiles) {
+                    files = FileUtil.GetFiles(Path.GetDirectoryName(file), ["*.jpg", "*.png", "*.livp", "*.bmp", "*.heic"], SearchOption.TopDirectoryOnly);
+                }
+                this.textImageTitle.Text = $"{Path.GetFileName(file)} ({files.IndexOf(file) + 1}/{files.Count})";
                 return true;
             } catch (Exception e) {
                 Console.WriteLine(e.ToString());

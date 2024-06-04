@@ -25,7 +25,7 @@
 				</Image.ContextMenu>
 			</Image>
 			<StackPanel Margin="10">
-				<TextBlock Margin="0 5" FontSize="18" FontWeight="Bold">Headi123123ng</TextBlock>
+				<TextBlock x:Name="textImageTitle" Margin="0 5" FontSize="18" FontWeight="Bold"></TextBlock>
 				<TextBlock x:Name="textImageInfo"
 							Padding="10"
 							Width="300"
