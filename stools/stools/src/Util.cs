@@ -165,14 +165,13 @@ namespace Scorpio.stools {
                 return null;
             } else if (value is StringValue || value is string) {
                 if (string.IsNullOrWhiteSpace(value.ToString())) return null;
-                var info = CultureInfo.CurrentCulture;
-                var wwww = DateTime.Now;
-                var eee = wwww.ToString("yyyy:MM:dd HH:mm:sstt", info);
-                
+                var cultures = new CultureInfo[] { CultureInfo.InvariantCulture, new CultureInfo("zh-CN") };
                 var formats = new string[]{"yyyy:MM:dd HH:mm:ss", "ddd MMM dd HH:mm:ss yyyy", "yyyy:MM:dd HH:mm:sstt"};
-                foreach (var format in formats) {
-                    if (DateTime.TryParseExact(value.ToString(), format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var time)) {
-                        return time;
+                foreach (var culture in cultures) {
+                    foreach (var format in formats) {
+                        if (DateTime.TryParseExact(value.ToString(), format, culture, DateTimeStyles.None, out var time)) {
+                            return time;
+                        }
                     }
                 }
                 throw new System.Exception($"未知的时间格式 : {value}");
