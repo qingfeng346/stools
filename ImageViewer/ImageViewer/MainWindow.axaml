@@ -8,18 +8,37 @@
 		KeyUp="OnKeyUp"
         Title="ImageViewer">
     <DockPanel>
-        <Menu DockPanel.Dock="Top">
+		<Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
-                <MenuItem Header="_Open..." Click = "OpenCommand"/>
+                <MenuItem Header="Open..." Click = "OnClickOpenMenu"/>
                 <Separator/>
-                <MenuItem Header="_Exit"/>
+                <MenuItem Header="Exit" Click="OnClickExitMenu"/>
             </MenuItem>
         </Menu>
-        <TextBlock x:Name="textImageInfo" DockPanel.Dock="Left" 
-				    Padding="10" 
-					Width="300" 
-					TextWrapping="Wrap" />
-        <Image x:Name="imagePicture" Stretch="Uniform"/>
+		<Panel>
+			<Image x:Name="imagePicture" Stretch="Uniform">
+				<Image.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Copy"/>
+						<MenuItem Header="Paste"/>
+					</ContextMenu>
+				</Image.ContextMenu>
+			</Image>
+			<StackPanel Margin="10">
+				<TextBlock Margin="0 5" FontSize="18" FontWeight="Bold">Headi123123ng</TextBlock>
+				<TextBlock x:Name="textImageInfo"
+							Padding="10"
+							Width="300"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Top"
+							TextWrapping="Wrap" />
+			</StackPanel>
+			<!-- 
+			<Button HorizontalAlignment="Left" VerticalAlignment="Center">fewfew</Button>
+			<Button HorizontalAlignment="Right" VerticalAlignment="Center">fewfew</Button>
+			-->
+		</Panel>
+
 		<!-- 
 		<Button Click="OnClickLastButton" DockPanel.Dock="Bottom">上一个</Button>
 		<Button Click="OnClickNextButton" DockPanel.Dock="Bottom">下一个</Button>

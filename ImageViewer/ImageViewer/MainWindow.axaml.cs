@@ -12,19 +12,25 @@ using Scorpio.Commons;
 using System.Threading.Tasks;
 namespace ImageViewer {
     public partial class MainWindow : Window {
-        private object sync = new object();
-        private int version = 0;
         private string file = "";
         private List<string> files = new List<string>();
         public string ImageInfo { get; private set; } = "";
         public MainWindow() {
             InitializeComponent();
+            var args = Environment.GetCommandLineArgs();
+            if (args.Length > 1) {
+                OpenFile(args[1], true);
+            }
         }
-        async Task<bool> OpenFile(string fileName) {
+        async Task<bool> OpenFile(string fileName, bool loadPathFiles = false) {
             try {
-                using var magickImage = new MagickImage(fileName);
-                var info = $@"文件 : {fileName}
-大小 : {ScorpioUtil.GetMemory(new FileInfo(fileName).Length)}
+                file = Path.GetFullPath(fileName);
+                using var magickImage = new MagickImage(file);
+                if (loadPathFiles) {
+                    files = FileUtil.GetFiles(Path.GetDirectoryName(file), ["*.jpg", "*.png", "*.livp", "*.bmp", "*.heic"], SearchOption.TopDirectoryOnly);
+                }
+                var info = $@"文件名 : {Path.GetFileName(file)} ({files.IndexOf(file) + 1}/{files.Count})
+大小 : {ScorpioUtil.GetMemory(new FileInfo(file).Length)}
 尺寸 : {magickImage.Width}x{magickImage.Height}";
                 var profiler = magickImage.GetExifProfile();
                 if (profiler != null) {
@@ -42,33 +48,15 @@ namespace ImageViewer {
                 var tempFile = Path.GetTempFileName();
                 await magickImage.WriteAsync(tempFile, MagickFormat.Jpg);
                 imagePicture.Source = new Bitmap(tempFile);
-                ToolTip.SetTip(imagePicture, info);
+                //ToolTip.SetTip(imagePicture, info);
                 File.Delete(tempFile);
-                file = Path.GetFullPath(fileName);
                 return true;
-            } catch (System.Exception e) {
+            } catch (Exception e) {
                 Console.WriteLine(e.ToString());
             }
             return false;
         }
-        void OpenPath(string path) {
-            Task.Run(() => {
-                version++;
-                lock (sync) { this.files.Clear(); }
-                var v = version;
-                var files = FileUtil.GetFiles(path, "*", SearchOption.TopDirectoryOnly);
-                foreach (var file in files) {
-                    if (v != version) { return; }
-                    try {
-                        using var magickImage = new MagickImage(file);
-                        lock (sync) { this.files.Add(Path.GetFullPath(file)); }
-                    } catch (System.Exception e) {
-
-                    }
-                }
-            });
-        }
-        async void OpenCommand(object? sender, RoutedEventArgs e) {
+        async void OnClickOpenMenu(object sender, RoutedEventArgs e) {
             var options = new FilePickerOpenOptions {
                 Title = "选择文件",
                 FileTypeFilter = [
@@ -79,24 +67,23 @@ namespace ImageViewer {
             };
             var result = await StorageProvider.OpenFilePickerAsync(options);
             var file = result.FirstOrDefault();
-            if (file != null && await OpenFile(file.Path.LocalPath)) {
-                OpenPath(Path.GetDirectoryName(file.Path.LocalPath));
+            if (file != null) {
+                await OpenFile(file.Path.LocalPath, true);
             }
         }
-        void OnKeyDown(object sender, KeyEventArgs e) {
+        void OnClickExitMenu(object sender, RoutedEventArgs e) {
+            Environment.Exit(0);
+        }
+        async void OnKeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.Left) {
-                lock (sync) {
-                    var index = files.IndexOf(file);
-                    if (index > 0) {
-                        OpenFile(files[index - 1]);
-                    }
+                var index = files.IndexOf(file);
+                if (index > 0) {
+                    await OpenFile(files[index - 1]);
                 }
             } else if (e.Key == Key.Right) {
-                lock (sync) {
-                    var index = files.IndexOf(file);
-                    if (index >= 0 && index < files.Count - 1) {
-                        OpenFile(files[index + 1]);
-                    }
+                var index = files.IndexOf(file);
+                if (index >= 0 && index < files.Count - 1) {
+                    await OpenFile(files[index + 1]);
                 }
             }
         }
