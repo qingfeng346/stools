@@ -25,13 +25,15 @@
 				</Image.ContextMenu>
 			</Image>
 			<StackPanel Margin="10">
-				<TextBlock x:Name="textImageTitle" Margin="0 5" FontSize="18" FontWeight="Bold"></TextBlock>
-				<TextBlock x:Name="textImageInfo"
-							Padding="10"
-							Width="300"
-							HorizontalAlignment="Left"
-							VerticalAlignment="Top"
-							TextWrapping="Wrap" />
+				<TextBlock x:Name="textImageTitle" Margin="0 5" FontSize="18" FontWeight="Bold"/>
+				<ScrollViewer x:Name="scrollViewer" HorizontalAlignment="Left" VerticalAlignment="Top">
+					<TextBlock x:Name="textImageInfo"
+						Padding="10"
+						Width="300"
+						HorizontalAlignment="Left"
+						VerticalAlignment="Top"
+						TextWrapping="Wrap" />
+				</ScrollViewer>
 			</StackPanel>
 			<!-- 
 			<Button HorizontalAlignment="Left" VerticalAlignment="Center">fewfew</Button>

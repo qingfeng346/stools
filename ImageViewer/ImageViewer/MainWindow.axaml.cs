@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using Scorpio.Commons;
 using System.Threading.Tasks;
+using System.Text;
+using ImageMagick.Formats;
 namespace ImageViewer {
     public partial class MainWindow : Window {
         private string file = "";
@@ -17,6 +19,7 @@ namespace ImageViewer {
         public string ImageInfo { get; private set; } = "";
         public MainWindow() {
             InitializeComponent();
+            SizeChanged += (_, _) => OnSizeChanged();
             var args = Environment.GetCommandLineArgs();
             if (args.Length > 1) {
                 OpenFile(args[1], true);
@@ -26,21 +29,34 @@ namespace ImageViewer {
             try {
                 file = Path.GetFullPath(fileName);
                 using var magickImage = new MagickImage(file);
-                var info = $@"大小 : {ScorpioUtil.GetMemory(new FileInfo(file).Length)}
-宽高 : {magickImage.Width}x{magickImage.Height}";
+                var builder = new StringBuilder();
+                builder.Append($@"大小 : {ScorpioUtil.GetMemory(new FileInfo(file).Length)}
+宽高 : {magickImage.Width}x{magickImage.Height}");
                 var profiler = magickImage.GetExifProfile();
                 if (profiler != null) {
+                    var tags = new HashSet<ExifTag>();
+                    void AddInfo<TValueType>(ExifTag<TValueType> tag, string name) {
+                        tags.Add(tag);
+                        var value = profiler.GetValue(tag);
+                        if (value != null) {
+                            builder.Append(@$"
+{name} : {value.Value}({value.DataType})");
+                        }
+                    }
+                    AddInfo(ExifTag.Make, "相机制造商");
+                    AddInfo(ExifTag.Model, "相机设备");
+                    AddInfo(ExifTag.DateTimeOriginal, "拍摄时间");
+                    AddInfo(ExifTag.DateTimeDigitized, "数字化时间");
+                    AddInfo(ExifTag.DateTime, "最后修改时间");
+                    AddInfo(ExifTag.GPSDateStamp, "GPS时间");
                     foreach (var value in profiler.Values) {
-                        if (value.GetValue() is Number number) {
-                            info += $@"
-{value.Tag} : {(ushort)number}";
-                        } else {
-                            info += $@"
-{value.Tag} : {value.GetValue().ToString()}";
+                        if (!tags.Contains(value.Tag)) {
+                            builder.Append($@"
+{value.Tag} : {value.GetValue().ToString()}");
                         }
                     }
                 }
-                textImageInfo.Text = info;
+                textImageInfo.Text = builder.ToString();
                 var tempFile = Path.GetTempFileName();
                 await magickImage.WriteAsync(tempFile, MagickFormat.Jpg);
                 imagePicture.Source = new Bitmap(tempFile);
@@ -49,6 +65,7 @@ namespace ImageViewer {
                     files = FileUtil.GetFiles(Path.GetDirectoryName(file), ["*.jpg", "*.png", "*.livp", "*.bmp", "*.heic"], SearchOption.TopDirectoryOnly);
                 }
                 this.textImageTitle.Text = $"{Path.GetFileName(file)} ({files.IndexOf(file) + 1}/{files.Count})";
+                OnSizeChanged();
                 return true;
             } catch (Exception e) {
                 Console.WriteLine(e.ToString());
@@ -88,6 +105,9 @@ namespace ImageViewer {
         }
         void OnKeyUp(object sender, KeyEventArgs e) {
             
+        }
+        void OnSizeChanged() {
+            scrollViewer.Height = Height - 100;
         }
     }
 }
