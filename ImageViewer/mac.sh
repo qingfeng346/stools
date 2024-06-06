@@ -30,6 +30,8 @@ cp -a "$PUBLISH_OUTPUT_DIRECTORY" "$APP_NAME/Contents/MacOS"
 ENTITLEMENTS="./AppEntitlements.entitlements"
 SIGNING_IDENTITY="Apple Development: linyuan.yang@centurygame.com (J58CW2UZN9)" # matches Keychain Access certificate name
 
+security unlock-keychain -p "funplus" ~/Library/Keychains/login.keychain-db
+
 find "$APP_NAME/Contents/MacOS/"|while read fname; do
     if [[ -f $fname ]]; then
         echo "[INFO] Signing $fname"
