@@ -27,7 +27,7 @@ cp "$ICON_FILE" "$APP_NAME/Contents/Resources/$ICON_FILE"
 cp -a "$PUBLISH_OUTPUT_DIRECTORY" "$APP_NAME/Contents/MacOS"
 
 ENTITLEMENTS="./MyAppEntitlements.entitlements"
-SIGNING_IDENTITY="ImageViewer" # matches Keychain Access certificate name
+SIGNING_IDENTITY="Apple Development: linyuan.yang@centurygame.com (J58CW2UZN9)" # matches Keychain Access certificate name
 
 find "$APP_NAME/Contents/MacOS/"|while read fname; do
     if [[ -f $fname ]]; then
