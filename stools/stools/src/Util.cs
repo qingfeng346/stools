@@ -89,8 +89,6 @@ namespace Scorpio.stools {
         }
     }
     public static class Util {
-        public static Func<string, string, bool> CheckMusic;
-        public static Action<MusicBase> DownloadedMusic;
         public static void ExecuteAndroidpublisher(string authFile, string packageName, Action<AndroidPublisherService, string> action, Action<TrackRelease> trackAction) {
             var service = new AndroidPublisherService(new BaseClientService.Initializer() {
                 HttpClientInitializer = GoogleCredential.FromFile(authFile).CreateScoped("https://www.googleapis.com/auth/androidpublisher"),
@@ -319,105 +317,6 @@ namespace Scorpio.stools {
                 return url.Substring(0, index);
             }
             return url;
-        }
-        public static async Task DownloadAlbumUrls(IEnumerable<string> urls, string output, MusicPath musicPath) {
-            foreach (var url in urls) {
-                await DownloadAlbumUrl(url, output, musicPath);
-            }
-        }
-        public static async Task DownloadAlbumUrl(string url, string output, MusicPath musicPath) {
-            if (string.IsNullOrWhiteSpace(url)) { return; }
-            if (FileUtil.FileExist(url)) { url = Path.GetFullPath(url); }
-            var uri = new Uri(url);
-            if (uri.Scheme == Uri.UriSchemeFile) {
-                var lines = File.ReadAllLines(uri.LocalPath);
-                foreach (var line in lines) {
-                    if (line.StartsWith("#") || line.StartsWith(";") || line.StartsWith("!")) { continue; }
-                    await DownloadAlbumUrl(line, output, musicPath);
-                }
-                return;
-            }
-            string type;
-            string id;
-            if (uri.Host.Contains("kuwo")) {
-                type = MusicFactory.Kuwo;
-                id = url.Substring(url.LastIndexOf("/") + 1);
-                if (id.IndexOf("?") >= 0) {
-                    id = id.Substring(0, id.IndexOf("?"));
-                }
-            } else if (uri.Host.Contains("163")) {
-                type = MusicFactory.Cloud;
-                id = Regex.Match(url, "id=\\w+(&|$)").ToString().Substring(3);
-                if (id.EndsWith("&")) {
-                    id = id.Substring(0, id.Length - 1);
-                }
-            } else if (uri.Host.Contains("kugou")) {
-                type = MusicFactory.Kugou;
-                if (url.EndsWith("/")) url = url.Substring(0, url.Length - 1);
-                id = url.Substring(url.LastIndexOf("/") + 1);
-            } else {
-                throw new System.Exception($"不支持的源数据:{url}");
-            }
-            await DownloadAlbum(type, id, output, musicPath);
-        }
-        public static async Task DownloadAlbum(string type, string id, string output, MusicPath musicPath) {
-            var albumInfo = await MusicFactory.Create(type).ParseAlbum(id);
-            foreach (var musicid in albumInfo.musicList) {
-                await DownloadMusic(type, musicid, output, musicPath);
-            }
-        }
-        public static async Task DownloadMusicUrls(IEnumerable<string> urls, string output, MusicPath musicPath) {
-            foreach (var url in urls) {
-                await DownloadMusicUrl(url, output, musicPath);
-            }
-        }
-        public static async Task DownloadMusicUrl(string url, string output, MusicPath musicPath) {
-            if (string.IsNullOrWhiteSpace(url)) { return; }
-            if (FileUtil.FileExist(url)) { url = Path.GetFullPath(url); }
-            var uri = new Uri(url);
-            if (uri.Scheme == Uri.UriSchemeFile) {
-                var lines = File.ReadAllLines(uri.LocalPath);
-                foreach (var line in lines) {
-                    if (line.StartsWith("#") || line.StartsWith(";")) { continue; }
-                    await DownloadMusicUrl(line, output, musicPath);
-                }
-                return;
-            }
-            string type;
-            string id;
-            if (uri.Host.Contains("kuwo")) {
-                type = MusicFactory.Kuwo;
-                id = url.Substring(url.LastIndexOf("/") + 1);
-                if (id.IndexOf("?") >= 0) {
-                    id = id.Substring(0, id.IndexOf("?"));
-                }
-            } else if (uri.Host.Contains("kugou")) {
-                type = MusicFactory.Kugou;
-                var result = await HttpUtil.Get(url);
-                var info = JsonConvert.DeserializeObject<MusicKugou.MusicUrlInfo>(Regex.Match(result, "(?<=dataFromSmarty = \\[).*?(?=],)").ToString());
-                id = info.hash;
-            } else if (uri.Host.Contains("163")) {
-                type = MusicFactory.Cloud;
-                id = Regex.Match(url, "id=\\w+(&|$)").ToString().Substring(3);
-                if (id.EndsWith("&")) {
-                    id = id.Substring(0, id.Length - 1);
-                }
-            } else {
-                throw new System.Exception($"不支持的源数据:{url}");
-            }
-            await DownloadMusic(type, id, output, musicPath);
-        }
-        public static async Task DownloadMusic(string type, string id, string output, MusicPath musicPath) {
-            if (CheckMusic?.Invoke(type, id) ?? true) {
-                try {
-                    var music = MusicFactory.Create(type);
-                    if (await music.Download(id, output, musicPath)) {
-                        DownloadedMusic?.Invoke(music);
-                    }
-                } catch (System.Exception e) {
-                    logger.error(e.ToString());
-                }
-            }
         }
     }
 }

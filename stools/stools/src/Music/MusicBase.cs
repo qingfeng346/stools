@@ -59,8 +59,8 @@ public abstract class MusicBase {
                 await ParseInfo(id);
                 return await DownloadFile(path, musicPath);
             } catch (Exception ex) {
-                logger.error($"下载音乐【{Name}】失败,一秒后重试 {i + 1}/{RetryTotal} : {ex}");
-                await Task.Delay(1000);
+                logger.error($"下载音乐【{Name}】失败,3秒后重试 {i + 1}/{RetryTotal} : {ex}");
+                await Task.Delay(3000);
             }
         }
         return false;
@@ -73,8 +73,8 @@ public abstract class MusicBase {
                     logger.info($"解析专辑完成, 名称:{albumInfo.name}  歌手:{albumInfo.artist}  歌曲数量:{albumInfo.musicList.Count}");
                 return albumInfo;
             } catch (Exception ex) {
-                logger.error($"解析专辑出错,一秒后重试 {i + 1}/{RetryTotal} : {ex}");
-                await Task.Delay(1000);
+                logger.error($"解析专辑出错,3秒后重试 {i + 1}/{RetryTotal} : {ex}");
+                await Task.Delay(3000);
             }
         }
         throw new Exception("解析专辑信息出错");
@@ -129,12 +129,13 @@ public abstract class MusicBase {
                     }
                     var pictures = new List<IPicture>();
                     {
-                        var picture = new TagLib.Id3v2.AttachmentFrame(new Picture(imagePath));
-                        picture.Type = PictureType.FrontCover;
-                        picture.Filename = "frontcover.png";
-                        picture.Description = "";
-                        picture.MimeType = Picture.GetMimeFromExtension(imagePath);
-                        picture.TextEncoding = StringType.Latin1;
+                        var picture = new TagLib.Id3v2.AttachmentFrame(new Picture(imagePath)) {
+                            Type = PictureType.FrontCover,
+                            Filename = "frontcover.png",
+                            Description = "",
+                            MimeType = Picture.GetMimeFromExtension(imagePath),
+                            TextEncoding = StringType.Latin1
+                        };
                         //var picture = new Picture(imagePath);
                         //picture.Type = PictureType.FrontCover;
                         //picture.Filename = "frontcover.png";

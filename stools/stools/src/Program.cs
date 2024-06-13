@@ -39,6 +39,7 @@ namespace Scorpio.stools {
             perform.AddExecute("googledrivedownload", "", GoogleDriveDownload);
             perform.AddExecute("wget", "下载文件", Wget);
             perform.AddExecute("downloadM3u8", "下载M3U8文件", DownloadM3u8);
+            perform.AddExecute("downloadmusic", "下载音乐", DownloadMusic);
             perform.AddExecute("md5", "获取文件MD5", GetMD5);
             perform.AddExecute("sortmedia", "整理图片和视频", SortMedia);
             perform.AddExecute("sortmusic", "整理音频", SortMusic);
@@ -257,6 +258,12 @@ namespace Scorpio.stools {
                               [ParamterInfo(Label = "清理目录", Param = ParameterClear, Required = false)] bool clear,
                               [ParamterInfo(Label = "移动文件", Param = ParameterMove, Required = false)] bool move) {
             MusicUtil.SortMusic(source, target, clear, move);
+        }
+        static void DownloadMusic(CommandLine commandLine, [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target) {
+            var urls = new List<string>();
+            urls.AddRange(commandLine.Args);
+            Task.Run(() => MusicUtil.DownloadMusicUrls(urls.ToArray(), target, MusicPath.None)).Wait();
+            
         }
     }
 }

@@ -6,7 +6,9 @@ using System;
 using System.IO;
 using SixLabors.ImageSharp.Processing;
 using TagLib;
-
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 namespace Scorpio.stools {
     public class MusicInfo {
         public string Name;
@@ -31,7 +33,9 @@ namespace Scorpio.stools {
             return datas.Find(x => x.singer == singer);
         }
     }
-    public class MusicUtil {
+    public static class MusicUtil {
+        public static Func<string, string, bool> CheckMusic;
+        public static Action<MusicBase> DownloadedMusic;
         public static void SetMusicInfo(string mp3File, MusicInfo musicInfo) {
             var file = TagLib.File.Create(mp3File);
             file.Tag.Title = musicInfo.Name ?? file.Tag.Title;
@@ -173,6 +177,120 @@ namespace Scorpio.stools {
             FileUtil.DeleteEmptyFolder(source, true);
             FileUtil.DeleteEmptyFolder(target, true);
             logger.info($"整理完成,所有文件:{fileCount},无效文件:{invalidCount},重复文件:{repeatCount}");
+        }
+        public static async Task<T> Get<T>(this string url) {
+            return JsonConvert.DeserializeObject<T>(await HttpUtil.Get(url));
+        }
+        public static async Task DownloadAlbumUrls(IEnumerable<string> urls, string output, MusicPath musicPath) {
+            foreach (var url in urls) {
+                await DownloadAlbumUrl(url, output, musicPath);
+            }
+        }
+        private static async Task DownloadAlbumUrl(string url, string output, MusicPath musicPath) {
+            if (string.IsNullOrWhiteSpace(url)) { return; }
+            if (FileUtil.FileExist(url)) { url = Path.GetFullPath(url); }
+            var uri = new Uri(url);
+            if (uri.Scheme == Uri.UriSchemeFile) {
+                var lines = System.IO.File.ReadAllLines(uri.LocalPath);
+                foreach (var line in lines) {
+                    if (line.StartsWith("#") || line.StartsWith(";") || line.StartsWith("!")) { continue; }
+                    await DownloadAlbumUrl(line, output, musicPath);
+                }
+                return;
+            }
+            string type;
+            string id;
+            if (uri.Host.Contains("kuwo")) {
+                type = MusicFactory.Kuwo;
+                id = url.Substring(url.LastIndexOf("/") + 1);
+                if (id.IndexOf("?") >= 0) {
+                    id = id.Substring(0, id.IndexOf("?"));
+                }
+            } else if (uri.Host.Contains("163")) {
+                type = MusicFactory.Cloud;
+                id = Regex.Match(url, "id=\\w+(&|$)").ToString().Substring(3);
+                if (id.EndsWith("&")) {
+                    id = id.Substring(0, id.Length - 1);
+                }
+            } else if (uri.Host.Contains("kugou")) {
+                type = MusicFactory.Kugou;
+                if (url.EndsWith("/")) url = url.Substring(0, url.Length - 1);
+                id = url.Substring(url.LastIndexOf("/") + 1);
+            } else {
+                throw new System.Exception($"不支持的源数据:{url}");
+            }
+            await DownloadAlbum(type, id, output, musicPath);
+        }
+        private static async Task DownloadAlbum(string type, string id, string output, MusicPath musicPath) {
+            var albumInfo = await MusicFactory.Create(type).ParseAlbum(id);
+            foreach (var musicid in albumInfo.musicList) {
+                await DownloadMusic(type, musicid, output, musicPath);
+                await Task.Delay(3000);
+            }
+        }
+        public static async Task DownloadMusicUrls(IEnumerable<string> urls, string output, MusicPath musicPath) {
+            foreach (var url in urls) {
+                try {
+                    await DownloadMusicUrl(url, output, musicPath);
+                } catch (System.Exception e) {
+                    logger.error($"下载链接失败[{url}] : {e}");
+                }
+                await Task.Delay(3000);
+            }
+        }
+        private static async Task DownloadMusicUrl(string url, string output, MusicPath musicPath) {
+            if (string.IsNullOrWhiteSpace(url)) { return; }
+            if (FileUtil.FileExist(url)) { url = Path.GetFullPath(url); }
+            var uri = new Uri(url);
+            if (uri.Scheme == Uri.UriSchemeFile) {
+                var lines = System.IO.File.ReadAllLines(uri.LocalPath);
+                foreach (var line in lines) {
+                    if (line.StartsWith("#") || line.StartsWith(";")) { continue; }
+                    await DownloadMusicUrl(line, output, musicPath);
+                }
+                return;
+            }
+            string type;
+            string id;
+            if (uri.Host.Contains("kuwo")) {
+                type = MusicFactory.Kuwo;
+                id = url.Substring(url.LastIndexOf("/") + 1);
+                if (id.IndexOf("?") >= 0) {
+                    id = id.Substring(0, id.IndexOf("?"));
+                }
+            } else if (uri.Host.Contains("qq.com")) {
+                type = MusicFactory.QQ;
+                id = url.Substring(url.LastIndexOf("/") + 1);
+                if (id.IndexOf("?") >= 0) {
+                    id = id.Substring(0, id.IndexOf("?"));
+                }
+            } else if (uri.Host.Contains("kugou")) {
+                type = MusicFactory.Kugou;
+                var result = await HttpUtil.Get(url);
+                var info = JsonConvert.DeserializeObject<MusicKugou.MusicUrlInfo>(Regex.Match(result, "(?<=dataFromSmarty = \\[).*?(?=],)").ToString());
+                id = info.hash;
+            } else if (uri.Host.Contains("163")) {
+                type = MusicFactory.Cloud;
+                id = Regex.Match(url, "id=\\w+(&|$)").ToString().Substring(3);
+                if (id.EndsWith("&")) {
+                    id = id.Substring(0, id.Length - 1);
+                }
+            } else {
+                throw new System.Exception($"不支持的源数据:{url}");
+            }
+            await DownloadMusic(type, id, output, musicPath);
+        }
+        private static async Task DownloadMusic(string type, string id, string output, MusicPath musicPath) {
+            if (CheckMusic?.Invoke(type, id) ?? true) {
+                try {
+                    var music = MusicFactory.Create(type);
+                    if (await music.Download(id, output, musicPath)) {
+                        DownloadedMusic?.Invoke(music);
+                    }
+                } catch (System.Exception e) {
+                    logger.error(e.ToString());
+                }
+            }
         }
     }
 }
