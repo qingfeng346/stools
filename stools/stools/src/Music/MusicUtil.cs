@@ -183,7 +183,12 @@ namespace Scorpio.stools {
         }
         public static async Task DownloadAlbumUrls(IEnumerable<string> urls, string output, MusicPath musicPath) {
             foreach (var url in urls) {
-                await DownloadAlbumUrl(url, output, musicPath);
+                try {
+                    await DownloadAlbumUrl(url, output, musicPath);
+                } catch (System.Exception e) {
+                    logger.error($"下载专辑失败[{url}] : {e}");
+                }
+                await Task.Delay(3000);
             }
         }
         private static async Task DownloadAlbumUrl(string url, string output, MusicPath musicPath) {
