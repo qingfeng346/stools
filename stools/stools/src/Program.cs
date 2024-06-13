@@ -266,7 +266,6 @@ namespace Scorpio.stools {
             urls.AddRange(commandLine.Args);
             if (url != null) urls.AddRange(url);
             Task.Run(() => MusicUtil.DownloadMusicUrls(urls.ToArray(), target, MusicPath.None)).Wait();
-            
         }
     }
 }
