@@ -259,9 +259,12 @@ namespace Scorpio.stools {
                               [ParamterInfo(Label = "移动文件", Param = ParameterMove, Required = false)] bool move) {
             MusicUtil.SortMusic(source, target, clear, move);
         }
-        static void DownloadMusic(CommandLine commandLine, [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target) {
+        static void DownloadMusic(CommandLine commandLine, 
+                                  [ParamterInfo(Label = "音乐地址", Param = ParameterUrl)] string[] url,
+                                  [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target) {
             var urls = new List<string>();
             urls.AddRange(commandLine.Args);
+            if (url != null) urls.AddRange(url);
             Task.Run(() => MusicUtil.DownloadMusicUrls(urls.ToArray(), target, MusicPath.None)).Wait();
             
         }
