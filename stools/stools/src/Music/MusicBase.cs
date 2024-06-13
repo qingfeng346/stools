@@ -46,7 +46,7 @@ public abstract class MusicBase {
     //下载文件
     public async Task<bool> Download(string id, string path, MusicPath musicPath) {
         ID = id;
-        logger.info($"开始解析数据,来源:{Source} ID:{id}");
+        logger.info($"==============开始解析数据,来源:{Source} ID:{id}==============");
         for (var i = 0; i < RetryTotal; ++i) {
             try {
                 Name = "";
@@ -152,12 +152,20 @@ public abstract class MusicBase {
             }
             file.Save();
             using (var log = new LoggerColor(ConsoleColor.Green)) {
-                logger.info("下载音乐完成 文件名:{0}  文件大小:{1}  时长:{2}s", Path.GetFullPath(FilePath), new FileInfo(FilePath).Length.GetMemory(), Duration / 1000);
+                logger.info("下载音乐完成 文件名:{0}  文件大小:{1}  时长:{2}", Path.GetFullPath(FilePath), new FileInfo(FilePath).Length.GetMemory(), GetDuration(Duration));
             }
             return true;
         } catch (Exception ) {
             FileUtil.DeleteFile(FilePath);
             throw;
+        }
+    }
+    string GetDuration(long duration) {
+        var seconds = duration / 1000;
+        if (seconds >= 60) {
+            return string.Format("{0:D2}:{0:D2}", seconds / 60, seconds % 60);
+        } else {
+            return string.Format("00:{0:D2}", seconds);
         }
     }
     public Dictionary<string, object> ToInfo() {
