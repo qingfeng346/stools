@@ -21,6 +21,6 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         /// <summary> 获取影片元数据 </summary>
         public abstract Task<MetadataResult<Movie>> GetMovieMetadataAsync(string id, CancellationToken cancellationToken);
         /// <summary> 查找影片 </summary>
-        public abstract Task<IEnumerable<T>> SearchAsync<T>(string keyword, CancellationToken cancellationToken) where T : SearchResult;
+        // public abstract Task<IEnumerable<T>> SearchAsync<T>(string keyword, CancellationToken cancellationToken) where T : SearchResult;
     }
 }

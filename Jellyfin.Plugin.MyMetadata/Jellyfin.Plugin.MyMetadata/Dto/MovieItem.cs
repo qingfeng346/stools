@@ -14,22 +14,17 @@ namespace Jellyfin.Plugin.MyMetadata.Dto
         /// <summary>
         /// 识别码
         /// </summary>
-        public string Avid { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// 标题
         /// </summary>
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
         /// <summary>
         /// 发行日期
         /// </summary>
         public DateTime? ReleaseDate { get; set; }
-
-        /// <summary>
-        /// 年份
-        /// </summary>
-        public int Year { get; set; }
 
         /// <summary>
         /// 时长

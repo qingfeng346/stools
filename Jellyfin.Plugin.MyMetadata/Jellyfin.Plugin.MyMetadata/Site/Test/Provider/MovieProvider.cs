@@ -17,26 +17,17 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
 
         public async Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken) => await httpService.GetResponseAsync(url, cancellationToken);
         public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken) {
-            logger.LogInformation("===================GetMetadata " + info.Name + "  " + info.Path);
-            var id = info.GetProviderId(Config.ProviderID);
-            if (string.IsNullOrWhiteSpace(id)) {
-                //var results = await GetIdsAsync(info.Name, cancellationToken);
-                var results = (await httpService.SearchAsync<SearchResult>(info.Name, cancellationToken).ConfigureAwait(false)).Select(i => i.Id);
-                if (results.Count() > 0) {
-                    id = results.FirstOrDefault();
-                } else {
-                    return new MetadataResult<Movie>();
-                }
+            var results = await httpService.SearchAsync(info.Name, cancellationToken).ConfigureAwait(false);
+            var url = results.FirstOrDefault()?.Id;
+            if (string.IsNullOrEmpty(url)) {
+                return new MetadataResult<Movie>();
             }
-
             // 获取 元数据
-            var movie = await httpService.GetMovieMetadataAsync(id, cancellationToken).ConfigureAwait(false);
-
-            //if (movie != null && movie.HasMetadata) {
-            //    // 如果能获取到元数据，则把 AvMoo Id 设置为 当前 id
-            //    info.SetProviderId(Plugin.Instance.Configuration.Sod.ProviderId, id);
-            //}
-
+            var movie = await httpService.GetMovieMetadataAsync(url, cancellationToken).ConfigureAwait(false);
+            if (movie != null && movie.HasMetadata) {
+               // 如果能获取到元数据，则把 AvMoo Id 设置为 当前 id
+               info.SetProviderId(Config.ProviderID, url);
+            }
             return movie;
         }
 
@@ -44,7 +35,6 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             
             var results = new List<RemoteSearchResult>();
             var Id = searchInfo.GetProviderId(Config.ProviderID);
-            logger.LogInformation("===================GetSearchResults " + searchInfo.Name + "  " + searchInfo.Path + "  " + "  " + Id + "  " + searchInfo.IndexNumber + "  " + searchInfo.ParentIndexNumber);
             var result = new RemoteSearchResult() {
                 IndexNumber = searchInfo.IndexNumber,
                 Name = "Title",

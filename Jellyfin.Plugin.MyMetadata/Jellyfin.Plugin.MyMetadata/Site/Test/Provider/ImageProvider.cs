@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using Jellyfin.Plugin.MyMetadata.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -24,42 +25,41 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
                 return list;
             }
 
-            // 获取影片详情
-            //var movie = await httpService.GetMovieAsync<MovieItem>(id, cancellationToken);
+            //获取影片详情
+            var movie = await httpService.GetMovieAsync<MovieItem>(id, cancellationToken);
+            //如果存在大封面
+            if (!string.IsNullOrEmpty(movie.Fanart)) {
+               // 小封面 poster
+               list.Add(new RemoteImageInfo {
+                   ProviderName = Name,
+                   Url = movie.Poster,
+                   Type = ImageType.Primary
+               });
 
-            // 如果存在大封面
-            //if (!string.IsNullOrEmpty(movie.Fanart)) {
-            //    // 小封面 poster
-            //    list.Add(new RemoteImageInfo {
-            //        ProviderName = Name,
-            //        Url = movie.Poster,
-            //        Type = ImageType.Primary
-            //    });
+               // 大封面 fanart/backdrop
+               list.Add(new RemoteImageInfo {
+                   ProviderName = Name,
+                   Url = movie.Fanart,
+                   Type = ImageType.Backdrop
+               });
 
-            //    // 大封面 fanart/backdrop
-            //    list.Add(new RemoteImageInfo {
-            //        ProviderName = Name,
-            //        Url = movie.Fanart,
-            //        Type = ImageType.Backdrop
-            //    });
+               // 列表为“缩略图”显示时，显示大封面
+               list.Add(new RemoteImageInfo {
+                   ProviderName = Name,
+                   Url = movie.Fanart,
+                   Type = ImageType.Thumb
+               });
+            }
 
-            //    // 列表为“缩略图”显示时，显示大封面
-            //    list.Add(new RemoteImageInfo {
-            //        ProviderName = Name,
-            //        Url = movie.Fanart,
-            //        Type = ImageType.Thumb
-            //    });
-            //}
-
-            //// 添加预览图
-            //movie.Shotscreens?.ForEach(img => {
-            //    list.Add(new RemoteImageInfo {
-            //        ProviderName = Plugin.Instance.Configuration.Avmoo.ProviderName,
-            //        Url = img,
-            //        Type = ImageType.Screenshot,
-            //        ThumbnailUrl = img // 缩略文件名
-            //    });
-            //});
+            // 添加预览图
+            movie.Shotscreens?.ForEach(img => {
+               list.Add(new RemoteImageInfo {
+                   ProviderName = Config.ProviderName,
+                   Url = img,
+                   Type = ImageType.Screenshot,
+                   ThumbnailUrl = img // 缩略文件名
+               });
+            });
             return list;
         }
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item) {
