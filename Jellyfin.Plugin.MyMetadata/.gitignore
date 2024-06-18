@@ -1,4 +1,6 @@
 /Jellyfin.Plugin.MyMetadata/bin
 /Jellyfin.Plugin.MyMetadata/obj
 /Jellyfin.Plugin.MyMetadata/*.user
+/Jellyfin.Plugin.MyMetadata.Tests/bin
+/Jellyfin.Plugin.MyMetadata.Tests/obj
 /.vs
