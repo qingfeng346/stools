@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities.Movies;
+﻿using Jellyfin.Plugin.MyMetadata.Dto;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -18,18 +19,15 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
         public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken) {
             logger.LogInformation("===================GetMetadata " + info.Name + "  " + info.Path);
             var id = info.GetProviderId(Config.ProviderID);
-
-            //// 如果 AvMoo Id 为空，则根据标题重新获取，且默认使用结果的第一条数据
-            //if (string.IsNullOrWhiteSpace(id)) {
-            //    //var results = await GetIdsAsync(info.Name, cancellationToken);
-            //    var results = (await _http.SearchAsync<SearchResult>(info.Name, cancellationToken).ConfigureAwait(false)).Select(i => i.Id);
-
-            //    if (results.Count() > 0) {
-            //        id = results.FirstOrDefault();
-            //    } else {
-            //        return new MetadataResult<Movie>();
-            //    }
-            //}
+            if (string.IsNullOrWhiteSpace(id)) {
+                //var results = await GetIdsAsync(info.Name, cancellationToken);
+                var results = (await httpService.SearchAsync<SearchResult>(info.Name, cancellationToken).ConfigureAwait(false)).Select(i => i.Id);
+                if (results.Count() > 0) {
+                    id = results.FirstOrDefault();
+                } else {
+                    return new MetadataResult<Movie>();
+                }
+            }
 
             // 获取 元数据
             var movie = await httpService.GetMovieMetadataAsync(id, cancellationToken).ConfigureAwait(false);

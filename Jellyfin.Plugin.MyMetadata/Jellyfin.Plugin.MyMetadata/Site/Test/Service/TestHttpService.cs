@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace Jellyfin.Plugin.MyMetadata.Service.Test {
     public class TestHttpService : HttpService
@@ -157,9 +158,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             doc.LoadHtml(html);
             var list = doc.DocumentNode.SelectSingleNode("//div[@class='listmain']");
             var nodes = list.SelectNodes("//dd/a");
-            foreach (var node in nodes) {
-                logger.LogInformation(node.InnerText.Trim());
-            }
+            logger.LogInformation("-------------------- " + nodes.First().InnerText.Trim());
             var results = new List<T>();
             return results;
             //// 匹配影片

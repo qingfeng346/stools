@@ -28,9 +28,8 @@ namespace Jellyfin.Plugin.MyMetadata.Tests
         public async Task TestGetSearchResults()
         {
             // Test 1: search metadata.
-            //MovieInfo info = new MovieInfo()
-            //{
-            //    Name = "蝙蝠侠.黑暗骑士",
+            //MovieInfo info = new MovieInfo() {
+            //    Name = "我吃西红柿",
             //};
 
             //var result = await _provider.GetSearchResults(info, CancellationToken.None);
@@ -56,7 +55,7 @@ namespace Jellyfin.Plugin.MyMetadata.Tests
             // Test 1: Normal case.
             MovieInfo info = new MovieInfo()
             {
-                Name = "Source Code"
+                Name = "我吃西红柿"
             };
             var meta = await _provider.GetMetadata(info, CancellationToken.None);
             //Assert.True(meta.HasMetadata);
