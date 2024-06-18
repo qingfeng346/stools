@@ -55,7 +55,7 @@ namespace Jellyfin.Plugin.MyMetadata.Tests
             // Test 1: Normal case.
             MovieInfo info = new MovieInfo()
             {
-                Name = "我吃西红柿"
+                Name = "JUQ-055"
             };
             var meta = await _provider.GetMetadata(info, CancellationToken.None);
             //Assert.True(meta.HasMetadata);

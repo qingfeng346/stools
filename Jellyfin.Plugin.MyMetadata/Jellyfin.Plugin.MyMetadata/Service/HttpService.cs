@@ -16,8 +16,10 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         public virtual async Task<HttpResponseMessage> GetResponseAsync(string url, CancellationToken cancellationToken) => 
                                                         await http.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         /// <summary>下载 HTMl 源码 </summary>
-        public virtual async Task<string> GetHtmlAsync(string url, CancellationToken cancellationToken) => 
-                                                        await http.CreateClient(NamedClient.Default).GetStringAsync(url, cancellationToken);
+        public virtual async Task<string> GetHtmlAsync(string url, CancellationToken cancellationToken) {
+            logger.LogInformation($"GetHtmlAsync : {url}");
+            return await http.CreateClient(NamedClient.Default).GetStringAsync(url, cancellationToken);
+        }
         /// <summary> 获取影片元数据 </summary>
         public abstract Task<MetadataResult<Movie>> GetMovieMetadataAsync(string id, CancellationToken cancellationToken);
         /// <summary> 查找影片 </summary>

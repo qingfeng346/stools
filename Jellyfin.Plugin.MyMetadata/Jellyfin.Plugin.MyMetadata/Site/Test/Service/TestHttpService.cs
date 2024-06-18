@@ -21,7 +21,6 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             doc.LoadHtml(html);
             var rootNode = doc.DocumentNode;
             var item = new MovieItem();
-            
             item.Title = rootNode.SelectSingleNode("//h1[@class='text-lg']")?.InnerText;
             item.Fanart = rootNode.SelectSingleNode("//img[@class='max-h-full']").GetAttributeValue<string>("src", "");
             item.Poster = item.Fanart;
@@ -112,6 +111,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             doc.LoadHtml(html);
             var rootNode = doc.DocumentNode;
             var nodes = rootNode.SelectNodes("//a[@class='text-md']");
+            logger.LogInformation($"搜索结果数量 : {nodes?.Count}");
             var results = new List<SearchResult>();
             foreach (var node in nodes) {
                 var url = node.GetAttributeValue<string>("href", "");
