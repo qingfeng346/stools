@@ -45,7 +45,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken) {
             
             var results = new List<RemoteSearchResult>();
-            var Id = searchInfo.GetProviderId(ProviderID);
+            var Id = searchInfo.GetProviderId(Config.ProviderID);
             logger.LogInformation("===================GetSearchResults " + searchInfo.Name + "  " + searchInfo.Path + "  " + "  " + Id + "  " + searchInfo.IndexNumber + "  " + searchInfo.ParentIndexNumber);
             var result = new RemoteSearchResult() {
                 IndexNumber = searchInfo.IndexNumber,

@@ -58,7 +58,17 @@ namespace ImageViewer {
                 }
                 textImageInfo.Text = builder.ToString();
                 var tempFile = Path.GetTempFileName();
-                await magickImage.WriteAsync(tempFile, MagickFormat.Jpg);
+                switch (magickImage.Format) {
+                    case MagickFormat.Png:
+                    case MagickFormat.Jpg:
+                    case MagickFormat.Jpeg:
+                    case MagickFormat.Bmp:
+                        FileUtil.CopyFile(file, tempFile);
+                        break;
+                    default:
+                        await magickImage.WriteAsync(tempFile, MagickFormat.Jpg);
+                        break;
+                }
                 imagePicture.Source = new Bitmap(tempFile);
                 File.Delete(tempFile);
                 if (loadPathFiles) {
@@ -101,6 +111,8 @@ namespace ImageViewer {
                 if (index >= 0 && index < files.Count - 1) {
                     await OpenFile(files[index + 1]);
                 }
+            } else if (e.Key == Key.Escape) {
+                Environment.Exit(0);
             }
         }
         void OnKeyUp(object sender, KeyEventArgs e) {
