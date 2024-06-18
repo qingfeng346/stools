@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MyMetadata 设置</title>
+</head>
+<body>
+    <div id="ConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="ConfigForm">
+                    <div class="inputContainer">
+                        <label class="inputeLabel inputLabelUnfocused" for="Url">域名</label>
+                        <input id="Url" name="Url" type="text" is="emby-input" />
+                        <div class="fieldDescription">域名</div>
+                    </div>
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                            <span>保存</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var Config = {
+                pluginUniqueId: 'aaf9d4dc-5804-45d0-96d9-a38e30c5d9b1'
+            };
+            document.querySelector('#ConfigPage')
+                .addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(Config.pluginUniqueId).then(function (config) {
+                        document.querySelector('#Url').value = config.Url;
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+            document.querySelector('#ConfigForm')
+                .addEventListener('submit', function (event) {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(Config.pluginUniqueId).then(function (config) {
+                        config.Url = document.querySelector('#Url').value;
+                        ApiClient.updatePluginConfiguration(Config.pluginUniqueId, config).then(function (result) {
+                            Dashboard.processPluginConfigurationUpdateResult(result);
+                        });
+                    });
+                    return false;
+                });
+        </script>
+    </div>
+</body>
+</html>
