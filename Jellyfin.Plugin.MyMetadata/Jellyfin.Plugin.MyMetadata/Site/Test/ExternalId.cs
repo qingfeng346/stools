@@ -7,8 +7,8 @@ using MediaBrowser.Model.Providers;
 namespace Jellyfin.Plugin.MyMetadata.Service.Test {
     public class ExternalId : IExternalId
     {
-        public string ProviderName => "MyMetadata";
-        public string Key => "MyMetadataID";
+        public string ProviderName => Config.ProviderName;
+        public string Key => Config.ProviderID;
         public ExternalIdMediaType? Type => null;
         public string UrlFormatString => $"UrlFormatString";
         public bool Supports(IHasProviderIds item)

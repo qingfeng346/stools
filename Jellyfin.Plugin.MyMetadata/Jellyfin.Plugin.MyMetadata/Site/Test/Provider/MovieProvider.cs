@@ -5,13 +5,10 @@ using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.MyMetadata.Service.Test {
-    public class MovieProvider : IHasOrder, IRemoteMetadataProvider<Movie, MovieInfo> {
-        public const string ProviderID = "MyMetadataID";
+    public class MovieProvider : IRemoteMetadataProvider<Movie, MovieInfo> {
         private readonly ILogger<MovieProvider> logger;
         private readonly TestHttpService httpService;
-        public int Order => 3;
-        public string Name => "MyMetadata";
-
+        public string Name => Config.ProviderName;
         public MovieProvider(ILogger<MovieProvider> logger, TestHttpService httpService) {
             this.logger = logger;
             this.httpService = httpService;
@@ -20,7 +17,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
         public async Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken) => await httpService.GetResponseAsync(url, cancellationToken);
         public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken) {
             logger.LogInformation("===================GetMetadata " + info.Name + "  " + info.Path);
-            var id = info.GetProviderId(ProviderID);
+            var id = info.GetProviderId(Config.ProviderID);
 
             //// 如果 AvMoo Id 为空，则根据标题重新获取，且默认使用结果的第一条数据
             //if (string.IsNullOrWhiteSpace(id)) {

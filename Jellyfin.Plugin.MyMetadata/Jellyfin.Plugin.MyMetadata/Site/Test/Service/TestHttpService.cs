@@ -94,7 +94,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
                 SortName = "SortName",
                 ForcedSortName = "ForcedSortName",
                 Overview = "Overview",
-                HomePageUrl = $"HomePageUrl",
+                HomePageUrl = $"http://am3tools.diandian.info:6789/static/ClientAssets/plant_444dinosaur_stone01.png",
             };
             movie.AddGenre("genre1");
             movie.AddGenre("genre2");

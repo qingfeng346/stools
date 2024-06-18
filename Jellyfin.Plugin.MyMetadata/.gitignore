@@ -1,0 +1,4 @@
+/Jellyfin.Plugin.MyMetadata/bin
+/Jellyfin.Plugin.MyMetadata/obj
+/Jellyfin.Plugin.MyMetadata/*.user
+/.vs
