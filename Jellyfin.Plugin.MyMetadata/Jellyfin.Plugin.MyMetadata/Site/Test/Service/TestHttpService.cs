@@ -10,21 +10,7 @@ using System.Text.RegularExpressions;
 namespace Jellyfin.Plugin.MyMetadata.Service.Test {
     public class TestHttpService : HttpService
     {
-        protected readonly ILogger<HttpService> logger;
-        public TestHttpService(ILogger<TestHttpService> logger, IHttpClientFactory http) : base(logger, http)
-        {
-            this.logger = logger;
-        }
-
-
-        //public override async Task<string> GetHtmlAsync(string url, CancellationToken cancellationToken)
-        //{
-
-        //    var request = new HttpRequestMessage(HttpMethod.Get, url);
-        //    var response = await _http.CreateClient(NamedClient.Default).SendAsync(request);
-        //    var content = await response.Content.ReadAsStringAsync();
-        //    return content;
-        //}
+        public TestHttpService(ILogger<HttpService> logger, IHttpClientFactory http) : base(logger, http) { }
         //public override async Task<HttpResponseMessage> GetResponseAsync(string url, CancellationToken cancellationToken)
         //{
         //    var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -164,31 +150,31 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             //return result;
         }
 
-        //public override async Task<IEnumerable<T>> SearchAsync<T>(string keyword, CancellationToken cancellationToken)
-        //{
-        //    //var results = new List<T>();
+        public override async Task<IEnumerable<T>> SearchAsync<T>(string keyword, CancellationToken cancellationToken) {
+            //// 查询
+            var html = await GetHtmlAsync($"https://www.bigee.cc/book/4464/", cancellationToken);
+            var doc = new HtmlAgilityPack.HtmlDocument();
+            doc.LoadHtml(html);
+            var list = doc.DocumentNode.SelectSingleNode("//div[@class='listmain']");
+            var nodes = list.SelectNodes("//dd/a");
+            foreach (var node in nodes) {
+                logger.LogInformation(node.InnerText.Trim());
+            }
+            var results = new List<T>();
+            return results;
+            //// 匹配影片
+            //var matches = Regex.Matches(html, Plugin.Instance.Configuration.Sod.SearchResultPattern);
 
-        //    //// 拼接 url
-        //    //var url = $"https://{Plugin.Instance.Configuration.Sod.Domain}/videos/genre/?search_type=1&sodsearch={keyword}";
-
-        //    //// 确认
-        //    ////await ConfirmAsync();
-
-        //    //// 查询
-        //    //var html = await GetHtmlAsync(url, cancellationToken);
-        //    //// 匹配影片
-        //    //var matches = Regex.Matches(html, Plugin.Instance.Configuration.Sod.SearchResultPattern);
-
-        //    //foreach (Match match in matches)
-        //    //{
-        //    //    if (match.Success)
-        //    //    {
-        //    //        var item = new SearchResult { Id = match.Groups["avid"].Value.Trim() };
-        //    //        results.Add(item as T);
-        //    //    }
-        //    //}
-        //    //// 返回 30 条记录
-        //    //return (IEnumerable<T>)results.Distinct().Take(30).ToList();
-        //}
+            //foreach (Match match in matches)
+            //{
+            //    if (match.Success)
+            //    {
+            //        var item = new SearchResult { Id = match.Groups["avid"].Value.Trim() };
+            //        results.Add(item as T);
+            //    }
+            //}
+            //// 返回 30 条记录
+            //return (IEnumerable<T>)results.Distinct().Take(30).ToList();
+        }
     }
 }
