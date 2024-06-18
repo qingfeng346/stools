@@ -39,6 +39,8 @@ namespace Scorpio.stools {
             perform.AddExecute("googledrivedownload", "", GoogleDriveDownload);
             perform.AddExecute("wget", "下载文件", Wget);
             perform.AddExecute("downloadM3u8", "下载M3U8文件", DownloadM3u8);
+            perform.AddExecute("downloadmusic", "下载音乐", DownloadMusic);
+            perform.AddExecute("downloadalbum", "下载专辑", DownloadAlbum);
             perform.AddExecute("md5", "获取文件MD5", GetMD5);
             perform.AddExecute("sortmedia", "整理图片和视频", SortMedia);
             perform.AddExecute("sortmusic", "整理音频", SortMusic);
@@ -257,6 +259,22 @@ namespace Scorpio.stools {
                               [ParamterInfo(Label = "清理目录", Param = ParameterClear, Required = false)] bool clear,
                               [ParamterInfo(Label = "移动文件", Param = ParameterMove, Required = false)] bool move) {
             MusicUtil.SortMusic(source, target, clear, move);
+        }
+        static void DownloadMusic(CommandLine commandLine, 
+                                  [ParamterInfo(Label = "音乐地址", Param = ParameterUrl)] string[] url,
+                                  [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string output) {
+            var urls = new List<string>();
+            urls.AddRange(commandLine.Args);
+            if (url != null) urls.AddRange(url);
+            Task.Run(async () => await MusicUtil.DownloadMusicUrls(urls.ToArray(), output, MusicPath.Artist)).Wait();
+        }
+        static void DownloadAlbum(CommandLine commandLine, 
+                                  [ParamterInfo(Label = "专辑地址", Param = ParameterUrl)] string[] url,
+                                  [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string output) {
+            var urls = new List<string>();
+            urls.AddRange(commandLine.Args);
+            if (url != null) urls.AddRange(url);
+            Task.Run(async () => await MusicUtil.DownloadAlbumUrls(urls.ToArray(), output, MusicPath.Artist)).Wait();
         }
     }
 }

@@ -3,13 +3,16 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Text;
 using System;
+using Scorpio.stools;
 public class MusicKuwo : MusicBase {
     public override string Source => MusicFactory.Kuwo;
     public class KuwoMusicInfo {
         public class Data {
             public string name;
             public string artist;
+            public int artistid;
             public string album;
+            public int albumid;
             public string pic;
             public string pic120;
             public string releaseDate;
@@ -48,12 +51,23 @@ public class MusicKuwo : MusicBase {
         public Data data;
         public int status;
     }
-    
+    public class KuwoDownloadInfo {
+        public class Data {
+            public string name;
+            public string singer;
+            public string album;
+            public string cover;
+            public string url;
+        }
+        public int code;
+        public Data data;
+    }
     protected override async Task ParseInfo(string id) {
-        var result = await HttpUtil.Get($"https://wapi.kuwo.cn/api/www/music/musicInfo?mid={id}");
-        var musicInfo = JsonConvert.DeserializeObject<KuwoMusicInfo>(result);
+        var musicInfo = await $"https://wapi.kuwo.cn/api/www/music/musicInfo?mid={id}".Get<KuwoMusicInfo>();
         // var downloadUrl = await HttpUtil.Get($"http://antiserver.kuwo.cn/anti.s?type=convert_url&rid={id}&format=mp3|aac&response=url");
-        var downloadUrl = await HttpUtil.Get($"https://service-4v0argn6-1314197819.gz.apigw.tencentcs.com/rid/?rid={id}");
+        //var downloadUrl = await HttpUtil.Get($"https://service-4v0argn6-1314197819.gz.apigw.tencentcs.com/rid/?rid={id}");
+        var downloadInfo = await $"https://api.leafone.cn/api/kuwo?id={id}".Get<KuwoDownloadInfo>();
+        var downloadUrl = downloadInfo.data.url;
         Name = musicInfo.data.name;
         Album = musicInfo.data.album;
         Singer.AddRange(musicInfo.data.artist.Split("&"));
@@ -66,7 +80,7 @@ public class MusicKuwo : MusicBase {
                 Year = (uint)year;
             }
         }
-        var lyric = JsonConvert.DeserializeObject<KuwoLyric>(await HttpUtil.Get($"http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId={id}"));
+        var lyric = await $"http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId={id}".Get<KuwoLyric>();
         if (lyric?.data?.lrclist != null) {
             var builder = new StringBuilder();
             foreach (var lyc in lyric.data.lrclist) {
@@ -79,7 +93,7 @@ public class MusicKuwo : MusicBase {
         }
     }
     protected override async Task<AlbumInfo> ParseAlbum_impl(string id) {
-        var albumInfo = JsonConvert.DeserializeObject<KuwoAlbumInfo>(await HttpUtil.Get($"https://wapi.kuwo.cn/api/www/album/albumInfo?albumId={id}"));
+        var albumInfo = await $"https://wapi.kuwo.cn/api/www/album/albumInfo?albumId={id}".Get<KuwoAlbumInfo>();
         return new AlbumInfo() { 
             name = albumInfo.data.album,
             artist = albumInfo.data.artist,

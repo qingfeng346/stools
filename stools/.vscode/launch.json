@@ -21,7 +21,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/stools/bin/Debug/net7.0/stools.dll",
-            "args": ["downloadmusic", "https://www.kuwo.cn/play_detail/324244", "-output", "./"],
+            "args": ["downloadmusic", "https://kuwo.cn/play_detail/324244", "https://y.qq.com/n/ryqq/songDetail/00128N3r2SYKMF", "-output", "./"],
             "cwd": "${workspaceFolder}/stools",
             "console": "internalConsole",
             "stopAtEntry": false
