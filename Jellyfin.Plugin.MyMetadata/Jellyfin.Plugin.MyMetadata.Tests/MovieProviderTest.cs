@@ -55,7 +55,8 @@ namespace Jellyfin.Plugin.MyMetadata.Tests
             // Test 1: Normal case.
             MovieInfo info = new MovieInfo()
             {
-                Name = "JUQ-055"
+                Name = "MIDE-267",
+                Path = "MIDE-267.mp4"
             };
             var meta = await _provider.GetMetadata(info, CancellationToken.None);
             //Assert.True(meta.HasMetadata);

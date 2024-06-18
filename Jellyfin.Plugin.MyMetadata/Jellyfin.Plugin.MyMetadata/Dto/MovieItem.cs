@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
 
 namespace Jellyfin.Plugin.MyMetadata.Dto
 {
@@ -49,37 +50,37 @@ namespace Jellyfin.Plugin.MyMetadata.Dto
         /// <summary>
         /// 导演
         /// </summary>
-        public List<PersonModel> Directors { get; set; }
+        public List<PersonInfo> Directors { get; private set; } = new List<PersonInfo>();
 
         /// <summary>
         /// 工作室
         /// </summary>
-        public List<string> Studios { get; set; }
+        public List<string> Studios { get; private set; } = new List<string>();
 
         /// <summary>
         /// 发行商
         /// </summary>
-        public List<string> Labels { get; set; }
+        public List<string> Labels { get; private set; } = new List<string>();
 
         /// <summary>
         /// 系列
         /// </summary>
-        public List<string> Series { get; set; }
+        public List<string> Series { get; private set; } = new List<string>();
 
         /// <summary>
         /// 类别
         /// </summary>
-        public List<string> Genres { get; set; }
+        public List<string> Genres { get; private set; } = new List<string>();
 
         /// <summary>
         /// 演员
         /// </summary>
-        public List<PersonModel> Actresses { get; set; }
+        public List<PersonInfo> Persons { get; private set; } = new List<PersonInfo>();
 
         /// <summary>
         /// 预览图
         /// </summary>
-        public List<string> Shotscreens { get; set; }
+        public List<string> Shotscreens { get; private set; } = new List<string>();
 
         /// <summary>
         /// 来源URL

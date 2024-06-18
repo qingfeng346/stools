@@ -24,7 +24,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
                 //_logger.LogWarning($"GetImages failed because that the sid is empty: {item.Name}");
                 return list;
             }
-
+            logger.LogInformation($"GetImages : {id}");
             //获取影片详情
             var movie = await httpService.GetMovieAsync<MovieItem>(id, cancellationToken);
             //如果存在大封面

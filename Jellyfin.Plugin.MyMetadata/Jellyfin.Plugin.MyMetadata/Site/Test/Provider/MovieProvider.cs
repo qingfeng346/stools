@@ -17,7 +17,9 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
 
         public async Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken) => await httpService.GetResponseAsync(url, cancellationToken);
         public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken) {
-            var results = await httpService.SearchAsync(info.Name, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation($"GetMetadata : {info.Name}  Path : {info.Path}");
+            var name = Path.GetFileNameWithoutExtension(info.Path);
+            var results = await httpService.SearchAsync(name, cancellationToken).ConfigureAwait(false);
             var url = results.FirstOrDefault()?.Id;
             if (string.IsNullOrEmpty(url)) {
                 return new MetadataResult<Movie>();
@@ -25,14 +27,13 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             // 获取 元数据
             var movie = await httpService.GetMovieMetadataAsync(url, cancellationToken).ConfigureAwait(false);
             if (movie != null && movie.HasMetadata) {
-               // 如果能获取到元数据，则把 AvMoo Id 设置为 当前 id
                info.SetProviderId(Config.ProviderID, url);
             }
             return movie;
         }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken) {
-            
+            logger.LogInformation($"GetSearchResults : {searchInfo.Name}");
             var results = new List<RemoteSearchResult>();
             var Id = searchInfo.GetProviderId(Config.ProviderID);
             var result = new RemoteSearchResult() {
