@@ -64,8 +64,10 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         /// <summary> 获取影片元数据 </summary>
         public async Task<T> GetMovieAsync<T>(string id, CancellationToken cancellationToken) where T : MovieItem {
             foreach (var (movieId, movieItem) in cacheMovies) {
-                if (movieId == id)
+                if (movieId == id) {
+                    logger.LogInformation($"GetMovieAsync {id} Result Cache : {JsonConvert.Serialize(movieItem)}");
                     return movieItem as T;
+                }
             }
             var item = await GetMovieAsync_impl<T>(id, cancellationToken);
             logger.LogInformation($"GetMovieAsync {id} Result : {JsonConvert.Serialize(item)}");
