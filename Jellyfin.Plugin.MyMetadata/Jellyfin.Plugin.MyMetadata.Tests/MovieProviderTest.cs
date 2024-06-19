@@ -2,8 +2,8 @@
 using Jellyfin.Plugin.MyMetadata.Service.Test;
 using MediaBrowser.Controller.Providers;
 using Xunit.Abstractions;
-
-namespace Jellyfin.Plugin.MyMetadata.Tests {
+using Jellyfin.Plugin.MyMetadata.Tests;
+// namespace Jellyfin.Plugin.MyMetadata.Tests {
     public class MovieProviderTest {
         private readonly MovieProvider _provider;
         private ITestOutputHelper output;
@@ -38,15 +38,15 @@ namespace Jellyfin.Plugin.MyMetadata.Tests {
         }
         [Fact]
         public async Task TestGetMetadata() {
-            output.WriteLine("1111111111111111111");
-            System.Diagnostics.Debug.WriteLine("123123123");
+            // output.WriteLine("1111111111111111111");
+            // System.Diagnostics.Debug.WriteLine("123123123");
             // throw new Exception("123123123");
             // // Test 1: Normal case.
-            // MovieInfo info = new MovieInfo() {
-            //     Name = "111",
-            //     Path = "222.mp4"
-            // };
-            // var meta = await _provider.GetMetadata(info, CancellationToken.None);
+            MovieInfo info = new MovieInfo() {
+                Name = "111",
+                Path = "MIDE-284.mp4"
+            };
+            var meta = await _provider.GetMetadata(info, CancellationToken.None);
             //Assert.True(meta.HasMetadata);
             //Assert.Equal("源代码", meta.Item.Name);
             //Assert.Equal("3075287", meta.Item.GetProviderId(Config.ProviderID));
@@ -71,4 +71,4 @@ namespace Jellyfin.Plugin.MyMetadata.Tests {
             //Assert.False(meta.HasMetadata);
         }
     }
-}
+// }

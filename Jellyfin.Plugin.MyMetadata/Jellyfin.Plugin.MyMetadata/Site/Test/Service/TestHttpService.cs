@@ -8,14 +8,14 @@ using System.Globalization;
 namespace Jellyfin.Plugin.MyMetadata.Service.Test {
     public class TestHttpService : HttpService {
         public TestHttpService(ILogger<HttpService> logger, IHttpClientFactory http) : base(logger, http) { }
-        protected override async Task<T> GetMovieAsync_impl<T>(string url, CancellationToken cancellationToken) {
-            return null;
+        protected override async Task<T> GetMovieAsync_impl<T>(string id, CancellationToken cancellationToken) {
+            var url = $"https://www.avbase.net/works/{id}";
             var html = await GetHtmlAsync(url, cancellationToken);
             var doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(html);
             var rootNode = doc.DocumentNode;
             var item = new MovieItem();
-            item.Id = url.Substring(url.LastIndexOf(":") + 1);
+            item.MovieId = url.Substring(url.LastIndexOf(":") + 1);
             item.Title = rootNode.SelectSingleNode("//h1[@class='text-lg']")?.InnerText;
             item.Fanart = rootNode.SelectSingleNode("//img[@class='max-w-full max-h-full']").GetAttributeValue<string>("src", "");
             item.Poster = item.Fanart;
@@ -54,11 +54,22 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             var rootNode = doc.DocumentNode;
             var nodes = rootNode.SelectNodes("//div[@class='grow']/a");
             var results = new List<SearchResult>();
-            foreach (var node in nodes) {
-                var url = node.GetAttributeValue<string>("href", "");
-                results.Add(new SearchResult() { Id = $"https://www.avbase.net{url}" });
+            if (nodes != null) {
+                foreach (var node in nodes) {
+                    var url = node.GetAttributeValue<string>("href", "");
+                    results.Add(new SearchResult() { Id = url.Substring(url.LastIndexOf("/") + 1)});
+                }
             }
             return results;
+        }
+        protected override async Task<string> GetMovieIdByName_impl(string name, string id, CancellationToken cancellationToken)
+        {
+            if (!string.IsNullOrEmpty(id))
+                return id;
+            var searchResults = await SearchAsync(name, cancellationToken);
+            if (searchResults.Count == 0)
+                return "";
+            return searchResults[0].Id;
         }
     }
 }

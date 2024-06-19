@@ -14,7 +14,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
             doc.LoadHtml(html);
             var rootNode = doc.DocumentNode;
             var item = new MovieItem();
-            item.Id = url.Substring(url.LastIndexOf(":") + 1);
+            item.MovieId = url.Substring(url.LastIndexOf(":") + 1);
             item.Title = rootNode.SelectSingleNode("//h1[@class='text-lg']")?.InnerText;
             item.Fanart = rootNode.SelectSingleNode("//img[@class='max-w-full max-h-full']").GetAttributeValue<string>("src", "");
             item.Poster = item.Fanart;

@@ -1,18 +1,19 @@
 ﻿using System.Reflection;
 using System.Text;
-using System;
-using System.Collections.Generic;
 namespace WMJson {
     internal class JsonObjectContract : JsonContainerContract {
         private JsonVariable[] jsonVariables;
         public JsonObjectContract(Type type) : base(type) {
             var list = new List<JsonVariable>();
             foreach (var propertyInfo in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)) {
-                if (!JsonUtils.IsAttribute<JsonIgnoreAttribute>(propertyInfo) && propertyInfo.GetIndexParameters().Length == 0)
+                if (!JsonUtils.IsAttribute<JsonIgnoreAttribute>(propertyInfo) &&
+                    !JsonUtils.IsAttribute<NonSerializedAttribute>(propertyInfo) &&
+                    propertyInfo.GetIndexParameters().Length == 0)
                     list.Add(new JsonProperty(propertyInfo));
             }
             foreach (var fieldInfo in type.GetFields(BindingFlags.Public | BindingFlags.Instance)) {
-                if (!JsonUtils.IsAttribute<JsonIgnoreAttribute>(fieldInfo))
+                if (!JsonUtils.IsAttribute<JsonIgnoreAttribute>(fieldInfo) &&
+                    !JsonUtils.IsAttribute<NonSerializedAttribute>(fieldInfo))
                     list.Add(new JsonField(fieldInfo));
             }
             jsonVariables = list.ToArray();

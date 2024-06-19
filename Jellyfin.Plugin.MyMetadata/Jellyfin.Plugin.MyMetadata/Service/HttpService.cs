@@ -34,7 +34,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             if (item == null) return result;
             // 设置 基础信息
             var movie = new Movie {
-                Name = $"{item.Id} {item.Title}",
+                Name = $"{item.MovieId} {item.Title}",
                 OriginalTitle = item.Title,
                 HomePageUrl = id,
             };
@@ -80,7 +80,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         public async Task<IList<SearchResult>> SearchAsync(string keyword, CancellationToken cancellationToken) {
             var results = await SearchAsync_impl(keyword, cancellationToken);
             logger.LogInformation($"SearchAsync {keyword} Result : {JsonConvert.Serialize(results)}");
-            return results;
+            return results ?? [];
         }
         public async Task<string> GetMovieIdByName(string name, string id, CancellationToken cancellationToken) {
             var result = await GetMovieIdByName_impl(name, id, cancellationToken);

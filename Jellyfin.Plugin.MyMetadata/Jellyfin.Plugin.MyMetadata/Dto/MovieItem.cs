@@ -1,16 +1,17 @@
 ﻿using MediaBrowser.Controller.Entities;
+using System.Runtime.Serialization;
+using System;
 namespace Jellyfin.Plugin.MyMetadata.Dto
 {
     /// <summary> 影片详情 </summary>
     public class MovieItem {
         /// <summary> 识别码 </summary>
-        public string Id { get; set; }
-        /// <summary> 识别码 </summary>
-        public string ServiceId { get; set; }
+        public string MovieId { get; set; }
         /// <summary> 标题 </summary>
         public string? Title { get; set; }
+        [NonSerialized]
         /// <summary> 发行日期 </summary>
-        public DateTime? ReleaseDate { get; set; }
+        public DateTime? ReleaseDate;
         /// <summary> 时长 </summary>
         public int Duration { get; set; }
         /// <summary> 简介 </summary>

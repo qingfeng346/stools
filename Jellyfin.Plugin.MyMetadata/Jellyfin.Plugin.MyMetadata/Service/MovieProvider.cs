@@ -22,6 +22,8 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             logger.LogInformation($"GetMetadata Id:{id} Info:{JsonConvert.Serialize(info.Name)}");
             var name = Path.GetFileNameWithoutExtension(info.Path);
             var movieId = await httpService.GetMovieIdByName(name, id, cancellationToken).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(movieId))
+                return default;
             var movie = await httpService.GetMovieMetadataAsync(movieId, cancellationToken).ConfigureAwait(false);
             if (movie != null && movie.HasMetadata && !string.IsNullOrEmpty(movieId)) {
                info.SetProviderId(ProviderID, movieId);
