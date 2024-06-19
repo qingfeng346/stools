@@ -1,5 +1,4 @@
-﻿using Jellyfin.Plugin.MyMetadata.Service.Test;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Xunit.Abstractions;
@@ -16,7 +15,8 @@ namespace Jellyfin.Plugin.MyMetadata.Tests
                 .AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug))
                 .AddLogging(builder => builder.AddSystemdConsole().SetMinimumLevel(LogLevel.Debug))
                 .AddSingleton<T>()
-                .AddSingleton<TestHttpService>();
+                .AddSingleton<Jellyfin.Plugin.MyMetadata.Service.Test.TestHttpService>()
+                .AddSingleton<Jellyfin.Plugin.MyMetadata.Service.Test2.TestHttpService>();
 
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider.GetService<ILogger<T>>();

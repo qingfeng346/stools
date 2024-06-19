@@ -108,6 +108,8 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         protected abstract Task<T> GetMovieAsync_impl<T>(string id, CancellationToken cancellationToken) where T : MovieItem;
         protected abstract Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken);
         protected virtual async Task<string> GetMovieIdByName_impl(string name, string id, CancellationToken cancellationToken) {
+            if (!string.IsNullOrEmpty(id))
+                return id;
             return name;
         }
     }

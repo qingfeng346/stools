@@ -1,8 +1,6 @@
 ﻿using Jellyfin.Data.Enums;
 using Jellyfin.Plugin.MyMetadata.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Providers;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 namespace Jellyfin.Plugin.MyMetadata.Service.Test {
