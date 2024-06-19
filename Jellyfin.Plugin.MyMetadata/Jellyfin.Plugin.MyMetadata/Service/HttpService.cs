@@ -13,16 +13,53 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             this.http = http;
         }
         /// <summary>获取响应对象 </summary>
-        public virtual async Task<HttpResponseMessage> GetResponseAsync(string url, CancellationToken cancellationToken) => 
-                                                        await http.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+        public async Task<HttpResponseMessage> GetResponseAsync(string url, CancellationToken cancellationToken) {
+            logger.LogInformation($"GetResponseAsync : {url}");
+            return await http.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+        } 
         /// <summary>下载 HTMl 源码 </summary>
-        public virtual async Task<string> GetHtmlAsync(string url, CancellationToken cancellationToken) {
+        public async Task<string> GetHtmlAsync(string url, CancellationToken cancellationToken) {
             logger.LogInformation($"GetHtmlAsync : {url}");
             return await http.CreateClient(NamedClient.Default).GetStringAsync(url, cancellationToken);
         }
         /// <summary> 获取影片元数据 </summary>
-        public abstract Task<MetadataResult<Movie>> GetMovieMetadataAsync(string id, CancellationToken cancellationToken);
-        /// <summary> 查找影片 </summary>
-        // public abstract Task<IEnumerable<T>> SearchAsync<T>(string keyword, CancellationToken cancellationToken) where T : SearchResult;
+        public async Task<MetadataResult<Movie>> GetMovieMetadataAsync(string id, CancellationToken cancellationToken) {
+            await Task.Delay(1);
+            var result = new MetadataResult<Movie>();
+            //// 获取影片详情
+            var item = await GetMovieAsync<MovieItem>(id, cancellationToken);
+            // 设置 基础信息
+            var movie = new Movie {
+                Name = $"{item.Id} {item.Title}",
+                OriginalTitle = item.Title,
+                HomePageUrl = id,
+            };
+            // 如果 系列 不为空
+            if (item.Series.Count > 0)
+                movie.CollectionName = item.Series[0];
+            // 如果 发行日期 不为空
+            if (item.ReleaseDate != null) {
+                var releaseDate = item.ReleaseDate?.ToUniversalTime();
+                // 设置 发行日期
+                movie.PremiereDate = releaseDate;
+                // 设置 年份
+                movie.ProductionYear = releaseDate?.Year;
+            }
+            // 添加类别
+            item.Genres?.ForEach(movie.AddGenre);
+            // 添加 工作室
+            item.Studios?.ForEach(movie.AddStudio);
+            // 添加 发行商
+            item.Labels?.ForEach(movie.AddStudio);
+            // 演员
+            item.Persons.ForEach(result.AddPerson);
+            result.QueriedById = false;
+            result.HasMetadata = true;
+            result.Item = movie;
+            return result;
+        }
+        public abstract Task<(MetadataResult<Movie>, string)> GetMovieMetadataByNameAsync(string name, string id, CancellationToken cancellationToken);
+        public abstract Task<T> GetMovieAsync<T>(string id, CancellationToken cancellationToken) where T : MovieItem;
+        public abstract Task<IList<SearchResult>> SearchAsync(string keyword, CancellationToken cancellationToken);
     }
 }

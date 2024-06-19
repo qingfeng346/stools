@@ -1,6 +1,6 @@
-﻿namespace Jellyfin.Plugin.MyMetadata {
-    public static class Test2 {
-        public const string ProviderName = "MyMetadata2";
-        public const string ProviderID = "MyMetadataID2";
+﻿namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
+    public static class Config {
+        public const string ProviderName = "MyMetadata";
+        public const string ProviderID = "MyMetadataID";
     }
 }
