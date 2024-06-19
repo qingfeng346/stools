@@ -79,8 +79,15 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             logger.LogInformation($"SearchAsync {keyword} Result : {JsonConvert.Serialize(results)}");
             return results;
         }
+        public async Task<string> GetMovieIdByName(string name, string id, CancellationToken cancellationToken) {
+            var result = await GetMovieIdByName_impl(name, id, cancellationToken);
+            logger.LogInformation($"GetMovieIdByName name:{name} id:{id}  Result : {result}");
+            return result;
+        }
         protected abstract Task<T> GetMovieAsync_impl<T>(string id, CancellationToken cancellationToken) where T : MovieItem;
         protected abstract Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken);
-        public abstract Task<(MetadataResult<Movie>, string)> GetMovieMetadataByNameAsync(string name, string id, CancellationToken cancellationToken);
+        protected virtual async Task<string> GetMovieIdByName_impl(string name, string id, CancellationToken cancellationToken) {
+            return name;
+        }
     }
 }

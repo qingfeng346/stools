@@ -46,9 +46,6 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
             item.SourceUrl = url;
             return item as T;
         }
-        public override Task<(MetadataResult<Movie>, string)> GetMovieMetadataByNameAsync(string name, string id, CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
         protected override async Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken) {
             //// 查询
             var html = await GetHtmlAsync($"https://www.avbase.net/works?q={keyword}", cancellationToken);

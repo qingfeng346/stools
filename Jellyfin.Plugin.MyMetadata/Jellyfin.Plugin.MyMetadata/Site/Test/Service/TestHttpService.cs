@@ -59,8 +59,5 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             }
             return results;
         }
-        public override Task<(MetadataResult<Movie>, string)> GetMovieMetadataByNameAsync(string name, string id, CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
     }
 }

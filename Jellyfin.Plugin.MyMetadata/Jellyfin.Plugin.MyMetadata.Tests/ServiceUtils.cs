@@ -13,7 +13,7 @@ namespace Jellyfin.Plugin.MyMetadata.Tests
             var services = new ServiceCollection()
                 .AddHttpClient()
                 .AddLogging(builder => builder.AddXUnit(output).SetMinimumLevel(LogLevel.Debug))
-                .AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug))
+                // .AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug))
                 .AddSingleton<T>()
                 .AddSingleton<TestHttpService>();
 
