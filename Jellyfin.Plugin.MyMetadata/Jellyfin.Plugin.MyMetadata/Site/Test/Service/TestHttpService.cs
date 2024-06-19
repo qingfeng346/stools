@@ -8,7 +8,7 @@ using System.Globalization;
 namespace Jellyfin.Plugin.MyMetadata.Service.Test {
     public class TestHttpService : HttpService {
         public TestHttpService(ILogger<HttpService> logger, IHttpClientFactory http) : base(logger, http) { }
-        public override async Task<T> GetMovieAsync<T>(string url, CancellationToken cancellationToken) {
+        protected override async Task<T> GetMovieAsync_impl<T>(string url, CancellationToken cancellationToken) {
             var html = await GetHtmlAsync(url, cancellationToken);
             var doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(html);
@@ -46,23 +46,21 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             item.SourceUrl = url;
             return item as T;
         }
-        public override Task<(MetadataResult<Movie>, string)> GetMovieMetadataByNameAsync(string name, string id, CancellationToken cancellationToken) {
-            throw new NotImplementedException();
-        }
-        public override async Task<IList<SearchResult>> SearchAsync(string keyword, CancellationToken cancellationToken) {
-            //// 查询
+        protected override async Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken) {
             var html = await GetHtmlAsync($"https://www.avbase.net/works?q={keyword}", cancellationToken);
             var doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(html);
             var rootNode = doc.DocumentNode;
             var nodes = rootNode.SelectNodes("//div[@class='grow']/a");
-            logger.LogInformation($"搜索结果数量 : {nodes?.Count}");
             var results = new List<SearchResult>();
             foreach (var node in nodes) {
                 var url = node.GetAttributeValue<string>("href", "");
                 results.Add(new SearchResult() { Id = $"https://www.avbase.net{url}" });
             }
             return results;
+        }
+        public override Task<(MetadataResult<Movie>, string)> GetMovieMetadataByNameAsync(string name, string id, CancellationToken cancellationToken) {
+            throw new NotImplementedException();
         }
     }
 }

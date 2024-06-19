@@ -8,7 +8,7 @@ using System.Globalization;
 namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
     public class TestHttpService : HttpService {
         public TestHttpService(ILogger<HttpService> logger, IHttpClientFactory http) : base(logger, http) { }
-        public override async Task<T> GetMovieAsync<T>(string url, CancellationToken cancellationToken) {
+        protected override async Task<T> GetMovieAsync_impl<T>(string url, CancellationToken cancellationToken) {
             var html = await GetHtmlAsync(url, cancellationToken);
             var doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(html);
@@ -49,7 +49,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
         public override Task<(MetadataResult<Movie>, string)> GetMovieMetadataByNameAsync(string name, string id, CancellationToken cancellationToken) {
             throw new NotImplementedException();
         }
-        public override async Task<IList<SearchResult>> SearchAsync(string keyword, CancellationToken cancellationToken) {
+        protected override async Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken) {
             //// 查询
             var html = await GetHtmlAsync($"https://www.avbase.net/works?q={keyword}", cancellationToken);
             var doc = new HtmlAgilityPack.HtmlDocument();
