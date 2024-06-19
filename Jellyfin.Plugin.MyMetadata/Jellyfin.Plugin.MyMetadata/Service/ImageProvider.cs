@@ -20,39 +20,38 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         public async Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken) => await httpService.GetResponseAsync(url, cancellationToken);
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken) {
             var id = item.GetProviderId(ProviderID);
-            logger.LogInformation($"GetImages Id:{id} Info:{JsonConvert.Serialize(item)}");
+            logger.LogInformation($"GetImages Id:{id} ItemId:{item.Id} Name:{item.Name}");
             var list = new List<RemoteImageInfo>();
-            if (string.IsNullOrWhiteSpace(id)) {
-                //_logger.LogWarning($"GetImages failed because that the sid is empty: {item.Name}");
+            var movieId = await httpService.GetMovieIdByName(item.Name, id, cancellationToken);
+            if (string.IsNullOrWhiteSpace(movieId))
                 return list;
-            }
             //获取影片详情
-            var movie = await httpService.GetMovieAsync<MovieItem>(id, cancellationToken);
+            var movieInfo = await httpService.GetMovieAsync<MovieItem>(movieId, cancellationToken);
             //如果存在大封面
-            if (!string.IsNullOrEmpty(movie.Fanart)) {
+            if (!string.IsNullOrEmpty(movieInfo.Fanart)) {
                // 小封面 poster
                list.Add(new RemoteImageInfo {
                    ProviderName = Name,
-                   Url = movie.Poster,
+                   Url = movieInfo.Poster,
                    Type = ImageType.Primary
                });
 
                // 大封面 fanart/backdrop
                list.Add(new RemoteImageInfo {
                    ProviderName = Name,
-                   Url = movie.Fanart,
+                   Url = movieInfo.Fanart,
                    Type = ImageType.Backdrop
                });
 
                // 列表为“缩略图”显示时，显示大封面
                list.Add(new RemoteImageInfo {
                    ProviderName = Name,
-                   Url = movie.Fanart,
+                   Url = movieInfo.Fanart,
                    Type = ImageType.Thumb
                });
             }
             // 添加预览图
-            movie.Shotscreens?.ForEach(img => {
+            movieInfo.Shotscreens?.ForEach(img => {
                list.Add(new RemoteImageInfo {
                    ProviderName = Name,
                    Url = img,

@@ -36,6 +36,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             var movie = new Movie {
                 Name = $"{item.MovieId} {item.Title}",
                 OriginalTitle = item.Title,
+                Overview = item.Title,
                 HomePageUrl = id,
             };
             // 如果 系列 不为空
@@ -57,6 +58,8 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             item.Labels?.ForEach(movie.AddStudio);
             // 演员
             item.Persons.ForEach(result.AddPerson);
+            // 系列
+            movie.Tags = item.Series.ToArray();
             result.QueriedById = false;
             result.HasMetadata = true;
             result.Item = movie;
@@ -64,28 +67,43 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         }
         /// <summary> 获取影片元数据 </summary>
         public async Task<T> GetMovieAsync<T>(string id, CancellationToken cancellationToken) where T : MovieItem {
-            foreach (var (movieId, movieItem) in cacheMovies) {
-                if (movieId == id) {
-                    logger.LogInformation($"GetMovieAsync {id} Result Cache : {JsonConvert.Serialize(movieItem)}");
-                    return movieItem as T;
+            try {
+                foreach (var (movieId, movieItem) in cacheMovies) {
+                    if (movieId == id) {
+                        logger.LogInformation($"GetMovieAsync {id} Result Cache : {JsonConvert.Serialize(movieItem)}");
+                        return movieItem as T;
+                    }
                 }
+                var item = await GetMovieAsync_impl<T>(id, cancellationToken);
+                logger.LogInformation($"GetMovieAsync {id} Result : {JsonConvert.Serialize(item)}");
+                cacheMovies.Add((id, item));
+                if (cacheMovies.Count > 10)
+                    cacheMovies.RemoveAt(0);
+                return item;
+            } catch (Exception e) {
+                logger.LogError($"GetMovieAsync : {id} is error : {e}");
+                return null;
             }
-            var item = await GetMovieAsync_impl<T>(id, cancellationToken);
-            logger.LogInformation($"GetMovieAsync {id} Result : {JsonConvert.Serialize(item)}");
-            cacheMovies.Add((id, item));
-            if (cacheMovies.Count > 10)
-                cacheMovies.RemoveAt(0);
-            return item;
         }
         public async Task<IList<SearchResult>> SearchAsync(string keyword, CancellationToken cancellationToken) {
-            var results = await SearchAsync_impl(keyword, cancellationToken);
-            logger.LogInformation($"SearchAsync {keyword} Result : {JsonConvert.Serialize(results)}");
-            return results ?? [];
+            try {
+                var results = await SearchAsync_impl(keyword, cancellationToken);
+                logger.LogInformation($"SearchAsync {keyword} Result : {JsonConvert.Serialize(results)}");
+                return results ?? [];
+            } catch (Exception e) {
+                logger.LogError($"SearchAsync : {keyword} is error : {e}");
+                return [];
+            }
         }
         public async Task<string> GetMovieIdByName(string name, string id, CancellationToken cancellationToken) {
-            var result = await GetMovieIdByName_impl(name, id, cancellationToken);
-            logger.LogInformation($"GetMovieIdByName name:{name} id:{id}  Result : {result}");
-            return result;
+            try {
+                var result = await GetMovieIdByName_impl(name, id, cancellationToken);
+                logger.LogInformation($"GetMovieIdByName name:{name} id:{id}  Result : {result}");
+                return result;
+            } catch (Exception e) {
+                logger.LogError($"GetMovieIdByName name:{name} id:{id} is error : {e}");
+                return "";
+            }
         }
         protected abstract Task<T> GetMovieAsync_impl<T>(string id, CancellationToken cancellationToken) where T : MovieItem;
         protected abstract Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken);

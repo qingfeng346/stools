@@ -19,12 +19,29 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             item.Title = rootNode.SelectSingleNode("//h1[@class='text-lg']")?.InnerText;
             item.Fanart = rootNode.SelectSingleNode("//img[@class='max-w-full max-h-full']").GetAttributeValue<string>("src", "");
             item.Poster = item.Fanart;
-            var infoNodes = rootNode.SelectNodes("//div[@class='text-sm']/a[@class='link']");
-            if (DateTime.TryParseExact(infoNodes[0].InnerText, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var releaseDate))
-                item.ReleaseDate = releaseDate;
-            item.Studios.Add(infoNodes[1].InnerText);
-            item.Labels.Add(infoNodes[2].InnerText);
-            item.Series.Add(infoNodes[3].InnerText);
+            var infoNodes = rootNode.SelectNodes("//div[@class='bg-base-100 p-2 flex flex-col gap-1']");
+            foreach (var node in infoNodes) {
+                var nameNode = node.SelectSingleNode("div[@class='text-xs']");
+                if (nameNode == null) continue;
+                var valueNode = node.SelectSingleNode("div[@class='text-sm']");
+                if (valueNode == null) continue;
+                logger.LogInformation($"解析信息 {nameNode.InnerText} = {valueNode.InnerText}");
+                switch (nameNode.InnerText) {
+                    case "発売日":
+                        if (DateTime.TryParseExact(valueNode.InnerText, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var releaseDate))
+                            item.ReleaseDate = releaseDate;
+                        break;
+                    case "メーカー":
+                        item.Studios.Add(valueNode.InnerText);
+                        break;
+                    case "レーベル":
+                        item.Labels.Add(valueNode.InnerText);
+                        break;
+                    case "シリーズ":
+                        item.Series.Add(valueNode.InnerText);
+                        break;
+                }
+            }
             var personNodes = rootNode.SelectNodes("//a[@class='chip']");
             foreach (var node in personNodes) {
                 var name = node.InnerText;
@@ -33,6 +50,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
                     Name = name,
                     Role = name,
                     Type = PersonKind.Actor,
+                    ItemId = Utils.GetGuidByName(name),
                     ImageUrl = avatarUrl
                 });
             }
@@ -64,8 +82,8 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
         }
         protected override async Task<string> GetMovieIdByName_impl(string name, string id, CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrEmpty(id))
-                return id;
+            // if (!string.IsNullOrEmpty(id))
+            //     return id;
             var searchResults = await SearchAsync(name, cancellationToken);
             if (searchResults.Count == 0)
                 return "";
