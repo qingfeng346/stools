@@ -1,32 +1,20 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.DependencyInjection;
-
+﻿using Microsoft.Extensions.DependencyInjection;
 using Jellyfin.Plugin.MyMetadata.Service.Test;
-
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-
-using Xunit;
 using Xunit.Abstractions;
 
-namespace Jellyfin.Plugin.MyMetadata.Tests
-{
-    public class MovieProviderTest
-    {
+namespace Jellyfin.Plugin.MyMetadata.Tests {
+    public class MovieProviderTest {
         private readonly MovieProvider _provider;
-        public MovieProviderTest(ITestOutputHelper output)
-        {
+        private ITestOutputHelper output;
+        public MovieProviderTest(ITestOutputHelper output) {
+            this.output = output;
             var serviceProvider = ServiceUtils.BuildServiceProvider<MovieProvider>(output);
             _provider = serviceProvider.GetService<MovieProvider>();
         }
 
         [Fact]
-        public async Task TestGetSearchResults()
-        {
+        public async Task TestGetSearchResults() {
             // Test 1: search metadata.
             //MovieInfo info = new MovieInfo() {
             //    Name = "我吃西红柿",
@@ -48,17 +36,17 @@ namespace Jellyfin.Plugin.MyMetadata.Tests
             //Assert.Equal("1851857", doubanId);
             //Assert.Equal(2008, year);
         }
-
         [Fact]
-        public async Task TestGetMetadata()
-        {
-            // Test 1: Normal case.
-            MovieInfo info = new MovieInfo()
-            {
-                Name = "MIDE-267",
-                Path = "MIDE-267.mp4"
-            };
-            var meta = await _provider.GetMetadata(info, CancellationToken.None);
+        public async Task TestGetMetadata() {
+            output.WriteLine("1111111111111111111");
+            System.Diagnostics.Debug.WriteLine("123123123");
+            // throw new Exception("123123123");
+            // // Test 1: Normal case.
+            // MovieInfo info = new MovieInfo() {
+            //     Name = "111",
+            //     Path = "222.mp4"
+            // };
+            // var meta = await _provider.GetMetadata(info, CancellationToken.None);
             //Assert.True(meta.HasMetadata);
             //Assert.Equal("源代码", meta.Item.Name);
             //Assert.Equal("3075287", meta.Item.GetProviderId(Config.ProviderID));

@@ -31,6 +31,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             var result = new MetadataResult<Movie>();
             //// 获取影片详情
             var item = await GetMovieAsync<MovieItem>(id, cancellationToken);
+            if (item == null) return result;
             // 设置 基础信息
             var movie = new Movie {
                 Name = $"{item.Id} {item.Title}",

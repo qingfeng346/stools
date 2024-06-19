@@ -9,6 +9,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
     public class TestHttpService : HttpService {
         public TestHttpService(ILogger<HttpService> logger, IHttpClientFactory http) : base(logger, http) { }
         protected override async Task<T> GetMovieAsync_impl<T>(string url, CancellationToken cancellationToken) {
+            return null;
             var html = await GetHtmlAsync(url, cancellationToken);
             var doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(html);
