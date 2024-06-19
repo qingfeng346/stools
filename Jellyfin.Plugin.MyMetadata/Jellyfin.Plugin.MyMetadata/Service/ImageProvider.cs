@@ -27,6 +27,8 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                 return list;
             //获取影片详情
             var movieInfo = await httpService.GetMovieAsync<MovieItem>(movieId, cancellationToken);
+            if (movieInfo == null)
+                return list;
             //如果存在大封面
             if (!string.IsNullOrEmpty(movieInfo.Fanart)) {
                // 小封面 poster

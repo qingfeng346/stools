@@ -13,10 +13,19 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             doc.LoadHtml(html);
             var rootNode = doc.DocumentNode;
             var item = new MovieItem();
-            item.MovieId = url.Substring(url.LastIndexOf(":") + 1);
+            var index = url.LastIndexOf(":");
+            if (index >= 0) {
+                item.MovieId = url.Substring(index + 1);
+            } else {
+                item.MovieId = url.Substring(url.LastIndexOf("/") + 1);
+            }
             item.Title = rootNode.SelectSingleNode("//h1[@class='text-lg']")?.InnerText;
             item.Fanart = rootNode.SelectSingleNode("//img[@class='max-w-full max-h-full']").GetAttributeValue<string>("src", "");
-            item.Poster = item.Fanart;
+            if (item.Fanart.EndsWith("pl.jpg")) {
+                item.Poster = item.Fanart.Replace("pl.jpg", "ps.jpg");
+            } else {
+                item.Poster = item.Fanart;
+            }
             var infoNodes = rootNode.SelectNodes("//div[@class='bg-base-100 p-2 flex flex-col gap-1']");
             foreach (var node in infoNodes) {
                 var nameNode = node.SelectSingleNode("div[@class='text-xs']");
@@ -80,8 +89,6 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
         }
         protected override async Task<string> GetMovieIdByName_impl(string name, string id, CancellationToken cancellationToken)
         {
-            // if (!string.IsNullOrEmpty(id))
-            //     return id;
             var searchResults = await SearchAsync(name, cancellationToken);
             if (searchResults.Count == 0)
                 return "";
