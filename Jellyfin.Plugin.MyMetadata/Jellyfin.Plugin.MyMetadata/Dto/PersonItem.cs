@@ -10,6 +10,9 @@ namespace Jellyfin.Plugin.MyMetadata.Dto {
         /// <summary> 封面 </summary>
         public string ImageUrl { get; set; }
         public string PersonId {get;set;}
+        [JsonIgnore]
+        public DateTime? PremiereDate {get;set;}
+        public string Desc {get;set;}
         public PersonInfo ToPersonInfo() {
             return new PersonInfo() {
                 Name = Name,

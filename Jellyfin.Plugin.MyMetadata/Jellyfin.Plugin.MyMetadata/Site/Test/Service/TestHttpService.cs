@@ -4,7 +4,7 @@ using System.Globalization;
 using WMJson;
 namespace Jellyfin.Plugin.MyMetadata.Service.Test {
     public class TestHttpService : HttpService {
-        public class JsonData {
+        public class MovieJsonData {
             public class Actor {
                 public string name;
                 public string image_url;
@@ -60,6 +60,32 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             }
             public Props props;
         }
+        public class PersonJsonData {
+            public class Fanza {
+                public string birthday;
+                public string height;
+                public string cup;
+                public string prefectures;
+            }
+            public class Meta {
+                public Fanza fanza;
+            }
+            public class Primary {
+                public string name;
+                public string image_url;
+                public Meta meta;
+            }
+            public class Talent {
+                public Primary primary;
+            }
+            public class PageProps {
+                public Talent talent;
+            }
+            public class Props {
+                public PageProps pageProps;
+            }
+            public Props props;
+        }
         public TestHttpService(ILogger<HttpService> logger, IHttpClientFactory http) : base(logger, http) { }
         protected override async Task<T> GetMovieAsync_impl<T>(string id, CancellationToken cancellationToken) {
             var url = $"https://www.avbase.net/works/{id}";
@@ -68,7 +94,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             doc.LoadHtml(html);
             var rootNode = doc.DocumentNode;
             var jsonContent = rootNode.SelectSingleNode("//script[@id='__NEXT_DATA__']")?.InnerText;
-            var movieInfo = JsonConvert.Deserialize<JsonData>(jsonContent).props.pageProps.work;
+            var movieInfo = JsonConvert.Deserialize<MovieJsonData>(jsonContent).props.pageProps.work;
             var item = new MovieItem();
             item.MovieId = movieInfo.work_id;
             item.Title = movieInfo.title;
@@ -98,9 +124,25 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             item.SourceUrl = url;
             return item as T;
         }
-        protected override Task<T> GetPersonAsync_impl<T>(string id, CancellationToken cancellationToken)
-        {
-            return null;
+        protected override async Task<T> GetPersonAsync_impl<T>(string id, CancellationToken cancellationToken) {
+            var url = $"https://www.avbase.net/talents/{id}";
+            var html = await GetHtmlAsync(url, cancellationToken);
+            var doc = new HtmlAgilityPack.HtmlDocument();
+            doc.LoadHtml(html);
+            var rootNode = doc.DocumentNode;
+            var jsonContent = rootNode.SelectSingleNode("//script[@id='__NEXT_DATA__']")?.InnerText;
+            var personInfo = JsonConvert.Deserialize<PersonJsonData>(jsonContent).props.pageProps.talent;
+            var item = new PersonItem();
+            item.Name = personInfo.primary.name;
+            item.ImageUrl = personInfo.primary.image_url;
+            if (personInfo.primary.meta != null) {
+                if (DateTime.TryParseExact(personInfo.primary.meta.fanza.birthday, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+                    item.PremiereDate = date;
+                item.Desc = @$"出生地:{personInfo.primary.meta.fanza.prefectures}
+    身高:{personInfo.primary.meta.fanza.height}cm
+    罩杯:{personInfo.primary.meta.fanza.cup}";
+            }
+            return item as T;
         }
         protected override async Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken) {
             var html = await GetHtmlAsync($"https://www.avbase.net/works?q={keyword}", cancellationToken);

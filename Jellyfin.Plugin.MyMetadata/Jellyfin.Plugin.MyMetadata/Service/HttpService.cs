@@ -91,12 +91,20 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         }
         /// <summary> 获取演员元数据 </summary>
         public async Task<MetadataResult<Person>> GetPersonMetadataAsync(string id, string name, CancellationToken cancellationToken) {
-            // var persion = new Person();
-            // persion.AddTrailerUrl()
-            // persion.AddImage(new ImageInfo() );
-            // var result = new MetadataResult<Person>();
-            // result.People.
-            return null;
+            await Task.Delay(1);
+            var result = new MetadataResult<Person>();
+            //// 获取影片详情
+            var item = await GetPersonAsync<PersonItem>(name, cancellationToken);
+            if (item == null) return result;
+            var person = new Person();
+            if (item.PremiereDate != null) {
+                person.PremiereDate = item.PremiereDate;
+                person.ProductionYear = item.PremiereDate.Value.Year;
+            }
+            person.Overview = item.Desc;
+            result.Item = person;
+            result.HasMetadata = true;
+            return result;
         }
         /// <summary> 获取演员元数据 </summary>
         public async Task<T> GetPersonAsync<T>(string id, CancellationToken cancellationToken) where T : PersonItem {

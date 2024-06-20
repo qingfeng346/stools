@@ -22,7 +22,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             var list = new List<RemoteImageInfo>();
             try {
                 var id = item.GetProviderId(ProviderID);
-                logger.LogInformation($"GetImages Id:{id} ItemId:{item.Id} Name:{item.Name} Path:{item.Path}");
+                logger.LogInformation($"MovieImageProvider.GetImages Id:{id} ItemId:{item.Id} Name:{item.Name} Path:{item.Path}");
                 var movieId = await httpService.GetMovieIdByName(Path.GetFileNameWithoutExtension(item.Path), id, cancellationToken);
                 if (string.IsNullOrWhiteSpace(movieId))
                     return list;
@@ -85,7 +85,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                 // });
                 return list;
             } catch (System.Exception e) {
-                logger.LogError($"ImageProvider.GetImages is error : {e}");
+                logger.LogError($"MovieImageProvider.GetImages is error : {e}");
                 return list;
             }
         }

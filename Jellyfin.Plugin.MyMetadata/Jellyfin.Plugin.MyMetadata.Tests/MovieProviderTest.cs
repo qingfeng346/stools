@@ -4,12 +4,13 @@ using MediaBrowser.Controller.Providers;
 using Xunit.Abstractions;
 namespace Jellyfin.Plugin.MyMetadata.Tests {
     public class MovieProviderTest {
-        private readonly MovieProvider _provider;
+        private readonly MovieProvider movieProvider;
+        private readonly PersonProvider personProvider;
         private ITestOutputHelper output;
         public MovieProviderTest(ITestOutputHelper output) {
             this.output = output;
-            var serviceProvider = ServiceUtils.BuildServiceProvider<MovieProvider>(output);
-            _provider = serviceProvider.GetService<MovieProvider>();
+            movieProvider = ServiceUtils.BuildServiceProvider<MovieProvider>(output).GetService<MovieProvider>();
+            personProvider = ServiceUtils.BuildServiceProvider<PersonProvider>(output).GetService<PersonProvider>();
         }
         [Fact]
         public async Task TestGetMetadata() {
@@ -17,11 +18,15 @@ namespace Jellyfin.Plugin.MyMetadata.Tests {
             // System.Diagnostics.Debug.WriteLine("123123123");
             // throw new Exception("123123123");
             // // Test 1: Normal case.
-            MovieInfo info = new MovieInfo() {
-                Name = "111",
-                Path = "JUX-236.mp4"
+            // MovieInfo info = new MovieInfo() {
+            //     Name = "111",
+            //     Path = "JUX-236.mp4"
+            // };
+            // await _provider.GetMetadata(info, CancellationToken.None);
+            var info = new PersonLookupInfo() {
+                Name = "翔田千里"
             };
-            await _provider.GetMetadata(info, CancellationToken.None);
+            await personProvider.GetMetadata(info, CancellationToken.None);
         }
     }
 }

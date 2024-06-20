@@ -24,11 +24,9 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                 var person = await httpService.GetPersonMetadataAsync(id, info.Name, cancellationToken).ConfigureAwait(false);
                 if (person == null)
                     return new MetadataResult<Person>();
-                // if (person != null && person.HasMetadata)
-                //     info.SetProviderId(ProviderID, movieId);
                 return person;
             } catch (Exception e) {
-                logger.LogError($"MovieProvider.GetMetadata is error : {e}");
+                logger.LogError($"PersonProvider.GetMetadata is error : {e}");
                 return new MetadataResult<Person>();
             }
         }

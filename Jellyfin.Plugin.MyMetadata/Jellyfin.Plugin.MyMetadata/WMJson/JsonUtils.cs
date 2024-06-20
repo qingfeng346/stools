@@ -26,7 +26,8 @@
         private readonly static Type JMapType = typeof(JMap);
         private readonly static IJsonContract NullContract = new JsonNullContract();
         public readonly static IJsonContract StringContract = new JsonStringContract();
-        private static Dictionary<Type, IJsonContract> TypeContract = new Dictionary<Type, IJsonContract>();
+        private static object sync = new object();
+        private static  Dictionary<Type, IJsonContract> TypeContract = new Dictionary<Type, IJsonContract>();
         public static void ClearCache() {
             TypeContract.Clear();
         }
@@ -81,53 +82,55 @@
             if (type == null)
                 return NullContract;
             type = IsNullableType(type) ? Nullable.GetUnderlyingType(type) : type;
-            if (TypeContract.TryGetValue(type, out var contract)) {
-                return contract;
-            } else {
-                if (type == ObjectType || type == JObjectType)
-                    return TypeContract[type] = new JsonJObjectContract();
-                else if (type.IsEnum)
-                    return TypeContract[type] = new JsonEnumContract(type);
-                else if (type == BoolType)
-                    return TypeContract[type] = new JsonBoolContract();
-                else if (type == Int8Type)
-                    return TypeContract[type] = new JsonInt8Contract();
-                else if (type == UInt8Type)
-                    return TypeContract[type] = new JsonUInt8Contract();
-                else if (type == Int16Type)
-                    return TypeContract[type] = new JsonInt16Contract();
-                else if (type == UInt16Type)
-                    return TypeContract[type] = new JsonUInt16Contract();
-                else if (type == Int32Type)
-                    return TypeContract[type] = new JsonInt32Contract();
-                else if (type == UInt32Type)
-                    return TypeContract[type] = new JsonUInt32Contract();
-                else if (type == Int64Type)
-                    return TypeContract[type] = new JsonInt64Contract();
-                else if (type == UInt64Type)
-                    return TypeContract[type] = new JsonUInt64Contract();
-                else if (type == FloatType)
-                    return TypeContract[type] = new JsonFloatContract();
-                else if (type == DoubleType)
-                    return TypeContract[type] = new JsonDoubleContract();
-                else if (type == DecimalType)
-                    return TypeContract[type] = new JsonDecimalContract();
-                else if (type == StringType)
-                    return TypeContract[type] = StringContract;
-                else if (type == JValueType)
-                    return TypeContract[type] = new JsonJValuetContract();
-                else if (type == JArrayType)
-                    return TypeContract[type] = new JsonJArrayContract();
-                else if (type == JMapType)
-                    return TypeContract[type] = new JsonJMapContract();
-                else if (IsDictionary(type, out var keyType, out var valueType))
-                    return TypeContract[type] = new JsonMapContract(type, keyType, valueType);
-                else if (type.IsArray)
-                    return TypeContract[type] = new JsonArrayContract(type, type.GetElementType());
-                else if (IsEnumerable(type, out var listValueType))
-                    return TypeContract[type] = new JsonEnumerableContract(type, listValueType);
-                else
-                    return TypeContract[type] = new JsonObjectContract(type);
+            lock (sync) {
+                if (TypeContract.TryGetValue(type, out var contract)) {
+                    return contract;
+                } else {
+                    if (type == ObjectType || type == JObjectType)
+                        return TypeContract[type] = new JsonJObjectContract();
+                    else if (type.IsEnum)
+                        return TypeContract[type] = new JsonEnumContract(type);
+                    else if (type == BoolType)
+                        return TypeContract[type] = new JsonBoolContract();
+                    else if (type == Int8Type)
+                        return TypeContract[type] = new JsonInt8Contract();
+                    else if (type == UInt8Type)
+                        return TypeContract[type] = new JsonUInt8Contract();
+                    else if (type == Int16Type)
+                        return TypeContract[type] = new JsonInt16Contract();
+                    else if (type == UInt16Type)
+                        return TypeContract[type] = new JsonUInt16Contract();
+                    else if (type == Int32Type)
+                        return TypeContract[type] = new JsonInt32Contract();
+                    else if (type == UInt32Type)
+                        return TypeContract[type] = new JsonUInt32Contract();
+                    else if (type == Int64Type)
+                        return TypeContract[type] = new JsonInt64Contract();
+                    else if (type == UInt64Type)
+                        return TypeContract[type] = new JsonUInt64Contract();
+                    else if (type == FloatType)
+                        return TypeContract[type] = new JsonFloatContract();
+                    else if (type == DoubleType)
+                        return TypeContract[type] = new JsonDoubleContract();
+                    else if (type == DecimalType)
+                        return TypeContract[type] = new JsonDecimalContract();
+                    else if (type == StringType)
+                        return TypeContract[type] = StringContract;
+                    else if (type == JValueType)
+                        return TypeContract[type] = new JsonJValuetContract();
+                    else if (type == JArrayType)
+                        return TypeContract[type] = new JsonJArrayContract();
+                    else if (type == JMapType)
+                        return TypeContract[type] = new JsonJMapContract();
+                    else if (IsDictionary(type, out var keyType, out var valueType))
+                        return TypeContract[type] = new JsonMapContract(type, keyType, valueType);
+                    else if (type.IsArray)
+                        return TypeContract[type] = new JsonArrayContract(type, type.GetElementType());
+                    else if (IsEnumerable(type, out var listValueType))
+                        return TypeContract[type] = new JsonEnumerableContract(type, listValueType);
+                    else
+                        return TypeContract[type] = new JsonObjectContract(type);
+                }
             }
         }
     }
