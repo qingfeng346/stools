@@ -19,70 +19,75 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         }
         public async Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken) => await httpService.GetResponseAsync(url, cancellationToken);
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken) {
-            var id = item.GetProviderId(ProviderID);
-            logger.LogInformation($"GetImages Id:{id} ItemId:{item.Id} Name:{item.Name} Path:{item.Path}");
             var list = new List<RemoteImageInfo>();
-            var movieId = await httpService.GetMovieIdByName(Path.GetFileNameWithoutExtension(item.Path), id, cancellationToken);
-            if (string.IsNullOrWhiteSpace(movieId))
-                return list;
-            //获取影片详情
-            var movieInfo = await httpService.GetMovieAsync<MovieItem>(movieId, cancellationToken);
-            if (movieInfo == null)
-                return list;
-            //如果存在大封面
-            if (!string.IsNullOrEmpty(movieInfo.Fanart)) {
-               // 小封面 poster
-               list.Add(new RemoteImageInfo {
-                   ProviderName = Name,
-                   Url = movieInfo.Poster,
-                   Type = ImageType.Primary
-               });
+            try {
+                var id = item.GetProviderId(ProviderID);
+                logger.LogInformation($"GetImages Id:{id} ItemId:{item.Id} Name:{item.Name} Path:{item.Path}");
+                var movieId = await httpService.GetMovieIdByName(Path.GetFileNameWithoutExtension(item.Path), id, cancellationToken);
+                if (string.IsNullOrWhiteSpace(movieId))
+                    return list;
+                //获取影片详情
+                var movieInfo = await httpService.GetMovieAsync<MovieItem>(movieId, cancellationToken);
+                if (movieInfo == null)
+                    return list;
+                //如果存在大封面
+                if (!string.IsNullOrEmpty(movieInfo.Fanart)) {
+                // 小封面 poster
+                list.Add(new RemoteImageInfo {
+                    ProviderName = Name,
+                    Url = movieInfo.Poster,
+                    Type = ImageType.Primary
+                });
 
-               // 大封面 fanart/backdrop
-               list.Add(new RemoteImageInfo {
-                   ProviderName = Name,
-                   Url = movieInfo.Fanart,
-                   Type = ImageType.Backdrop
-               });
+                // 大封面 fanart/backdrop
+                list.Add(new RemoteImageInfo {
+                    ProviderName = Name,
+                    Url = movieInfo.Fanart,
+                    Type = ImageType.Backdrop
+                });
 
-               // 列表为“缩略图”显示时，显示大封面
-               list.Add(new RemoteImageInfo {
-                   ProviderName = Name,
-                   Url = movieInfo.Fanart,
-                   Type = ImageType.Thumb
-               });
+                // 列表为“缩略图”显示时，显示大封面
+                list.Add(new RemoteImageInfo {
+                    ProviderName = Name,
+                    Url = movieInfo.Fanart,
+                    Type = ImageType.Thumb
+                });
+                }
+                // 添加预览图
+                // movieInfo.Shotscreens?.ForEach(img => {
+                //     foreach (var type in GetSupportedImages(null)) {
+                //         list.Add(new RemoteImageInfo {
+                //             ProviderName = Name,
+                //             Url = img,
+                //             Type = type,
+                //             ThumbnailUrl = img // 缩略文件名
+                //         });
+                //     }
+                
+                //    list.Add(new RemoteImageInfo {
+                //        ProviderName = Name,
+                //        Url = img,
+                //        Type = ImageType.Menu,
+                //        ThumbnailUrl = img // 缩略文件名
+                //    });
+                //    list.Add(new RemoteImageInfo {
+                //        ProviderName = Name,
+                //        Url = img,
+                //        Type = ImageType.Disc,
+                //        ThumbnailUrl = img // 缩略文件名
+                //    });
+                //    list.Add(new RemoteImageInfo {
+                //        ProviderName = Name,
+                //        Url = img,
+                //        Type = ImageType.Logo,
+                //        ThumbnailUrl = img // 缩略文件名
+                //    });
+                // });
+                return list;
+            } catch (System.Exception e) {
+                logger.LogError($"ImageProvider.GetImages is error : {e}");
+                return list;
             }
-            // 添加预览图
-            // movieInfo.Shotscreens?.ForEach(img => {
-            //     foreach (var type in GetSupportedImages(null)) {
-            //         list.Add(new RemoteImageInfo {
-            //             ProviderName = Name,
-            //             Url = img,
-            //             Type = type,
-            //             ThumbnailUrl = img // 缩略文件名
-            //         });
-            //     }
-               
-            //    list.Add(new RemoteImageInfo {
-            //        ProviderName = Name,
-            //        Url = img,
-            //        Type = ImageType.Menu,
-            //        ThumbnailUrl = img // 缩略文件名
-            //    });
-            //    list.Add(new RemoteImageInfo {
-            //        ProviderName = Name,
-            //        Url = img,
-            //        Type = ImageType.Disc,
-            //        ThumbnailUrl = img // 缩略文件名
-            //    });
-            //    list.Add(new RemoteImageInfo {
-            //        ProviderName = Name,
-            //        Url = img,
-            //        Type = ImageType.Logo,
-            //        ThumbnailUrl = img // 缩略文件名
-            //    });
-            // });
-            return list;
         }
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item) {
             yield return ImageType.Primary;
