@@ -26,9 +26,8 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                 if (string.IsNullOrEmpty(movieId))
                     return new MetadataResult<Movie>();
                 var movie = await httpService.GetMovieMetadataAsync(movieId, cancellationToken).ConfigureAwait(false);
-                if (movie != null && movie.HasMetadata) {
-                info.SetProviderId(ProviderID, movieId);
-                }
+                if (movie != null && movie.HasMetadata)
+                    info.SetProviderId(ProviderID, movieId);
                 return movie;
             } catch (Exception e) {
                 logger.LogError($"MovieProvider.GetMetadata is error : {e}");
