@@ -1,73 +1,61 @@
-﻿using Jellyfin.Data.Enums;
-using Jellyfin.Plugin.MyMetadata.Dto;
-using MediaBrowser.Controller.Entities;
+﻿using Jellyfin.Plugin.MyMetadata.Dto;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 namespace Jellyfin.Plugin.MyMetadata.Service.Test3 {
     public class TestHttpService : HttpService {
         public TestHttpService(ILogger<HttpService> logger, IHttpClientFactory http) : base(logger, http) { }
         protected override async Task<T> GetMovieAsync_impl<T>(string id, CancellationToken cancellationToken) {
-            var url = $"https://jav5.land/tw/id_search.php?keys={id}";
+            var rootUrl = "https://www.busjav.cfd";
+            var url = $"{rootUrl}/{id}";
             var html = await GetHtmlAsync(url, cancellationToken);
             var doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(html);
             var rootNode = doc.DocumentNode;
             var item = new MovieItem();
             item.MovieId = id;
-            item.Title = rootNode.SelectSingleNode("//span[@class='glyphicon glyphicon-film']")?.ParentNode?.InnerText;
-            var imgNode = rootNode.SelectSingleNode("//div[@id='video_favorite_edit']");
+            item.Title = rootNode.SelectSingleNode("//div[@class='container']/h3")?.InnerText;
+            var imgNode = rootNode.SelectSingleNode("//a[@class='bigImage']");
             if (imgNode != null) {
-                item.Fanart = imgNode.ParentNode.SelectSingleNode("img").GetAttributeValue<string>("src", "");
-                item.Poster = item.Fanart;
+                item.ImageUrl = rootUrl + imgNode.GetAttributeValue<string>("href", "");
+                item.ThumbUrl = item.ImageUrl;
             }
-            var tableNode = rootNode.SelectSingleNode("//table[@class='videotextlist table table-bordered table-hover']");
-            var infoNodes = tableNode.SelectNodes("tr");
+            var infoNodes = rootNode.SelectNodes("//div[@class='col-md-3 info']");
             foreach (var node in infoNodes) {
-                var nodes = node.SelectNodes("td");
-                if (nodes == null || nodes.Count < 2) continue;
-                var nameNode = nodes[0].SelectSingleNode("strong");
+                var nameNode = node.SelectSingleNode("span");
                 if (nameNode == null) continue;
-                var valueNode = nodes[1];
-                if (valueNode == null) continue;
-                logger.LogInformation($"解析信息 {nameNode.InnerText} = {valueNode.InnerText}");
+                logger.LogInformation($"解析信息 {nameNode.InnerText} = {node.InnerText}");
                 var key = nameNode.InnerText;
                 if (key.Contains("發行日期")) {
-                    if (DateTime.TryParseExact(valueNode.InnerText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var releaseDate))
+                    if (DateTime.TryParseExact(node.InnerText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var releaseDate))
                             item.ReleaseDate = releaseDate;
                 } else if (key.Contains("系列")) {
-                    foreach (var vNode in valueNode.SelectNodes("span/a")) {
-                        item.Series.Add(vNode.InnerText);
-                    }
+                    item.Series.Add(node.SelectSingleNode("a").InnerText);
                 } else if (key.Contains("製作商")) {
-                    foreach (var vNode in valueNode.SelectNodes("span/a")) {
-                        item.Studios.Add(vNode.InnerText);
-                    }
+                    item.Studios.Add(node.SelectSingleNode("a").InnerText);
                 } else if (key.Contains("發行商")) {
-                    foreach (var vNode in valueNode.SelectNodes("span/a")) {
-                        item.Labels.Add(vNode.InnerText);
-                    }
-                } else if (key.Contains("類別")) {
-                    foreach (var vNode in valueNode.SelectNodes("span/a")) {
-                        item.Genres.Add(vNode.InnerText);
-                    }
-                } else if (key.Contains("演員")) {
-                    foreach (var vNode in valueNode.SelectNodes("span/span/span/a")) {
-                        var name = vNode.InnerText;
-                        item.Persons.Add(new PersonInfo() { 
-                            Name = name,
-                            Role = name,
-                            Type = PersonKind.Actor,
-                            ItemId = Utils.GetGuidByName(name)
-                        });
-                    }
+                    item.Labels.Add(node.SelectSingleNode("a").InnerText);
                 }
             }
-            var shotscreensNodes = rootNode.SelectNodes("//span[@id='waterfall']/a");
-            foreach (var node in shotscreensNodes) {
-                item.Shotscreens.Add(node.GetAttributeValue<string>("href", ""));
+            var genreNodes = rootNode.SelectNodes("//span[@class='genre']/label/a");
+            foreach (var node in genreNodes) {
+                item.Genres.Add(node.InnerText);
             }
+            var actorNodes = rootNode.SelectNodes("//div[@class='star-name']");
+            foreach (var node in actorNodes) {
+                item.Persons.Add(new PersonItem() {
+                    Name = node.InnerText,
+                });
+            }
+            // var shotscreensNodes = rootNode.SelectNodes("//span[@id='waterfall']/a");
+            // foreach (var node in shotscreensNodes) {
+            //     item.Shotscreens.Add(node.GetAttributeValue<string>("href", ""));
+            // }
             item.SourceUrl = url;
             return item as T;
+        }
+        protected override Task<T> GetPersonAsync_impl<T>(string id, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
         protected override async Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken) {
             var html = await GetHtmlAsync($"https://www.avbase.net/works?q={keyword}", cancellationToken);

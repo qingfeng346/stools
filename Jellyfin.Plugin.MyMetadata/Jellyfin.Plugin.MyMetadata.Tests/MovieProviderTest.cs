@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Jellyfin.Plugin.MyMetadata.Service.Test2;
+using Jellyfin.Plugin.MyMetadata.Service.Test;
 using MediaBrowser.Controller.Providers;
 using Xunit.Abstractions;
-using Jellyfin.Plugin.MyMetadata.Tests;
-// namespace Jellyfin.Plugin.MyMetadata.Tests {
+namespace Jellyfin.Plugin.MyMetadata.Tests {
     public class MovieProviderTest {
         private readonly MovieProvider _provider;
         private ITestOutputHelper output;
@@ -20,9 +19,9 @@ using Jellyfin.Plugin.MyMetadata.Tests;
             // // Test 1: Normal case.
             MovieInfo info = new MovieInfo() {
                 Name = "111",
-                Path = "MIDE-307.mp4"
+                Path = "JUX-236.mp4"
             };
             await _provider.GetMetadata(info, CancellationToken.None);
         }
     }
-// }
+}

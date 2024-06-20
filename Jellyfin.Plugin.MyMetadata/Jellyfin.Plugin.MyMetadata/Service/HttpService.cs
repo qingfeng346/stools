@@ -1,5 +1,7 @@
-﻿using Jellyfin.Plugin.MyMetadata.Dto;
+﻿using Jellyfin.Data.Entities;
+using Jellyfin.Plugin.MyMetadata.Dto;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using Microsoft.Extensions.Logging;
@@ -10,10 +12,12 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         protected readonly ILogger<HttpService> logger;
         protected readonly IHttpClientFactory http;
         protected readonly List<(string, MovieItem)> cacheMovies;
+        protected readonly List<(string, PersonItem)> cachePersions;
         public HttpService(ILogger<HttpService> logger, IHttpClientFactory http) {
             this.logger = logger;
             this.http = http;
             this.cacheMovies = new List<(string, MovieItem)>();
+            this.cachePersions = new List<(string, PersonItem)>();
         }
         /// <summary>获取响应对象 </summary>
         public async Task<HttpResponseMessage> GetResponseAsync(string url, CancellationToken cancellationToken) {
@@ -57,7 +61,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             // 添加 发行商
             item.Labels?.ForEach(movie.AddStudio);
             // 演员
-            item.Persons.ForEach(result.AddPerson);
+            item.Persons.ForEach(x => result.AddPerson(x.ToPersonInfo()));
             // 系列
             movie.Tags = item.Series.ToArray();
             result.QueriedById = false;
@@ -85,6 +89,35 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                 return null;
             }
         }
+        /// <summary> 获取演员元数据 </summary>
+        public async Task<MetadataResult<Person>> GetPersonMetadataAsync(string id, string name, CancellationToken cancellationToken) {
+            // var persion = new Person();
+            // persion.AddTrailerUrl()
+            // persion.AddImage(new ImageInfo() );
+            // var result = new MetadataResult<Person>();
+            // result.People.
+            return null;
+        }
+        /// <summary> 获取演员元数据 </summary>
+        public async Task<T> GetPersonAsync<T>(string id, CancellationToken cancellationToken) where T : PersonItem {
+            try {
+                foreach (var (personId, personItem) in cachePersions) {
+                    if (personId == id) {
+                        logger.LogInformation($"GetPersonAsync {id} Result Cache : {JsonConvert.Serialize(personItem)}");
+                        return personItem as T;
+                    }
+                }
+                var item = await GetPersonAsync_impl<T>(id, cancellationToken);
+                logger.LogInformation($"GetPersonAsync {id} Result : {JsonConvert.Serialize(item)}");
+                cachePersions.Add((id, item));
+                if (cachePersions.Count > 10)
+                    cachePersions.RemoveAt(0);
+                return item;
+            } catch (Exception e) {
+                logger.LogError($"GetPersonAsync : {id} is error : {e}");
+                return null;
+            }
+        }
         public async Task<IList<SearchResult>> SearchAsync(string keyword, CancellationToken cancellationToken) {
             try {
                 var results = await SearchAsync_impl(keyword, cancellationToken);
@@ -107,6 +140,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         }
         protected abstract Task<T> GetMovieAsync_impl<T>(string id, CancellationToken cancellationToken) where T : MovieItem;
         protected abstract Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken);
+        protected abstract Task<T> GetPersonAsync_impl<T>(string id, CancellationToken cancellationToken) where T : PersonItem;
         protected virtual async Task<string> GetMovieIdByName_impl(string name, string id, CancellationToken cancellationToken) {
             if (!string.IsNullOrEmpty(id))
                 return id;

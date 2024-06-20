@@ -1,6 +1,4 @@
-﻿using Jellyfin.Data.Enums;
-using Jellyfin.Plugin.MyMetadata.Dto;
-using MediaBrowser.Controller.Entities;
+﻿using Jellyfin.Plugin.MyMetadata.Dto;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
@@ -17,8 +15,8 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
             item.Title = rootNode.SelectSingleNode("//span[@class='glyphicon glyphicon-film']")?.ParentNode?.InnerText;
             var imgNode = rootNode.SelectSingleNode("//div[@id='video_favorite_edit']");
             if (imgNode != null) {
-                item.Fanart = imgNode.ParentNode.SelectSingleNode("img").GetAttributeValue<string>("src", "");
-                item.Poster = item.Fanart;
+                item.ImageUrl = imgNode.ParentNode.SelectSingleNode("img").GetAttributeValue<string>("src", "");
+                item.ThumbUrl = item.ImageUrl;
             }
             var tableNode = rootNode.SelectSingleNode("//table[@class='videotextlist table table-bordered table-hover']");
             var infoNodes = tableNode.SelectNodes("tr");
@@ -53,11 +51,8 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
                 } else if (key.Contains("演員")) {
                     foreach (var vNode in valueNode.SelectNodes("span/span/span/a")) {
                         var name = vNode.InnerText;
-                        item.Persons.Add(new PersonInfo() { 
-                            Name = name,
-                            Role = name,
-                            Type = PersonKind.Actor,
-                            ItemId = Utils.GetGuidByName(name)
+                        item.Persons.Add(new PersonItem() { 
+                            Name = name
                         });
                     }
                 }
@@ -68,6 +63,10 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
             }
             item.SourceUrl = url;
             return item as T;
+        }
+        protected override Task<T> GetPersonAsync_impl<T>(string id, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
         protected override async Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken) {
             var html = await GetHtmlAsync($"https://www.avbase.net/works?q={keyword}", cancellationToken);

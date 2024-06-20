@@ -16,7 +16,8 @@ namespace Jellyfin.Plugin.MyMetadata.Tests
                 .AddLogging(builder => builder.AddSystemdConsole().SetMinimumLevel(LogLevel.Debug))
                 .AddSingleton<T>()
                 .AddSingleton<Jellyfin.Plugin.MyMetadata.Service.Test.TestHttpService>()
-                .AddSingleton<Jellyfin.Plugin.MyMetadata.Service.Test2.TestHttpService>();
+                .AddSingleton<Jellyfin.Plugin.MyMetadata.Service.Test2.TestHttpService>()
+                .AddSingleton<Jellyfin.Plugin.MyMetadata.Service.Test3.TestHttpService>();
 
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider.GetService<ILogger<T>>();

@@ -1,10 +1,65 @@
-﻿using Jellyfin.Data.Enums;
-using Jellyfin.Plugin.MyMetadata.Dto;
-using MediaBrowser.Controller.Entities;
+﻿using Jellyfin.Plugin.MyMetadata.Dto;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using WMJson;
 namespace Jellyfin.Plugin.MyMetadata.Service.Test {
     public class TestHttpService : HttpService {
+        public class JsonData {
+            public class Actor {
+                public string name;
+                public string image_url;
+            }
+            public class Cast {
+                public Actor actor;
+            }
+            public class Genre {
+                public string name;
+            }
+            public class Maker {
+                public string name;
+            }
+            public class Label {
+                public string name;
+            }
+            public class Serie {
+                public string name;
+            }
+            public class SampleImage {
+                public string s;
+                public string l;
+            }
+            public class ItemInfo {
+                public string volume;
+            }
+            public class Product {
+                public string url;
+                public string image_url;
+                public string title;
+                public string thumbnail_url;
+                public Maker maker;
+                public Label label;
+                public Serie series;
+                public List<SampleImage> sample_image_urls = new List<SampleImage>();
+                public ItemInfo iteminfo;
+            }
+            public class Work {
+                public string work_id;
+                public string title;
+                public string min_date;
+                public string note = "";
+                public List<Cast> casts = new List<Cast>();
+                public List<string> tags = new List<string>();
+                public List<Genre> genres = new List<Genre>();
+                public List<Product> products = new List<Product>();
+            }
+            public class PageProps {
+                public Work work;
+            }
+            public class Props {
+                public PageProps pageProps;
+            }
+            public Props props;
+        }
         public TestHttpService(ILogger<HttpService> logger, IHttpClientFactory http) : base(logger, http) { }
         protected override async Task<T> GetMovieAsync_impl<T>(string id, CancellationToken cancellationToken) {
             var url = $"https://www.avbase.net/works/{id}";
@@ -12,65 +67,40 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             var doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(html);
             var rootNode = doc.DocumentNode;
+            var jsonContent = rootNode.SelectSingleNode("//script[@id='__NEXT_DATA__']")?.InnerText;
+            var movieInfo = JsonConvert.Deserialize<JsonData>(jsonContent).props.pageProps.work;
             var item = new MovieItem();
-            var index = url.LastIndexOf(":");
-            if (index >= 0) {
-                item.MovieId = url.Substring(index + 1);
-            } else {
-                item.MovieId = url.Substring(url.LastIndexOf("/") + 1);
-            }
-            item.Title = rootNode.SelectSingleNode("//h1[@class='text-lg']")?.InnerText;
-            item.Fanart = rootNode.SelectSingleNode("//img[@class='max-w-full max-h-full']").GetAttributeValue<string>("src", "");
-            if (item.Fanart.EndsWith("pl.jpg")) {
-                item.Poster = item.Fanart.Replace("pl.jpg", "ps.jpg");
-            } else {
-                item.Poster = item.Fanart;
-            }
-            var infoNodes = rootNode.SelectNodes("//div[@class='bg-base-100 p-2 flex flex-col gap-1']");
-            foreach (var node in infoNodes) {
-                var nameNode = node.SelectSingleNode("div[@class='text-xs']");
-                if (nameNode == null) continue;
-                var valueNode = node.SelectSingleNode("div[@class='text-sm']");
-                if (valueNode == null) continue;
-                logger.LogInformation($"解析信息 {nameNode.InnerText} = {valueNode.InnerText}");
-                switch (nameNode.InnerText) {
-                    case "発売日":
-                        if (DateTime.TryParseExact(valueNode.InnerText, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var releaseDate))
-                            item.ReleaseDate = releaseDate;
-                        break;
-                    case "メーカー":
-                        item.Studios.Add(valueNode.InnerText);
-                        break;
-                    case "レーベル":
-                        item.Labels.Add(valueNode.InnerText);
-                        break;
-                    case "シリーズ":
-                        item.Series.Add(valueNode.InnerText);
-                        break;
-                }
-            }
-            var personNodes = rootNode.SelectNodes("//a[@class='chip']");
-            foreach (var node in personNodes) {
-                var name = node.InnerText;
-                var avatarUrl = node.SelectSingleNode("//div[@class='avatar']/div/img").GetAttributeValue<string>("src", "");
-                item.Persons.Add(new PersonInfo() { 
-                    Name = name,
-                    Role = name,
-                    Type = PersonKind.Actor,
-                    ItemId = Utils.GetGuidByName(name),
-                    ImageUrl = avatarUrl
-                });
-            }
-            var genreNodes = rootNode.SelectNodes("//a[@class='rounded-lg border border-solid text-sm px-2 py-1']");
-            foreach (var node in genreNodes) {
-                item.Genres.Add(node.InnerText);
-            }
-            var shotscreensNodes = rootNode.SelectNodes("//img[@class='h-28']");
-            foreach (var node in shotscreensNodes) {
-                item.Shotscreens.Add(node.GetAttributeValue<string>("src", ""));
-            }
+            item.MovieId = movieInfo.work_id;
+            item.Title = movieInfo.title;
+            if (DateTime.TryParseExact(movieInfo.min_date, "ddd MMM dd yyyy HH:mm:ss 'GMT'zzz '('zzz')", CultureInfo.InvariantCulture, DateTimeStyles.None, out var releaseDate))
+                item.ReleaseDate = releaseDate;
+            movieInfo.genres.ForEach(x => item.Genres.Add(x.name));
+            movieInfo.casts.ForEach(x => {
+                var personItem = new PersonItem() {
+                    Name = x.actor.name,
+                    ImageUrl = x.actor.image_url,
+                    PersonId = x.actor.name
+                };
+                item.Persons.Add(personItem);
+            });
+            var product = movieInfo.products.First();
+            item.ImageUrl = product.image_url;
+            item.ThumbUrl = product.thumbnail_url;
+            if (product.maker != null)
+                item.Studios.Add(product.maker.name);
+            if (product.label != null)
+                item.Labels.Add(product.label.name);
+            if (product.series != null)
+                item.Series.Add(product.series.name);
+            product.sample_image_urls.ForEach(x => {
+                item.Shotscreens.Add(x.l);
+            });
             item.SourceUrl = url;
             return item as T;
+        }
+        protected override Task<T> GetPersonAsync_impl<T>(string id, CancellationToken cancellationToken)
+        {
+            return null;
         }
         protected override async Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken) {
             var html = await GetHtmlAsync($"https://www.avbase.net/works?q={keyword}", cancellationToken);

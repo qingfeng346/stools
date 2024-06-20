@@ -8,12 +8,12 @@ using Microsoft.Extensions.Logging;
 using WMJson;
 
 namespace Jellyfin.Plugin.MyMetadata.Service {
-    public abstract class ImageProvider<T> : IRemoteImageProvider where T : HttpService {
-        protected readonly ILogger<ImageProvider<T>> logger;
+    public abstract class MovieImageProvider<T> : IRemoteImageProvider where T : HttpService {
+        protected readonly ILogger<MovieImageProvider<T>> logger;
         protected readonly T httpService;
         public abstract string Name { get; }
         public abstract string ProviderID { get; }
-        public ImageProvider(ILogger<ImageProvider<T>> logger, T httpService) {
+        public MovieImageProvider(ILogger<MovieImageProvider<T>> logger, T httpService) {
             this.logger = logger;
             this.httpService = httpService;
         }
@@ -31,25 +31,25 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                 if (movieInfo == null)
                     return list;
                 //如果存在大封面
-                if (!string.IsNullOrEmpty(movieInfo.Fanart)) {
+                if (!string.IsNullOrEmpty(movieInfo.ImageUrl)) {
                 // 小封面 poster
                 list.Add(new RemoteImageInfo {
                     ProviderName = Name,
-                    Url = movieInfo.Poster,
+                    Url = movieInfo.ThumbUrl,
                     Type = ImageType.Primary
                 });
 
                 // 大封面 fanart/backdrop
                 list.Add(new RemoteImageInfo {
                     ProviderName = Name,
-                    Url = movieInfo.Fanart,
+                    Url = movieInfo.ImageUrl,
                     Type = ImageType.Backdrop
                 });
 
                 // 列表为“缩略图”显示时，显示大封面
                 list.Add(new RemoteImageInfo {
                     ProviderName = Name,
-                    Url = movieInfo.Fanart,
+                    Url = movieInfo.ImageUrl,
                     Type = ImageType.Thumb
                 });
                 }
