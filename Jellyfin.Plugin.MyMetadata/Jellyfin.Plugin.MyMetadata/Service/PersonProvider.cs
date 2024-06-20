@@ -20,10 +20,16 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         public async Task<MetadataResult<Person>> GetMetadata(PersonLookupInfo info, CancellationToken cancellationToken) {
             try {
                 var id = info.GetProviderId(ProviderID);
-                logger.LogInformation($"PersonProvider.GetMetadata Id:{id} Name:{info.Name} Path:{info.Path}");
-                var person = await httpService.GetPersonMetadataAsync(id, info.Name, cancellationToken).ConfigureAwait(false);
+                logger.LogInformation($"PersonProvider.GetMovieMetadata Id:{id} Name:{info.Name} Path:{info.Path}");
+                var name = Path.GetFileNameWithoutExtension(info.Path);
+                var personId = await httpService.GetPersonIdByName(id, info.Name, info.Path, cancellationToken).ConfigureAwait(false);
+                if (string.IsNullOrEmpty(personId))
+                    return new MetadataResult<Person>();
+                var person = await httpService.GetPersonMetadataAsync(personId, cancellationToken).ConfigureAwait(false);
                 if (person == null)
                     return new MetadataResult<Person>();
+                if (person.HasMetadata)
+                    info.SetProviderId(ProviderID, personId);
                 return person;
             } catch (Exception e) {
                 logger.LogError($"PersonProvider.GetMetadata is error : {e}");

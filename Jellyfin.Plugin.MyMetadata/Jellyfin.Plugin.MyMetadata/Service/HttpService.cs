@@ -90,11 +90,11 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             }
         }
         /// <summary> 获取演员元数据 </summary>
-        public async Task<MetadataResult<Person>> GetPersonMetadataAsync(string id, string name, CancellationToken cancellationToken) {
+        public async Task<MetadataResult<Person>> GetPersonMetadataAsync(string id, CancellationToken cancellationToken) {
             await Task.Delay(1);
             var result = new MetadataResult<Person>();
             //// 获取影片详情
-            var item = await GetPersonAsync<PersonItem>(name, cancellationToken);
+            var item = await GetPersonAsync<PersonItem>(id, cancellationToken);
             if (item == null) return result;
             var person = new Person();
             if (item.PremiereDate != null) {
@@ -136,13 +136,23 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                 return [];
             }
         }
-        public async Task<string> GetMovieIdByName(string name, string id, CancellationToken cancellationToken) {
+        public async Task<string> GetMovieIdByName(string name, string id, string path, CancellationToken cancellationToken) {
             try {
                 var result = await GetMovieIdByName_impl(name, id, cancellationToken);
-                logger.LogInformation($"GetMovieIdByName name:{name} id:{id}  Result : {result}");
+                logger.LogInformation($"GetMovieIdByName name:{name} id:{id} path:{path} Result : {result}");
                 return result;
             } catch (Exception e) {
-                logger.LogError($"GetMovieIdByName name:{name} id:{id} is error : {e}");
+                logger.LogError($"GetMovieIdByName name:{name} id:{id} path:{path} is error : {e}");
+                return "";
+            }
+        }
+        public async Task<string> GetPersonIdByName(string name, string id, string path, CancellationToken cancellationToken) {
+            try {
+                var result = await GetPersonIdByName_impl(name, id, cancellationToken);
+                logger.LogInformation($"GetPersonIdByName name:{name} id:{id} path:{path} Result : {result}");
+                return result;
+            } catch (Exception e) {
+                logger.LogError($"GetPersonIdByName name:{name} id:{id} path:{path} is error : {e}");
                 return "";
             }
         }
@@ -152,6 +162,9 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         protected virtual async Task<string> GetMovieIdByName_impl(string name, string id, CancellationToken cancellationToken) {
             if (!string.IsNullOrEmpty(id))
                 return id;
+            return name;
+        }
+        protected virtual async Task<string> GetPersonIdByName_impl(string name, string id, CancellationToken cancellationToken) {
             return name;
         }
     }

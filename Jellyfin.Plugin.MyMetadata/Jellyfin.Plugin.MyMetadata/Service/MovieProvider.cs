@@ -22,7 +22,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                 var id = info.GetProviderId(ProviderID);
                 logger.LogInformation($"MovieProvider.GetMovieMetadata Id:{id} Name:{info.Name} Path:{info.Path}");
                 var name = Path.GetFileNameWithoutExtension(info.Path);
-                var movieId = await httpService.GetMovieIdByName(name, id, cancellationToken).ConfigureAwait(false);
+                var movieId = await httpService.GetMovieIdByName(name, id, "", cancellationToken).ConfigureAwait(false);
                 if (string.IsNullOrEmpty(movieId))
                     return new MetadataResult<Movie>();
                 var movie = await httpService.GetMovieMetadataAsync(movieId, cancellationToken).ConfigureAwait(false);

@@ -23,7 +23,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             try {
                 var id = item.GetProviderId(ProviderID);
                 logger.LogInformation($"MovieImageProvider.GetImages Id:{id} ItemId:{item.Id} Name:{item.Name} Path:{item.Path}");
-                var movieId = await httpService.GetMovieIdByName(Path.GetFileNameWithoutExtension(item.Path), id, cancellationToken);
+                var movieId = await httpService.GetMovieIdByName(Path.GetFileNameWithoutExtension(item.Path), id, "", cancellationToken);
                 if (string.IsNullOrWhiteSpace(movieId))
                     return list;
                 //获取影片详情

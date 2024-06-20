@@ -133,6 +133,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             var jsonContent = rootNode.SelectSingleNode("//script[@id='__NEXT_DATA__']")?.InnerText;
             var personInfo = JsonConvert.Deserialize<PersonJsonData>(jsonContent).props.pageProps.talent;
             var item = new PersonItem();
+            item.PersonId = id;
             item.Name = personInfo.primary.name;
             item.ImageUrl = personInfo.primary.image_url;
             if (personInfo.primary.meta != null) {
