@@ -160,7 +160,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
             }
             return results;
         }
-        protected override async Task<string> GetMovieIdByName_impl(string name, string id, CancellationToken cancellationToken)
+        protected override async Task<string> GetMovieIdByName_impl(string name, string id, string path, CancellationToken cancellationToken)
         {
             var searchResults = await SearchAsync(name, cancellationToken);
             if (searchResults.Count == 0)

@@ -32,26 +32,24 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                     return list;
                 //如果存在大封面
                 if (!string.IsNullOrEmpty(movieInfo.ImageUrl)) {
-                // 小封面 poster
-                list.Add(new RemoteImageInfo {
-                    ProviderName = Name,
-                    Url = movieInfo.ThumbUrl,
-                    Type = ImageType.Primary
-                });
-
-                // 大封面 fanart/backdrop
-                list.Add(new RemoteImageInfo {
-                    ProviderName = Name,
-                    Url = movieInfo.ImageUrl,
-                    Type = ImageType.Backdrop
-                });
-
-                // 列表为“缩略图”显示时，显示大封面
-                list.Add(new RemoteImageInfo {
-                    ProviderName = Name,
-                    Url = movieInfo.ImageUrl,
-                    Type = ImageType.Thumb
-                });
+                    // 小封面 poster
+                    list.Add(new RemoteImageInfo {
+                        ProviderName = Name,
+                        Url = movieInfo.ThumbUrl,
+                        Type = ImageType.Primary
+                    });
+                    // 大封面 fanart/backdrop
+                    list.Add(new RemoteImageInfo {
+                        ProviderName = Name,
+                        Url = movieInfo.ImageUrl,
+                        Type = ImageType.Backdrop
+                    });
+                    // 列表为“缩略图”显示时，显示大封面
+                    list.Add(new RemoteImageInfo {
+                        ProviderName = Name,
+                        Url = movieInfo.ImageUrl,
+                        Type = ImageType.Thumb
+                    });
                 }
                 // 添加预览图
                 // movieInfo.Shotscreens?.ForEach(img => {

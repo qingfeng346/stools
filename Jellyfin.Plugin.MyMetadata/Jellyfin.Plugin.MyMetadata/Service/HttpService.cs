@@ -1,4 +1,5 @@
-﻿using Jellyfin.Data.Entities;
+﻿using System.Net.Security;
+using Jellyfin.Data.Entities;
 using Jellyfin.Plugin.MyMetadata.Dto;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
@@ -22,12 +23,34 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         /// <summary>获取响应对象 </summary>
         public async Task<HttpResponseMessage> GetResponseAsync(string url, CancellationToken cancellationToken) {
             logger.LogInformation($"GetResponseAsync : {url}");
-            return await http.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+            using (var httpClientHandler = new HttpClientHandler()) {
+                httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => {
+                    if (sslPolicyErrors == SslPolicyErrors.None) {
+                        return true;   //Is valid
+                    }
+                    return true;
+                };
+                using (var client = new HttpClient(httpClientHandler)) {
+                    return await client.GetAsync(url, cancellationToken);
+                }
+            }
+            // return await http.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         } 
         /// <summary>下载 HTMl 源码 </summary>
         public async Task<string> GetHtmlAsync(string url, CancellationToken cancellationToken) {
             logger.LogInformation($"GetHtmlAsync : {url}");
-            return await http.CreateClient(NamedClient.Default).GetStringAsync(url, cancellationToken);
+            using (var httpClientHandler = new HttpClientHandler()) {
+                httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => {
+                    if (sslPolicyErrors == SslPolicyErrors.None) {
+                        return true;   //Is valid
+                    }
+                    return true;
+                };
+                using (var client = new HttpClient(httpClientHandler)) {
+                    return await client.GetStringAsync(url, cancellationToken);
+                }
+            }
+            // return await http.CreateClient(NamedClient.Default).GetStringAsync(url, cancellationToken);
         }
         /// <summary> 获取影片元数据 </summary>
         public async Task<MetadataResult<Movie>> GetMovieMetadataAsync(string id, CancellationToken cancellationToken) {
@@ -138,7 +161,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         }
         public async Task<string> GetMovieIdByName(string name, string id, string path, CancellationToken cancellationToken) {
             try {
-                var result = await GetMovieIdByName_impl(name, id, cancellationToken);
+                var result = await GetMovieIdByName_impl(name, id, path, cancellationToken);
                 logger.LogInformation($"GetMovieIdByName name:{name} id:{id} path:{path} Result : {result}");
                 return result;
             } catch (Exception e) {
@@ -146,9 +169,9 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                 return "";
             }
         }
-        public async Task<string> GetPersonIdByName(string name, string id, string path, CancellationToken cancellationToken) {
+        public async Task<string> GetPersonIdByName(string id, string name, string path, CancellationToken cancellationToken) {
             try {
-                var result = await GetPersonIdByName_impl(name, id, cancellationToken);
+                var result = await GetPersonIdByName_impl(id, name, path, cancellationToken);
                 logger.LogInformation($"GetPersonIdByName name:{name} id:{id} path:{path} Result : {result}");
                 return result;
             } catch (Exception e) {
@@ -159,12 +182,12 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         protected abstract Task<T> GetMovieAsync_impl<T>(string id, CancellationToken cancellationToken) where T : MovieItem;
         protected abstract Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken);
         protected abstract Task<T> GetPersonAsync_impl<T>(string id, CancellationToken cancellationToken) where T : PersonItem;
-        protected virtual async Task<string> GetMovieIdByName_impl(string name, string id, CancellationToken cancellationToken) {
+        protected virtual async Task<string> GetMovieIdByName_impl(string name, string id, string path, CancellationToken cancellationToken) {
             if (!string.IsNullOrEmpty(id))
                 return id;
             return name;
         }
-        protected virtual async Task<string> GetPersonIdByName_impl(string name, string id, CancellationToken cancellationToken) {
+        protected virtual async Task<string> GetPersonIdByName_impl(string id, string name, string path, CancellationToken cancellationToken) {
             return name;
         }
     }
