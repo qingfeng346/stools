@@ -1,6 +1,7 @@
 const { Util, FileUtil } = require('weimingcommons')
 const path = require('path')
 const console = require('./logger')
+const fs = require('fs')
 class Build {
     async startBuild(jsonFile) {
         let startDate = new Date()
@@ -78,7 +79,6 @@ class Build {
         return execute
     }
     async execStools(execute, param) {
-        await this.DownloadFile("https://pics.dmm.co.jp/mono/actjpgs/syouda_tisato.jpg", "/app/root/root/音乐下载", "1111.jpg")
         const stoolsPath = path.join(process.cwd(), "stools");
         let args = ["run", execute.command]
         for (let key in param.Args) {

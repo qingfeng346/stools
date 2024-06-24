@@ -41,7 +41,7 @@
     },
     "wget": {
       "commandName": "Project",
-      "commandLineArgs": "wget https://pics.dmm.co.jp/mono/actjpgs/syouda_tisato.jpg"
+      "commandLineArgs": "wget 123"
     },
     "sortmusic": {
       "commandName": "Project",
