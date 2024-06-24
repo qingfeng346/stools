@@ -40,6 +40,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         public async Task<string> GetHtmlAsync(string url, CancellationToken cancellationToken) {
             logger.LogInformation($"GetHtmlAsync : {url}");
             using (var httpClientHandler = new HttpClientHandler()) {
+                httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => {
                     if (sslPolicyErrors == SslPolicyErrors.None) {
                         return true;   //Is valid

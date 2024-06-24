@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "download": "^8.0.0",
     "weimingcommons": "^0.0.23"
   }
 }

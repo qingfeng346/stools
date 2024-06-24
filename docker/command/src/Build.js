@@ -78,6 +78,7 @@ class Build {
         return execute
     }
     async execStools(execute, param) {
+        await this.DownloadFile("https://pics.dmm.co.jp/mono/actjpgs/syouda_tisato.jpg", "/app/root/root/音乐下载", "1111.jpg")
         const stoolsPath = path.join(process.cwd(), "stools");
         let args = ["run", execute.command]
         for (let key in param.Args) {
@@ -86,6 +87,27 @@ class Build {
         }
         console.log(`运行stools命令:${stoolsPath} : ${JSON.stringify(args)}`)
         return await Util.execAsync("dotnet", stoolsPath, args)
+    }
+    DownloadFile = function(url, targetPath, fileName) {
+        return new Promise((resolve, reject) => {
+            let file = `${targetPath}/${fileName}`
+            let percent = 0
+            let time = new Date().getTime();
+            let d = download(url)
+            d.addListener("downloadProgress", function (progress) {
+                let now = new Date().getTime();
+                if (now - time > 2000 && progress.percent - percent >= 0.01) {
+                    time = now
+                    percent = progress.percent
+                    console.log(`文件${url}下载进度:${Math.floor(percent * 100)}%`)
+                }
+            })
+            d.pipe(fs.createWriteStream(file))
+                .on("close", function() {
+                    console.log(`文件${url}下载完成`)
+                    resolve()
+                })
+        })
     }
 }
 module.exports = new Build()

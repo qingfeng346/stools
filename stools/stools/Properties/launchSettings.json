@@ -41,7 +41,7 @@
     },
     "wget": {
       "commandName": "Project",
-      "commandLineArgs": "wget https://www.shiyinren.com/tool/song/js/function.2.5.js?v=2.3.11"
+      "commandLineArgs": "wget https://pics.dmm.co.jp/mono/actjpgs/syouda_tisato.jpg"
     },
     "sortmusic": {
       "commandName": "Project",
