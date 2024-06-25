@@ -23,54 +23,56 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         /// <summary>获取响应对象 </summary>
         public async Task<HttpResponseMessage> GetResponseAsync(string url, CancellationToken cancellationToken) {
             logger.LogInformation($"{GetType().Name} GetResponseAsync : {url}");
-            using (var handler = new HttpClientHandler()) {
-                // handler.Credentials = CredentialCache.DefaultCredentials;
-                // handler.UseDefaultCredentials = true;
-                // handler.CookieContainer = new CookieContainer();
-                // handler.AutomaticDecompression = DecompressionMethods.All;
-                // handler.PreAuthenticate = false;
-                // handler.AllowAutoRedirect = true;
-                handler.SslProtocols = SslProtocols.Ssl2 |
-                                       SslProtocols.Ssl3 |
-                                       SslProtocols.Tls |
-                                       SslProtocols.Tls11 |
-                                       SslProtocols.Tls12 |
-                                       SslProtocols.Tls13;
-                handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-                using (var client = new HttpClient(handler)) {
-                    // var cacheControl = new CacheControlHeaderValue();
-                    // cacheControl.NoCache = true;
-                    // cacheControl.NoStore = true;
-                    // client.DefaultRequestHeaders.CacheControl = cacheControl;
-                    return await client.GetAsync(url, cancellationToken);
-                }
-            }
+            return await http.CreateClient().GetAsync(url, cancellationToken);
+            // using (var handler = new HttpClientHandler()) {
+            //     // handler.Credentials = CredentialCache.DefaultCredentials;
+            //     // handler.UseDefaultCredentials = true;
+            //     // handler.CookieContainer = new CookieContainer();
+            //     // handler.AutomaticDecompression = DecompressionMethods.All;
+            //     // handler.PreAuthenticate = false;
+            //     // handler.AllowAutoRedirect = true;
+            //     handler.SslProtocols = SslProtocols.Ssl2 |
+            //                            SslProtocols.Ssl3 |
+            //                            SslProtocols.Tls |
+            //                            SslProtocols.Tls11 |
+            //                            SslProtocols.Tls12 |
+            //                            SslProtocols.Tls13;
+            //     handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+            //     using (var client = new HttpClient(handler)) {
+            //         // var cacheControl = new CacheControlHeaderValue();
+            //         // cacheControl.NoCache = true;
+            //         // cacheControl.NoStore = true;
+            //         // client.DefaultRequestHeaders.CacheControl = cacheControl;
+            //         return await client.GetAsync(url, cancellationToken);
+            //     }
+            // }
         } 
         /// <summary>下载 HTMl 源码 </summary>
         public async Task<string> GetHtmlAsync(string url, CancellationToken cancellationToken) {
             logger.LogInformation($"{GetType().Name} GetHtmlAsync : {url}");
-            using (var handler = new HttpClientHandler()) {
-                // handler.Credentials = CredentialCache.DefaultCredentials;
-                // handler.UseDefaultCredentials = true;
-                // handler.CookieContainer = new CookieContainer();
-                // handler.AutomaticDecompression = DecompressionMethods.All;
-                // handler.PreAuthenticate = false;
-                // handler.AllowAutoRedirect = true;
-                handler.SslProtocols = SslProtocols.Ssl2 |
-                                       SslProtocols.Ssl3 |
-                                       SslProtocols.Tls |
-                                       SslProtocols.Tls11 |
-                                       SslProtocols.Tls12 |
-                                       SslProtocols.Tls13;
-                handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-                using (var client = new HttpClient(handler)) {
-                    // var cacheControl = new CacheControlHeaderValue();
-                    // cacheControl.NoCache = true;
-                    // cacheControl.NoStore = true;
-                    // client.DefaultRequestHeaders.CacheControl = cacheControl;
-                    return await client.GetStringAsync(url, cancellationToken);
-                }
-            }
+            return await http.CreateClient().GetStringAsync(url, cancellationToken);
+            // using (var handler = new HttpClientHandler()) {
+            //     // handler.Credentials = CredentialCache.DefaultCredentials;
+            //     // handler.UseDefaultCredentials = true;
+            //     // handler.CookieContainer = new CookieContainer();
+            //     // handler.AutomaticDecompression = DecompressionMethods.All;
+            //     // handler.PreAuthenticate = false;
+            //     // handler.AllowAutoRedirect = true;
+            //     handler.SslProtocols = SslProtocols.Ssl2 |
+            //                            SslProtocols.Ssl3 |
+            //                            SslProtocols.Tls |
+            //                            SslProtocols.Tls11 |
+            //                            SslProtocols.Tls12 |
+            //                            SslProtocols.Tls13;
+            //     handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+            //     using (var client = new HttpClient(handler)) {
+            //         // var cacheControl = new CacheControlHeaderValue();
+            //         // cacheControl.NoCache = true;
+            //         // cacheControl.NoStore = true;
+            //         // client.DefaultRequestHeaders.CacheControl = cacheControl;
+            //         return await client.GetStringAsync(url, cancellationToken);
+            //     }
+            // }
         }
         /// <summary> 获取影片元数据 </summary>
         public async Task<MetadataResult<Movie>> GetMovieMetadataAsync(string id, CancellationToken cancellationToken) {
@@ -117,18 +119,18 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             try {
                 foreach (var (movieId, movieItem) in cacheMovies) {
                     if (movieId == id) {
-                        logger.LogInformation($"GetMovieAsync {id} Result Cache : {JsonConvert.Serialize(movieItem)}");
+                        logger.LogInformation($"{GetType().Name} GetMovieAsync {id} Result Cache : {JsonConvert.Serialize(movieItem)}");
                         return movieItem as T;
                     }
                 }
                 var item = await GetMovieAsync_impl<T>(id, cancellationToken);
-                logger.LogInformation($"GetMovieAsync {id} Result : {JsonConvert.Serialize(item)}");
+                logger.LogInformation($"{GetType().Name} GetMovieAsync {id} Result : {JsonConvert.Serialize(item)}");
                 cacheMovies.Add((id, item));
                 if (cacheMovies.Count > 10)
                     cacheMovies.RemoveAt(0);
                 return item;
             } catch (Exception e) {
-                logger.LogError($"GetMovieAsync : {id} is error : {e}");
+                logger.LogError($"{GetType().Name} GetMovieAsync : {id} is error : {e}");
                 return null;
             }
         }
@@ -154,25 +156,25 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             try {
                 foreach (var (personId, personItem) in cachePersions) {
                     if (personId == id) {
-                        logger.LogInformation($"GetPersonAsync {id} Result Cache : {JsonConvert.Serialize(personItem)}");
+                        logger.LogInformation($"{GetType().Name} GetPersonAsync {id} Result Cache : {JsonConvert.Serialize(personItem)}");
                         return personItem as T;
                     }
                 }
                 var item = await GetPersonAsync_impl<T>(id, cancellationToken);
-                logger.LogInformation($"GetPersonAsync {id} Result : {JsonConvert.Serialize(item)}");
+                logger.LogInformation($"{GetType().Name} GetPersonAsync {id} Result : {JsonConvert.Serialize(item)}");
                 cachePersions.Add((id, item));
                 if (cachePersions.Count > 10)
                     cachePersions.RemoveAt(0);
                 return item;
             } catch (Exception e) {
-                logger.LogError($"GetPersonAsync : {id} is error : {e}");
+                logger.LogError($"{GetType().Name} GetPersonAsync : {id} is error : {e}");
                 return null;
             }
         }
         public async Task<IList<SearchResult>> SearchAsync(string keyword, CancellationToken cancellationToken) {
             try {
                 var results = await SearchAsync_impl(keyword, cancellationToken);
-                logger.LogInformation($"SearchAsync {keyword} Result : {JsonConvert.Serialize(results)}");
+                logger.LogInformation($"{GetType().Name} SearchAsync {keyword} Result : {JsonConvert.Serialize(results)}");
                 return results ?? [];
             } catch (Exception e) {
                 logger.LogError($"SearchAsync : {keyword} is error : {e}");
@@ -182,20 +184,20 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         public async Task<string> GetMovieIdByName(string name, string id, string path, CancellationToken cancellationToken) {
             try {
                 var result = await GetMovieIdByName_impl(name, id, path, cancellationToken);
-                logger.LogInformation($"GetMovieIdByName name:{name} id:{id} path:{path} Result : {result}");
+                logger.LogInformation($"{GetType().Name} GetMovieIdByName name:{name} id:{id} path:{path} Result : {result}");
                 return result;
             } catch (Exception e) {
-                logger.LogError($"GetMovieIdByName name:{name} id:{id} path:{path} is error : {e}");
+                logger.LogError($"{GetType().Name} GetMovieIdByName name:{name} id:{id} path:{path} is error : {e}");
                 return "";
             }
         }
         public async Task<string> GetPersonIdByName(string id, string name, string path, CancellationToken cancellationToken) {
             try {
                 var result = await GetPersonIdByName_impl(id, name, path, cancellationToken);
-                logger.LogInformation($"GetPersonIdByName name:{name} id:{id} path:{path} Result : {result}");
+                logger.LogInformation($"{GetType().Name} GetPersonIdByName name:{name} id:{id} path:{path} Result : {result}");
                 return result;
             } catch (Exception e) {
-                logger.LogError($"GetPersonIdByName name:{name} id:{id} path:{path} is error : {e}");
+                logger.LogError($"{GetType().Name} GetPersonIdByName name:{name} id:{id} path:{path} is error : {e}");
                 return "";
             }
         }
