@@ -35,6 +35,14 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                     Type = ImageType.Backdrop,
                     Language = Language,
                 });
+                // 大封面 fanart/backdrop
+                list.Add(new RemoteImageInfo {
+                    ProviderName = Name,
+                    Url = movieInfo.ImageUrl,
+                    ThumbnailUrl = movieInfo.ImageUrl,
+                    Type = ImageType.Banner,
+                    Language = Language,
+                });
                 // 列表为“缩略图”显示时，显示大封面
                 list.Add(new RemoteImageInfo {
                     ProviderName = Name,
@@ -49,6 +57,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         public override IEnumerable<ImageType> GetSupportedImages(BaseItem item) {
             yield return ImageType.Primary;
             yield return ImageType.Backdrop;
+            yield return ImageType.Banner;
             yield return ImageType.Thumb;
         }
     }
