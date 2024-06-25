@@ -22,14 +22,14 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         }
         /// <summary>获取响应对象 </summary>
         public async Task<HttpResponseMessage> GetResponseAsync(string url, CancellationToken cancellationToken) {
-            logger.LogInformation($"GetResponseAsync : {url}");
+            logger.LogInformation($"{GetType().Name} GetResponseAsync : {url}");
             using (var handler = new HttpClientHandler()) {
-                handler.Credentials = CredentialCache.DefaultCredentials;
-                handler.UseDefaultCredentials = true;
-                handler.CookieContainer = new CookieContainer();
-                handler.AutomaticDecompression = DecompressionMethods.All;
-                handler.PreAuthenticate = false;
-                handler.AllowAutoRedirect = true;
+                // handler.Credentials = CredentialCache.DefaultCredentials;
+                // handler.UseDefaultCredentials = true;
+                // handler.CookieContainer = new CookieContainer();
+                // handler.AutomaticDecompression = DecompressionMethods.All;
+                // handler.PreAuthenticate = false;
+                // handler.AllowAutoRedirect = true;
                 handler.SslProtocols = SslProtocols.Ssl2 |
                                        SslProtocols.Ssl3 |
                                        SslProtocols.Tls |
@@ -38,24 +38,24 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                                        SslProtocols.Tls13;
                 handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
                 using (var client = new HttpClient(handler)) {
-                    var cacheControl = new CacheControlHeaderValue();
-                    cacheControl.NoCache = true;
-                    cacheControl.NoStore = true;
-                    client.DefaultRequestHeaders.CacheControl = cacheControl;
+                    // var cacheControl = new CacheControlHeaderValue();
+                    // cacheControl.NoCache = true;
+                    // cacheControl.NoStore = true;
+                    // client.DefaultRequestHeaders.CacheControl = cacheControl;
                     return await client.GetAsync(url, cancellationToken);
                 }
             }
         } 
         /// <summary>下载 HTMl 源码 </summary>
         public async Task<string> GetHtmlAsync(string url, CancellationToken cancellationToken) {
-            logger.LogInformation($"GetHtmlAsync : {url}");
+            logger.LogInformation($"{GetType().Name} GetHtmlAsync : {url}");
             using (var handler = new HttpClientHandler()) {
-                handler.Credentials = CredentialCache.DefaultCredentials;
-                handler.UseDefaultCredentials = true;
-                handler.CookieContainer = new CookieContainer();
-                handler.AutomaticDecompression = DecompressionMethods.All;
-                handler.PreAuthenticate = false;
-                handler.AllowAutoRedirect = true;
+                // handler.Credentials = CredentialCache.DefaultCredentials;
+                // handler.UseDefaultCredentials = true;
+                // handler.CookieContainer = new CookieContainer();
+                // handler.AutomaticDecompression = DecompressionMethods.All;
+                // handler.PreAuthenticate = false;
+                // handler.AllowAutoRedirect = true;
                 handler.SslProtocols = SslProtocols.Ssl2 |
                                        SslProtocols.Ssl3 |
                                        SslProtocols.Tls |
@@ -64,10 +64,10 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                                        SslProtocols.Tls13;
                 handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
                 using (var client = new HttpClient(handler)) {
-                    var cacheControl = new CacheControlHeaderValue();
-                    cacheControl.NoCache = true;
-                    cacheControl.NoStore = true;
-                    client.DefaultRequestHeaders.CacheControl = cacheControl;
+                    // var cacheControl = new CacheControlHeaderValue();
+                    // cacheControl.NoCache = true;
+                    // cacheControl.NoStore = true;
+                    // client.DefaultRequestHeaders.CacheControl = cacheControl;
                     return await client.GetStringAsync(url, cancellationToken);
                 }
             }

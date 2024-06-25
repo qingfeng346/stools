@@ -86,4 +86,9 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test {
         public override string ProviderID => Config.ProviderID;
         public EpisodeImageProvider(ILogger<EpisodeImageProvider> logger, TestHttpService httpService) : base(logger, httpService) { }
     }
+    public class StudioImageProvider : StudioImageProvider<TestHttpService> {
+        public override string Name => Config.ProviderName;
+        public override string ProviderID => Config.ProviderID;
+        public StudioImageProvider(ILogger<StudioImageProvider> logger, TestHttpService httpService) : base(logger, httpService) { }
+    }
 }
