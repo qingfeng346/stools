@@ -12,13 +12,13 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
     public abstract class HttpService {
         protected readonly ILogger<HttpService> logger;
         protected readonly IHttpClientFactory http;
-        protected readonly List<(string, MovieItem)> cacheMovies;
-        protected readonly List<(string, PersonItem)> cachePersions;
+        // protected readonly List<(string, MovieItem)> cacheMovies;
+        // protected readonly List<(string, PersonItem)> cachePersions;
         public HttpService(ILogger<HttpService> logger, IHttpClientFactory http) {
             this.logger = logger;
             this.http = http;
-            this.cacheMovies = new List<(string, MovieItem)>();
-            this.cachePersions = new List<(string, PersonItem)>();
+            // this.cacheMovies = new List<(string, MovieItem)>();
+            // this.cachePersions = new List<(string, PersonItem)>();
         }
         /// <summary>获取响应对象 </summary>
         public async Task<HttpResponseMessage> GetResponseAsync(string url, CancellationToken cancellationToken) {
@@ -117,17 +117,17 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         /// <summary> 获取影片元数据 </summary>
         public async Task<T> GetMovieAsync<T>(string id, CancellationToken cancellationToken) where T : MovieItem {
             try {
-                foreach (var (movieId, movieItem) in cacheMovies) {
-                    if (movieId == id) {
-                        logger.LogInformation($"{GetType().Name} GetMovieAsync {id} Result Cache : {JsonConvert.Serialize(movieItem)}");
-                        return movieItem as T;
-                    }
-                }
+                // foreach (var (movieId, movieItem) in cacheMovies) {
+                //     if (movieId == id) {
+                //         logger.LogInformation($"{GetType().Name} GetMovieAsync {id} Result Cache : {JsonConvert.Serialize(movieItem)}");
+                //         return movieItem as T;
+                //     }
+                // }
                 var item = await GetMovieAsync_impl<T>(id, cancellationToken);
                 logger.LogInformation($"{GetType().Name} GetMovieAsync {id} Result : {JsonConvert.Serialize(item)}");
-                cacheMovies.Add((id, item));
-                if (cacheMovies.Count > 10)
-                    cacheMovies.RemoveAt(0);
+                // cacheMovies.Add((id, item));
+                // if (cacheMovies.Count > 10)
+                //     cacheMovies.RemoveAt(0);
                 return item;
             } catch (Exception e) {
                 logger.LogError($"{GetType().Name} GetMovieAsync : {id} is error : {e}");
@@ -154,17 +154,17 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         /// <summary> 获取演员元数据 </summary>
         public async Task<T> GetPersonAsync<T>(string id, CancellationToken cancellationToken) where T : PersonItem {
             try {
-                foreach (var (personId, personItem) in cachePersions) {
-                    if (personId == id) {
-                        logger.LogInformation($"{GetType().Name} GetPersonAsync {id} Result Cache : {JsonConvert.Serialize(personItem)}");
-                        return personItem as T;
-                    }
-                }
+                // foreach (var (personId, personItem) in cachePersions) {
+                //     if (personId == id) {
+                //         logger.LogInformation($"{GetType().Name} GetPersonAsync {id} Result Cache : {JsonConvert.Serialize(personItem)}");
+                //         return personItem as T;
+                //     }
+                // }
                 var item = await GetPersonAsync_impl<T>(id, cancellationToken);
                 logger.LogInformation($"{GetType().Name} GetPersonAsync {id} Result : {JsonConvert.Serialize(item)}");
-                cachePersions.Add((id, item));
-                if (cachePersions.Count > 10)
-                    cachePersions.RemoveAt(0);
+                // cachePersions.Add((id, item));
+                // if (cachePersions.Count > 10)
+                //     cachePersions.RemoveAt(0);
                 return item;
             } catch (Exception e) {
                 logger.LogError($"{GetType().Name} GetPersonAsync : {id} is error : {e}");
