@@ -27,6 +27,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         };
         public abstract string Name { get; }
         public abstract string ProviderID { get; }
+        public string Language {get;} = "Japanese";
         public BaseImageProvider(ILogger<T1> logger, T2 httpService) {
             this.logger = logger;
             this.httpService = httpService;

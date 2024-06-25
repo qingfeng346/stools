@@ -23,19 +23,25 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
                 list.Add(new RemoteImageInfo {
                     ProviderName = Name,
                     Url = movieInfo.ThumbUrl,
-                    Type = ImageType.Primary
+                    ThumbnailUrl = movieInfo.ThumbUrl,
+                    Type = ImageType.Primary,
+                    Language = Language,
                 });
                 // 大封面 fanart/backdrop
                 list.Add(new RemoteImageInfo {
                     ProviderName = Name,
                     Url = movieInfo.ImageUrl,
-                    Type = ImageType.Backdrop
+                    ThumbnailUrl = movieInfo.ImageUrl,
+                    Type = ImageType.Backdrop,
+                    Language = Language,
                 });
                 // 列表为“缩略图”显示时，显示大封面
                 list.Add(new RemoteImageInfo {
                     ProviderName = Name,
                     Url = movieInfo.ImageUrl,
-                    Type = ImageType.Thumb
+                    ThumbnailUrl = movieInfo.ImageUrl,
+                    Type = ImageType.Thumb,
+                    Language = Language,
                 });
             }
             return list;
