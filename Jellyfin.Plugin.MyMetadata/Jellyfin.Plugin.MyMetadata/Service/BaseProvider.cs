@@ -23,19 +23,19 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         }
         public async Task<MetadataResult<TItemType>> GetMetadata(TLookupInfoType info, CancellationToken cancellationToken) {
             try {
-                logger.LogInformation($"[{GetType().Name}] GetMetadata {GetString(info)}");
+                logger.LogInformation($"[{GetType().Name}] Start GetMetadata {GetString(info)}");
                 return await GetMetadata_impl(info, cancellationToken);
             } catch (Exception e) {
-                logger.LogError($"[{GetType().Name}] GetMetadata {GetString(info)} is error : {e}");
+                logger.LogError($"[{GetType().Name}] GetMetadata is error : {e.Message}");
                 return new MetadataResult<TItemType>();
             }
         }
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TLookupInfoType info, CancellationToken cancellationToken) {
             try {
-                logger.LogInformation($"[{GetType().Name}] GetSearchResults {GetString(info)}");
+                logger.LogInformation($"[{GetType().Name}] Start GetSearchResults {GetString(info)}");
                 return await GetSearchResults_impl(info, cancellationToken);
             } catch (Exception e) {
-                logger.LogError($"[{GetType().Name}] GetSearchResults {GetString(info)} is error : {e}");
+                logger.LogError($"[{GetType().Name}] GetSearchResults is error : {e.Message}");
                 return Array.Empty<RemoteSearchResult>();
             }
         }

@@ -77,10 +77,10 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         /// <summary> 获取影片元数据 </summary>
         public async Task<MetadataResult<Movie>> GetMovieMetadataAsync(string id, CancellationToken cancellationToken) {
             await Task.Delay(1);
-            var result = new MetadataResult<Movie>();
             //// 获取影片详情
             var item = await GetMovieAsync<MovieItem>(id, cancellationToken);
-            if (item == null) return result;
+            if (item == null) return null;
+            var result = new MetadataResult<Movie>();
             // 设置 基础信息
             var movie = new Movie {
                 Name = $"{item.MovieId} {item.Title}",

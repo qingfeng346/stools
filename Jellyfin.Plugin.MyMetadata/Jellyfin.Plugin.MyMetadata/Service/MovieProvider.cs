@@ -12,13 +12,13 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             var name = Path.GetFileNameWithoutExtension(info.Path);
             var movieId = await httpService.GetMovieIdByName(name, id, "", cancellationToken).ConfigureAwait(false);
             if (string.IsNullOrEmpty(movieId))
-                return new MetadataResult<Movie>();
-            var movie = await httpService.GetMovieMetadataAsync(movieId, cancellationToken).ConfigureAwait(false);
-            if (movie == null)
-                return new MetadataResult<Movie>();
-            if (movie.HasMetadata)
+                throw new Exception("movieId is null");
+            var movieInfo = await httpService.GetMovieMetadataAsync(movieId, cancellationToken).ConfigureAwait(false);
+            if (movieInfo == null)
+                throw new Exception("movieInfo is null");
+            if (movieInfo.HasMetadata)
                 info.SetProviderId(ProviderID, movieId);
-            return movie;
+            return movieInfo;
         }
         protected override async Task<IEnumerable<RemoteSearchResult>> GetSearchResults_impl(MovieInfo searchInfo, CancellationToken cancellationToken) {
             var id = searchInfo.GetProviderId(ProviderID);

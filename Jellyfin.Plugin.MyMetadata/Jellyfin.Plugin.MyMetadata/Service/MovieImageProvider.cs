@@ -12,46 +12,43 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
             var id = item.GetProviderId(ProviderID);
             var movieId = await httpService.GetMovieIdByName(Path.GetFileNameWithoutExtension(item.Path), id, "", cancellationToken);
             if (string.IsNullOrWhiteSpace(movieId))
-                return list;
+                throw new Exception("movieId is null");
             //获取影片详情
             var movieInfo = await httpService.GetMovieAsync<MovieItem>(movieId, cancellationToken);
             if (movieInfo == null)
-                return list;
-            //如果存在大封面
-            if (!string.IsNullOrEmpty(movieInfo.ImageUrl)) {
-                // 小封面 poster
-                list.Add(new RemoteImageInfo {
-                    ProviderName = Name,
-                    Url = movieInfo.ThumbUrl,
-                    ThumbnailUrl = movieInfo.ThumbUrl,
-                    Type = ImageType.Primary,
-                    Language = Language,
-                });
-                // 大封面 fanart/backdrop
-                list.Add(new RemoteImageInfo {
-                    ProviderName = Name,
-                    Url = movieInfo.ImageUrl,
-                    ThumbnailUrl = movieInfo.ImageUrl,
-                    Type = ImageType.Backdrop,
-                    Language = Language,
-                });
-                // 大封面 fanart/backdrop
-                list.Add(new RemoteImageInfo {
-                    ProviderName = Name,
-                    Url = movieInfo.ImageUrl,
-                    ThumbnailUrl = movieInfo.ImageUrl,
-                    Type = ImageType.Banner,
-                    Language = Language,
-                });
-                // 列表为“缩略图”显示时，显示大封面
-                list.Add(new RemoteImageInfo {
-                    ProviderName = Name,
-                    Url = movieInfo.ImageUrl,
-                    ThumbnailUrl = movieInfo.ImageUrl,
-                    Type = ImageType.Thumb,
-                    Language = Language,
-                });
-            }
+                throw new Exception("movieInfo is null");
+            // 小封面 poster
+            list.Add(new RemoteImageInfo {
+                ProviderName = Name,
+                Url = movieInfo.ThumbUrl,
+                ThumbnailUrl = movieInfo.ThumbUrl,
+                Type = ImageType.Primary,
+                Language = Language,
+            });
+            // 大封面 fanart/backdrop
+            list.Add(new RemoteImageInfo {
+                ProviderName = Name,
+                Url = movieInfo.ImageUrl,
+                ThumbnailUrl = movieInfo.ImageUrl,
+                Type = ImageType.Backdrop,
+                Language = Language,
+            });
+            // 大封面 fanart/backdrop
+            list.Add(new RemoteImageInfo {
+                ProviderName = Name,
+                Url = movieInfo.ImageUrl,
+                ThumbnailUrl = movieInfo.ImageUrl,
+                Type = ImageType.Banner,
+                Language = Language,
+            });
+            // 列表为“缩略图”显示时，显示大封面
+            list.Add(new RemoteImageInfo {
+                ProviderName = Name,
+                Url = movieInfo.ImageUrl,
+                ThumbnailUrl = movieInfo.ImageUrl,
+                Type = ImageType.Thumb,
+                Language = Language,
+            });
             return list;
         }
         public override IEnumerable<ImageType> GetSupportedImages(BaseItem item) {

@@ -41,15 +41,15 @@ namespace Jellyfin.Plugin.MyMetadata.Service {
         }
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken) {
             try {
-                logger.LogInformation($"[{GetType().Name}] GetImages {GetString(item)}");
+                logger.LogInformation($"[{GetType().Name}] Start GetImages {GetString(item)}");
                 return await GetImages_impl(item, cancellationToken);
             } catch (Exception e) {
-                logger.LogError($"[{GetType().Name}] GetImages {GetString(item)} is error : {e}");
-                return Array.Empty<RemoteImageInfo>();
+                logger.LogError($"[{GetType().Name}] GetImages is error : {e.Message}");
+                return null;
             }
         }
         protected virtual async Task<IEnumerable<RemoteImageInfo>> GetImages_impl(BaseItem item, CancellationToken cancellationToken) {
-            return Array.Empty<RemoteImageInfo>();
+            return null;
         }
     }
 }
