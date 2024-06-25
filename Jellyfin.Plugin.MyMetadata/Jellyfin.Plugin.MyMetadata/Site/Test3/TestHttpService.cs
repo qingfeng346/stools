@@ -27,7 +27,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test3 {
                 var key = nameNode.InnerText;
                 if (key.Contains("發行日期")) {
                     if (DateTime.TryParseExact(node.InnerText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var releaseDate))
-                            item.ReleaseDate = releaseDate;
+                        item.ReleaseDate = releaseDate;
                 } else if (key.Contains("系列")) {
                     item.Series.Add(node.SelectSingleNode("a").InnerText);
                 } else if (key.Contains("製作商")) {
@@ -53,8 +53,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test3 {
             item.SourceUrl = url;
             return item as T;
         }
-        protected override Task<T> GetPersonAsync_impl<T>(string id, CancellationToken cancellationToken)
-        {
+        protected override Task<T> GetPersonAsync_impl<T>(string id, CancellationToken cancellationToken) {
             throw new NotImplementedException();
         }
         protected override async Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken) {
@@ -67,7 +66,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test3 {
             if (nodes != null) {
                 foreach (var node in nodes) {
                     var url = node.GetAttributeValue<string>("href", "");
-                    results.Add(new SearchResult() { Id = url.Substring(url.LastIndexOf("/") + 1)});
+                    results.Add(new SearchResult() { Id = url.Substring(url.LastIndexOf("/") + 1) });
                 }
             }
             return results;

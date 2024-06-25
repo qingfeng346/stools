@@ -31,7 +31,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
                 var key = nameNode.InnerText;
                 if (key.Contains("發行日期")) {
                     if (DateTime.TryParseExact(valueNode.InnerText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var releaseDate))
-                            item.ReleaseDate = releaseDate;
+                        item.ReleaseDate = releaseDate;
                 } else if (key.Contains("系列")) {
                     foreach (var vNode in valueNode.SelectNodes("span/a")) {
                         item.Series.Add(vNode.InnerText);
@@ -51,7 +51,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
                 } else if (key.Contains("演員")) {
                     foreach (var vNode in valueNode.SelectNodes("span/span/span/a")) {
                         var name = vNode.InnerText;
-                        item.Persons.Add(new PersonItem() { 
+                        item.Persons.Add(new PersonItem() {
                             Name = name
                         });
                     }
@@ -64,8 +64,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
             item.SourceUrl = url;
             return item as T;
         }
-        protected override Task<T> GetPersonAsync_impl<T>(string id, CancellationToken cancellationToken)
-        {
+        protected override Task<T> GetPersonAsync_impl<T>(string id, CancellationToken cancellationToken) {
             throw new NotImplementedException();
         }
         protected override async Task<IList<SearchResult>> SearchAsync_impl(string keyword, CancellationToken cancellationToken) {
@@ -78,7 +77,7 @@ namespace Jellyfin.Plugin.MyMetadata.Service.Test2 {
             if (nodes != null) {
                 foreach (var node in nodes) {
                     var url = node.GetAttributeValue<string>("href", "");
-                    results.Add(new SearchResult() { Id = url.Substring(url.LastIndexOf("/") + 1)});
+                    results.Add(new SearchResult() { Id = url.Substring(url.LastIndexOf("/") + 1) });
                 }
             }
             return results;
