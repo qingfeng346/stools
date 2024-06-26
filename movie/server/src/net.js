@@ -100,7 +100,7 @@ class net {
             }
         })
         this.update()
-        MovieManager.GetMovieInfoByPath("123123123")
+        MovieManager.UpdateFileList()
     }
     async fireFunc(code, data, files, req, res) {
         let evt = message.get(code)

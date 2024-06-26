@@ -1,13 +1,37 @@
+const { FileUtil, logger } = require("weimingcommons")
 const database = require("../database")
 const ActorManager = require("./ActorManager")
 const TagManager = require("./TagManager")
+const { QueryTypes } = require("sequelize")
 class MovieManager {
     constructor() {
         this.pendingIds = []
     }
+    async UpdateFileList() {
+        let values = await database.movie.findAll()
+        let allFiles = FileUtil.GetFiles("./media", true)
+        if (allFiles == null) return
+        for (let file of allFiles) {
+            if (file.endsWith(".mp4") ||
+                file.endsWith(".mkv") ||
+                file.endsWith(".avi")) {
+                await this.GetMovieInfoByPath(file)
+            }
+        }
+        for (let value of values) {
+            if (allFiles.indexOf(value.path) < 0) {
+                logger.info(`文件 : ${value.path} 已删除`)
+                await database.movie.destroy({ where: {id : value.id}})
+            }
+        }
+        let result = await this.GetAllMovieInfosByActor(3)
+        console.log(result)
+        let a = 100
+    }
     async GetMovieInfoByPath(path) {
         let value = (await database.movie.findOrCreate({ where: { path: path } }))[0].dataValues
         if (!value.isInfo) {
+            logger.info(`添加新文件:${path}`)
             if (this.pendingIds.indexOf(value.id) < 0) {
                 this.pendingIds.push(value.id)
             }
@@ -43,8 +67,16 @@ class MovieManager {
         value.tags = []
         value.tags.push(await TagManager.GetTagId("123"))
         value.tags.push(await TagManager.GetTagId("456"))
-        console.log(value)
         await database.movie.update(value, { where: {id: id}})
+    }
+    async GetAllMovieInfos() {
+        await database.movie.findAll()
+    }
+    async GetAllMovieInfosByActor(id) {
+        return await database.sequelize.query(`select * from \`movie\` where exists (select 1 from json_each(actors) where value = ${id})`, { type: QueryTypes.SELECT })
+    }
+    async GetAllMovieInfosByTag(id) {
+        return await database.sequelize.query(`select * from \`movie\` where exists (select 1 from json_each(tags) where value = ${id})`, { type: QueryTypes.SELECT })
     }
 }
 module.exports = new MovieManager()

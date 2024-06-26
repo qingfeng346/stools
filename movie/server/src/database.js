@@ -77,8 +77,34 @@ class database {
             ],
         })
         await this.tag.sync()
-        await this.sync()
-        // let result = (await this.actor.findOrCreate({ where: { name: "123" }}))[0].dataValues;
+        // await this.config.upsert({ name: "name1", tags: [1,2,3,4,5], }, { where: { name: "name1" } })
+        // await this.config.upsert({ name: "name2", tags: [{name: "aaa"}], }, { where: { name: "name2" } })
+        // await this.config.upsert({ name: "name3", tags: {a:'a', b:'b'}, }, { where: { name: "name3" } })
+
+        // // let www = await this.config.findAll()
+        // // console.log(www)
+        // // let resuts = await sequelize.query("select * from `config` where exists (select 1 from json_each(tags) where value->>'name' = 'aaa')", { type: QueryTypes.SELECT })
+        // // console.log(resuts)
+        // // resuts = await sequelize.query("select * from `config` where exists (select 1 from json_each(tags) where value = 1)", { type: QueryTypes.SELECT })
+        // // console.log(resuts)
+        // let resuts = await sequelize.query("select * from `config` where json_extract(tags, '$.a') = '22'", { type: QueryTypes.SELECT })
+        // console.log(resuts)
+        // const tagToSearch = 1;
+        // const users = await this.config.findAll({
+        //   where: sequelize.literal(`JSON_each.value = '${tagToSearch}'`),
+        //   include: [{
+        //     model: this.config, 
+        //     where: sequelize.literal(`JSON_each.key = 'value'`)
+        //   }]
+        // });
+
+        // const records = await this.config.findAll({
+        //     where: {
+        //         value: { [Op.contains]: 1 }
+        //     }
+        // });
+        // await this.sync()
+        // let result = await this.actor.upsert({name:"234"}, { where: { name: "234" } })
         // console.log(result)
     }
     async sync() {
