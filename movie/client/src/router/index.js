@@ -4,6 +4,7 @@ import music from '@/components/music.vue'
 import photo from '@/components/photo.vue'
 import PageBuild from '@/components/PageBuild.vue'
 import PageHistory from '@/components/PageHistory.vue'
+import PageList from '@/components/PageList.vue'
 import PageConfig from '@/components/PageConfig.vue'
 const router = createRouter({
   history: createWebHashHistory(),
@@ -33,6 +34,11 @@ const router = createRouter({
           name: "history",
           path: "history",
           component: PageHistory,
+        },
+        {
+          name: "list",
+          path: "list",
+          component: PageList,
         },
         {
           name: "config",
