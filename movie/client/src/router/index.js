@@ -22,7 +22,7 @@ const router = createRouter({
       children: [
         {
           path: '',
-          redirect: '/home/build'
+          redirect: '/home/list'
         },
         {
           name: "build",

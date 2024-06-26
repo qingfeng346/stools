@@ -1,33 +1,35 @@
 const { FileUtil, logger } = require("weimingcommons")
+const path = require('path')
 const database = require("../database")
 const ActorManager = require("./ActorManager")
-const TagManager = require("./TagManager")
 const { QueryTypes } = require("sequelize")
 const ProviderManager = require("../Provider/ProviderManager")
+const { AssetsPath } = require("../config")
 class MovieManager {
     constructor() {
         this.pendingIds = []
+        this.mediaRoot = path.resolve(AssetsPath, "media")
     }
     async UpdateFileList() {
-        let values = await database.movie.findAll()
-        let allFiles = FileUtil.GetFiles("./media", true)
+        let movies = await database.movie.findAll()
+        let allFiles = FileUtil.GetFiles(this.mediaRoot, true)
         if (allFiles == null) return
+        let files = []
         for (let file of allFiles) {
             if (file.endsWith(".mp4") ||
                 file.endsWith(".mkv") ||
                 file.endsWith(".avi")) {
-                await this.GetMovieInfoByPath(file)
+                let f = file.substring(this.mediaRoot.length + 1)
+                files.push(f)
+                await this.GetMovieInfoByPath(f)
             }
         }
-        for (let value of values) {
-            if (allFiles.indexOf(value.path) < 0) {
-                logger.info(`文件 : ${value.path} 已删除`)
-                await database.movie.destroy({ where: {id : value.id}})
+        for (let movie of movies) {
+            if (files.indexOf(movie.path) < 0) {
+                logger.info(`文件 : ${movie.path} 已删除`)
+                await database.movie.destroy({ where: {id : movie.id}})
             }
         }
-        let result = await this.GetAllMovieInfosByActor(3)
-        console.log(result)
-        let a = 100
     }
     async GetMovieInfoByPath(path) {
         let value = (await database.movie.findOrCreate({ where: { path: path } }))[0].dataValues

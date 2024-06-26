@@ -7,7 +7,6 @@ const { UploadPath, AssetsPath, ClientPath } = require('./config')
 const { Util } = require('weimingcommons')
 const ActorManager = require('./Manager/ActorManager')
 const MovieManager = require('./Manager/MovieManager')
-const ProviderManager = require('./Provider/ProviderManager')
 const RequestManager = require('./Request/RequestManager')
 class net {
     constructor() {

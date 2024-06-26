@@ -5,7 +5,12 @@
         <Form label-position="left" :label-width="150">
             <FormItem label="标签">
                 <Space wrap>
-                    <Button v-for="tag of movieInfo.tags" :size="buttonSize" type="text">{{ tag }}</Button>
+                    <Button v-for="tag of movieInfo.tags" size="large" type="text">{{ tag }}</Button>
+                </Space>
+            </FormItem>
+            <FormItem label="操作">
+                <Space wrap>
+                    <Button size="large" type="text" @click="OnClickPlay(movieInfo)">播放地址</Button>
                 </Space>
             </FormItem>
         </Form>
@@ -51,6 +56,9 @@ export default {
             }
             movieInfo.actors = actors;
             this.movieInfo = movieInfo
+        },
+        async OnClickPlay(movieInfo) {
+            window.open(`${net.ServerUrl}/assets/media/${movieInfo.path}`, "_blank")
         }
     },
 };

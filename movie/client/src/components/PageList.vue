@@ -17,8 +17,6 @@
 <script>
 import RowList from "./row/RowList.vue";
 import util from "../scripts/util";
-import code from '../scripts/code.js';
-
 export default {
   components : {
     RowList,
@@ -31,7 +29,6 @@ export default {
   beforeMount() {
   },
   mounted() {
-    // util.registerOnResize(this, [{ name: "tableHeight", value: 0 }])
     this.RefreshAllInfos()
   },
   methods: {
