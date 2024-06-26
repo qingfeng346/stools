@@ -1,7 +1,5 @@
 const log4js = require('log4js')
 const axios = require('axios')
-const { FileUtil } = require('weimingcommons')
-const { UploadPath } = require('./src/config')
 log4js.configure({
     appenders: {
         console: {
@@ -48,8 +46,6 @@ async function main() {
         axios.defaults.timeout = 6000
         await require('./src/database').init()
         await require('./src/net').init()
-        await require('./src/Request/ServerConfig').init()
-        await require('./src/Request/HistoryManager').init()
     } catch (e) {
         logger.error("启动失败 : ", e)
     }

@@ -2,9 +2,11 @@ const logger = require('log4js').getLogger('net.js')
 const express = require('express')
 const multipart = require('multer')
 const webSocket = require('ws')
-const path = require('path')
 const message = require('./message')
 const { UploadPath, AssetsPath, ClientPath } = require('./config')
+const { Util } = require('weimingcommons')
+const ActorManager = require('./Manager/ActorManager')
+const MovieManager = require('./Manager/MovieManager')
 class net {
     constructor() {
         this.clients = []
@@ -43,8 +45,6 @@ class net {
         this.sendMessage("notice", { type: "error", msg: str })
     }
     async init() {
-        console.log(`AssetsPath : ${AssetsPath}`)
-        console.log(`AssetsPath : ${ClientPath}`)
         let app = express()
         app.all("*", (_req, res, next) => {
             res.header('Access-Control-Allow-Origin', '*');
@@ -99,6 +99,8 @@ class net {
                 }
             }
         })
+        this.update()
+        MovieManager.GetMovieInfoByPath("123123123")
     }
     async fireFunc(code, data, files, req, res) {
         let evt = message.get(code)
@@ -134,6 +136,17 @@ class net {
             }
         } catch (e) {
             logger.error("sendMessage is error : ", e)
+        }
+    }
+    async update() {
+        while (true) {
+            await Util.sleep(1000);
+            try {
+                await MovieManager.update()
+                await ActorManager.update()
+            } catch (e) {
+                logger.error(`Update is error : ${e.message}\n${e.stack}`)
+            }
         }
     }
 }
