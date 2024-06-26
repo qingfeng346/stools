@@ -3,5 +3,5 @@ npm install
 npm run build
 cd ../server
 
-docker build -t stools .
-docker save -o ../stools.tar stools
+docker build -t movie .
+docker save -o ../movie.tar movie

@@ -6,7 +6,7 @@ class net {
         this.hostName = window.location.hostname
         this.httpPort = window.location.port
         if (Util.IsDevelopment) {
-            this.httpPort = 4100
+            this.httpPort = 4200
         }
         this.startWebSocket()
     }

@@ -2,7 +2,7 @@ FROM node:16-alpine
 
 EXPOSE 4100
 
-VOLUME [ "/app/server/data", "/app/server/assets" ]
+VOLUME [ "/app/data", "/app/assets" ]
 
 RUN apk add openssl
 
@@ -10,7 +10,7 @@ WORKDIR /app
 
 COPY . .
 
-WORKDIR /app/server
+WORKDIR /app
 
 RUN npm install
 

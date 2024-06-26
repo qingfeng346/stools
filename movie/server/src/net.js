@@ -87,7 +87,7 @@ class net {
             }
             res.end()
         })
-        let port = 4100
+        let port = 4200
         let server = app.listen(port, () => {
             logger.info(`应用正在监听 http://127.0.0.1:${port}`);
         })
