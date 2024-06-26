@@ -1,11 +1,10 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import home from '@/components/home.vue'
-import music from '@/components/music.vue'
-import photo from '@/components/photo.vue'
 import PageBuild from '@/components/PageBuild.vue'
 import PageHistory from '@/components/PageHistory.vue'
 import PageList from '@/components/PageList.vue'
 import PageConfig from '@/components/PageConfig.vue'
+import InfoMovie from '@/components/InfoMovie.vue'
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
@@ -46,14 +45,9 @@ const router = createRouter({
           component: PageConfig,
         },
         {
-          name: "music",
-          path: "music",
-          component: music,
-        },
-        {
-          name: "photo",
-          path: "photo",
-          component: photo,
+          name: "movieinfo",
+          path: "movieinfo",
+          component: InfoMovie,
         },
       ]
     }

@@ -3,6 +3,7 @@ const database = require("../database")
 const ActorManager = require("./ActorManager")
 const TagManager = require("./TagManager")
 const { QueryTypes } = require("sequelize")
+const ProviderManager = require("../Provider/ProviderManager")
 class MovieManager {
     constructor() {
         this.pendingIds = []
@@ -57,16 +58,31 @@ class MovieManager {
         if (value == null) {
             throw new Error(`找不到MovieId:${id}`)
         }
+        let movieInfo = await ProviderManager.GetMovieInfo(FileUtil.GetFileNameWithoutExtension(value.path))
         value = value.dataValues
         value.isInfo = true
-        value.title = "title"
-        value.desc = "desc"
-        value.actors = []
-        value.actors.push((await ActorManager.GetActorInfoByName("123")).id)
-        value.actors.push((await ActorManager.GetActorInfoByName("456")).id)
-        value.tags = []
-        value.tags.push(await TagManager.GetTagId("123"))
-        value.tags.push(await TagManager.GetTagId("456"))
+        value.title = movieInfo.title
+        value.desc = movieInfo.desc
+        value.thumbUrl = movieInfo.thumbUrl
+        value.imageUrl = movieInfo.imageUrl
+        if (movieInfo.actors.length > 0) {
+            value.actors = []
+            for (let v of movieInfo.actors) {
+                value.actors.push((await ActorManager.GetActorInfoByName(v)).id)
+            }
+        }
+        if (movieInfo.tags.length > 0) {
+            value.tags = []
+            for (let v of movieInfo.tags) {
+                value.tags.push(v)
+            }
+        }
+        if (movieInfo.shotscreens.length > 0) {
+            value.shotscreens = []
+            for (let v of movieInfo.shotscreens) {
+                value.shotscreens.push(v)
+            }
+        }
         await database.movie.update(value, { where: {id: id}})
     }
     async GetAllMovieInfos() {

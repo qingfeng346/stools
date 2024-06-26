@@ -1,3 +1,4 @@
+const ProviderManager = require("../Provider/ProviderManager")
 const database = require("../database")
 class ActorManager {
     constructor() {
@@ -31,10 +32,11 @@ class ActorManager {
         if (value == null) {
             throw new Error(`找不到ActorId:${id}`)
         }
+        let personInfo = await ProviderManager.GetPersonInfo(value.name)
         value = value.dataValues
         value.isInfo = true
-        value.title = "title"
-        value.desc = "desc"
+        value.desc = personInfo.desc
+        value.imageUrl = personInfo.imageUrl
         console.log(value)
         await database.actor.update(value, { where: {id: id}})
     }
