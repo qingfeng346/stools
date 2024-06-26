@@ -1,3 +1,4 @@
+const MovieManager = require("../Manager/MovieManager")
 const { RequestCode } = require("../code")
 const database = require("../database")
 const message = require("../message")
