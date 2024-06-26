@@ -3,6 +3,9 @@
         <h1>{{ movieInfo.title }}</h1>
         <img :src="movieInfo.imageUrl"/>
         <Form label-position="left" :label-width="150">
+            <FormItem label="文件路径">
+                <div>{{ movieInfo.path }}</div>
+            </FormItem>
             <FormItem label="标签">
                 <Space wrap>
                     <Button v-for="tag of movieInfo.tags" size="large" type="text">{{ tag }}</Button>
@@ -50,9 +53,14 @@ export default {
         async RefreshInfo() {
             let movieInfo = await util.GetMovieInfo(this.id);
             let actors = []
-            for (let actor of movieInfo.actors) {
-                console.log(actor)
-                actors.push(await util.GetPersonInfo(actor))
+            if (movieInfo.actors != null) {
+                for (let actor of movieInfo.actors) {
+                    console.log(actor)
+                    actors.push(await util.GetPersonInfo(actor))
+                }
+            }
+            if (movieInfo.tags == null) {
+                movieInfo.tags = []
             }
             movieInfo.actors = actors;
             this.movieInfo = movieInfo

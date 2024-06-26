@@ -6,7 +6,7 @@
           <Col v-for="movie in movies" :key="movie.id">
             <Card :hoverable="true">
               <img :src="movie.thumbUrl" :alt="movie.title" style="height: 240px; width: 180px" @click="OnClickMovie(movie)" />
-              <Ellipsis :text="movie.title" :length="12" tooltip />
+              <Ellipsis :text="movie.title ?? movie.path" :length="12" tooltip />
             </Card>
           </Col>
         </Row>
