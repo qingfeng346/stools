@@ -6,7 +6,20 @@ class database {
         let sequelize = new Sequelize({
             dialect: "sqlite",
             storage: "./data/database/database.db",
-            logging: msg => logger.info(msg)
+            logging: msg => logger.info(msg),
+            retry: {
+                match: [
+                  /SQLITE_BUSY/,
+                ],
+                name: 'query',
+                max: 5
+            },
+            pool: {
+                maxactive: 1,
+                max: 5,
+                min: 0,
+                idle: 20000
+            },
         })
         this.sequelize = sequelize
         this.movie = sequelize.define('movie', {

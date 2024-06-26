@@ -12,6 +12,7 @@
           <Menu :active-name="activeMenu" theme="dark" width="auto" @on-select="OnSelectMenu">
             <!-- <MenuItem name="build">Build</MenuItem> -->
             <MenuItem name="list">列表</MenuItem>
+            <MenuItem name="tools">工具</MenuItem>
             <!-- <MenuItem name="config">配置</MenuItem> -->
           </Menu>
         </Sider>

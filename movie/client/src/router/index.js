@@ -4,6 +4,7 @@ import PageBuild from '@/components/PageBuild.vue'
 import PageHistory from '@/components/PageHistory.vue'
 import PageList from '@/components/PageList.vue'
 import PageConfig from '@/components/PageConfig.vue'
+import PageTools from '@/components/PageTools.vue'
 import InfoMovie from '@/components/InfoMovie.vue'
 const router = createRouter({
   history: createWebHashHistory(),
@@ -43,6 +44,11 @@ const router = createRouter({
           name: "config",
           path: "config",
           component: PageConfig,
+        },
+        {
+          name: "tools",
+          path: "tools",
+          component: PageTools,
         },
         {
           name: "movieinfo",

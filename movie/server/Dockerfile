@@ -1,6 +1,6 @@
 FROM node:16-alpine
 
-EXPOSE 4100
+EXPOSE 4200
 
 VOLUME [ "/app/data", "/app/assets" ]
 

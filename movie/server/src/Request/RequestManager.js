@@ -3,12 +3,16 @@ const database = require("../database")
 const message = require("../message")
 class RequestManager {
     constructor() {
+        message.register(RequestCode.UpdateMovieList, this.OnUpdateMovieList.bind(this))
         message.register(RequestCode.GetMovieList, this.OnGetMovieList.bind(this))
         message.register(RequestCode.GetMovieInfo, this.OnGetMovieInfo.bind(this))
         message.register(RequestCode.GetPersonInfo, this.OnGetPersonInfo.bind(this))
     }
     init() {
 
+    }
+    async OnUpdateMovieList() {
+        await MovieManager.UpdateMovieList()
     }
     async OnGetMovieList() {
         return await database.movie.findAll()

@@ -1,4 +1,4 @@
-const { FileUtil, logger } = require("weimingcommons")
+const { FileUtil, logger, Util } = require("weimingcommons")
 const path = require('path')
 const database = require("../database")
 const ActorManager = require("./ActorManager")
@@ -10,7 +10,7 @@ class MovieManager {
         this.pendingIds = []
         this.mediaRoot = path.resolve(AssetsPath, "media")
     }
-    async UpdateFileList() {
+    async UpdateMovieList() {
         let movies = await database.movie.findAll()
         let allFiles = FileUtil.GetFiles(this.mediaRoot, true)
         if (allFiles == null) return
@@ -21,6 +21,7 @@ class MovieManager {
                 file.endsWith(".avi")) {
                 let f = file.substring(this.mediaRoot.length + 1)
                 files.push(f)
+                await Util.sleep(1000)
                 await this.GetMovieInfoByPath(f)
             }
         }

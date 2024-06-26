@@ -189,6 +189,9 @@ class util {
     async GetPersonInfo(id) {
         return await net.execute(RequestCode.GetPersonInfo, { id: id})
     }
+    async UpdateMovieList() {
+        return await net.execute(RequestCode.UpdateMovieList)
+    }
     async GetStorage(name) {
         return (await net.execute(RequestCode.GetStorage, { name: name }))?.value
     }

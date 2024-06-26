@@ -102,7 +102,7 @@ class net {
         })
         this.update()
         RequestManager.init()
-        MovieManager.UpdateFileList()
+        MovieManager.UpdateMovieList()
     }
     async fireFunc(code, data, files, req, res) {
         let evt = message.get(code)
@@ -142,7 +142,7 @@ class net {
     }
     async update() {
         while (true) {
-            await Util.sleep(1000);
+            await Util.sleep(3000);
             try {
                 await MovieManager.update()
                 await ActorManager.update()
