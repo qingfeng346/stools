@@ -7,23 +7,24 @@ class ActorManager {
     async GetActorInfoByName(name) {
         let value = (await database.actor.findOrCreate({ where: { name: name } }))[0].dataValues
         if (!value.isInfo) {
-            if (this.pendingIds.indexOf(value.id) < 0) {
-                this.pendingIds.push(value.id)
-            }
+            this.UpdatePersonInfo(value.id)
         }
         return value
     }
     async GetActorInfoById(id) {
         let value = await database.actor.findOne({ where: { id: id } })
         if (!value.isInfo) {
-            if (this.pendingIds.indexOf(value.id) < 0) {
-                this.pendingIds.push(value.id)
-            }
+            this.UpdatePersonInfo(value.id)
         }
         return value
     }
+    UpdatePersonInfo(id) {
+        if (this.pendingIds.indexOf(id) < 0) {
+            this.pendingIds.push(id)
+        }
+    }
     async update() {
-        while (this.pendingIds.length > 0) {
+        if (this.pendingIds.length > 0) {
             await this.RefreshInfo(this.pendingIds.pop())
         }
     }
@@ -37,7 +38,6 @@ class ActorManager {
         value.isInfo = true
         value.desc = personInfo.desc
         value.imageUrl = personInfo.imageUrl
-        console.log(value)
         await database.actor.update(value, { where: {id: id}})
     }
 }

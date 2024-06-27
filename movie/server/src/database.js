@@ -31,11 +31,26 @@ class database {
             path: DataTypes.STRING(128),
             title: DataTypes.TEXT,
             desc: DataTypes.TEXT,
-            releaseDate: DataTypes.DATE,
+            releaseDate: DataTypes.STRING(128),
             thumbUrl: DataTypes.STRING(256),
             imageUrl: DataTypes.STRING(256),
             actors: DataTypes.JSON,
-            tags: DataTypes.JSON,
+            tags: {
+                type: DataTypes.JSON,
+                comment: "标签"
+            },
+            makers: {
+                type: DataTypes.JSON,
+                comment: "制造"
+            },
+            genres: {
+                type: DataTypes.JSON,
+                comment: "发行"
+            },
+            series: {
+                type: DataTypes.JSON,
+                comment: "系列"
+            },
             shotscreens: DataTypes.JSON,
             isInfo: DataTypes.BOOLEAN,
         }, {
@@ -72,24 +87,6 @@ class database {
             ],
         })
         await this.actor.sync()
-        this.tag = sequelize.define("tag", {
-            id: {
-                type: DataTypes.INTEGER,
-                primaryKey: true,
-                autoIncrement: true,
-            },
-            name: DataTypes.STRING(64)
-        }, {
-            tableName: "tag",
-            timestamps: false,
-            indexes: [
-                {
-                    unique: true,
-                    fields: ['name']
-                }
-            ],
-        })
-        await this.tag.sync()
         // await this.config.upsert({ name: "name1", tags: [1,2,3,4,5], }, { where: { name: "name1" } })
         // await this.config.upsert({ name: "name2", tags: [{name: "aaa"}], }, { where: { name: "name2" } })
         // await this.config.upsert({ name: "name3", tags: {a:'a', b:'b'}, }, { where: { name: "name3" } })
@@ -123,7 +120,6 @@ class database {
     async sync() {
         await this.movie.sync({alter: true})
         await this.actor.sync({alter: true})
-        await this.tag.sync({alter: true})
     }
 }
 module.exports = new database()

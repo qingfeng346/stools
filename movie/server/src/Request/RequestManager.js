@@ -1,28 +1,39 @@
+const ActorManager = require("../Manager/ActorManager")
 const MovieManager = require("../Manager/MovieManager")
 const { RequestCode } = require("../code")
 const database = require("../database")
 const message = require("../message")
 class RequestManager {
-    constructor() {
-        message.register(RequestCode.UpdateMovieList, this.OnUpdateMovieList.bind(this))
-        message.register(RequestCode.GetMovieList, this.OnGetMovieList.bind(this))
-        message.register(RequestCode.GetMovieInfo, this.OnGetMovieInfo.bind(this))
-        message.register(RequestCode.GetPersonInfo, this.OnGetPersonInfo.bind(this))
+    async init() {
+        let codes = [
+            RequestCode.UpdateMovieList,
+            RequestCode.GetMovieList,
+            RequestCode.GetMovieInfo,
+            RequestCode.UpdateMoveInfo,
+            RequestCode.GetPersonInfo,
+            RequestCode.UpdatePersonInfo,
+        ]
+        for (let code of codes) {
+            message.register(code, this[code].bind(this))
+        }
     }
-    init() {
-
-    }
-    async OnUpdateMovieList() {
+    async UpdateMovieList() {
         await MovieManager.UpdateMovieList()
     }
-    async OnGetMovieList() {
-        return await database.movie.findAll()
+    async GetMovieList() {
+        return await MovieManager.GetMovieList()
     }
-    async OnGetMovieInfo(data) {
-        return await database.movie.findOne({ where: {id: data.id}})
+    async GetMovieInfo(data) {
+        return await MovieManager.GetMovieInfoById(data.id)
     }
-    async OnGetPersonInfo(data) {
-        return await database.actor.findOne({ where: {id: data.id}})
+    async UpdateMoveInfo(data) {
+        MovieManager.UpdateMoveInfo(data.id)
+    }
+    async GetPersonInfo(data) {
+        return await ActorManager.GetActorInfoById(data.id)
+    }
+    async UpdatePersonInfo(data) {
+        ActorManager.UpdatePersonInfo(data.id)
     }
 }
 module.exports = new RequestManager()

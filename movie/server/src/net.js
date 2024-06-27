@@ -7,7 +7,6 @@ const { UploadPath, AssetsPath, ClientPath } = require('./config')
 const { Util } = require('weimingcommons')
 const ActorManager = require('./Manager/ActorManager')
 const MovieManager = require('./Manager/MovieManager')
-const RequestManager = require('./Request/RequestManager')
 class net {
     constructor() {
         this.clients = []
@@ -101,8 +100,6 @@ class net {
             }
         })
         this.update()
-        RequestManager.init()
-        MovieManager.UpdateMovieList()
     }
     async fireFunc(code, data, files, req, res) {
         let evt = message.get(code)

@@ -21,7 +21,7 @@ class MovieManager {
                 file.endsWith(".avi")) {
                 let f = file.substring(this.mediaRoot.length + 1)
                 files.push(f)
-                await Util.sleep(1000)
+                await Util.sleep(100)
                 await this.GetMovieInfoByPath(f)
             }
         }
@@ -32,27 +32,36 @@ class MovieManager {
             }
         }
     }
+    async GetMovieList() {
+        let values = await database.movie.findAll({attributes: ["id", "title", "path", "thumbUrl", "isInfo"]})
+        for (let value of values) {
+            this.CheckRefreshInfo(value)
+        }
+        return values
+    }
     async GetMovieInfoByPath(path) {
         let value = (await database.movie.findOrCreate({ where: { path: path } }))[0].dataValues
-        if (!value.isInfo) {
-            logger.info(`添加新文件:${path}`)
-            if (this.pendingIds.indexOf(value.id) < 0) {
-                this.pendingIds.push(value.id)
-            }
-        }
+        this.CheckRefreshInfo(value)
         return value
     }
     async GetMovieInfoById(id) {
         let value = await database.movie.findOne({ where: { id: id } })
-        if (!value.isInfo) {
-            if (this.pendingIds.indexOf(value.id) < 0) {
-                this.pendingIds.push(value.id)
-            }
-        }
+        this.CheckRefreshInfo(value)
         return value
     }
+    UpdateMoveInfo(id) {
+        if (this.pendingIds.indexOf(id) < 0) {
+            this.pendingIds.push(id)
+        }
+    }
+    CheckRefreshInfo(value) {
+        if (!value?.isInfo) {
+            this.UpdateMoveInfo(value.id)
+        }
+    }
+    
     async update() {
-        while (this.pendingIds.length > 0) {
+        if (this.pendingIds.length > 0) { 
             await this.RefreshInfo(this.pendingIds.pop())
         }
     }
