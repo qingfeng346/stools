@@ -1,8 +1,10 @@
 const ProviderTest = require('./ProviderTest');
+const ProviderTest2 = require('./ProviderTest2');
 class ProviderManager {
     constructor() {
         this.providers = []
         this.providers.push(ProviderTest)
+        this.providers.push(ProviderTest2)
     }
     async GetMovieInfo(name) {
         for (let provider of this.providers) {
