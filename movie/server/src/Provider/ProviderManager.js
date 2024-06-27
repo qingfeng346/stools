@@ -1,3 +1,4 @@
+const { logger } = require('weimingcommons');
 const ProviderTest = require('./ProviderTest');
 const ProviderTest2 = require('./ProviderTest2');
 class ProviderManager {
@@ -13,7 +14,7 @@ class ProviderManager {
                 if (info != null)
                     return info
             } catch (err) {
-
+                logger.error(`provider is error : ${err.message}`)
             }
         }
     }
