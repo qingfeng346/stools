@@ -1,8 +1,7 @@
 const ActorManager = require("../Manager/ActorManager")
 const MovieManager = require("../Manager/MovieManager")
-const { RequestCode } = require("../code")
-const database = require("../database")
 const message = require("../message")
+const { RequestCode } = require("../code")
 class RequestManager {
     async init() {
         let codes = [
@@ -20,8 +19,8 @@ class RequestManager {
     async UpdateMovieList() {
         await MovieManager.UpdateMovieList()
     }
-    async GetMovieList() {
-        return await MovieManager.GetMovieList()
+    async GetMovieList(data) {
+        return await MovieManager.GetMovieList(data.type, data.value, data.page, data.pageSize)
     }
     async GetMovieInfo(data) {
         return await MovieManager.GetMovieInfoById(data.id)

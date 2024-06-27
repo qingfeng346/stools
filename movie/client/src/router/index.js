@@ -1,11 +1,12 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import home from '@/components/home.vue'
-import PageBuild from '@/components/PageBuild.vue'
-import PageHistory from '@/components/PageHistory.vue'
-import PageList from '@/components/PageList.vue'
+import PageAllMovies from '@/components/PageAllMovies.vue'
 import PageConfig from '@/components/PageConfig.vue'
 import PageTools from '@/components/PageTools.vue'
 import InfoMovie from '@/components/InfoMovie.vue'
+import InfoActor from '@/components/InfoActor.vue'
+import InfoFilter from '@/components/InfoFilter.vue'
+
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
@@ -23,22 +24,12 @@ const router = createRouter({
       children: [
         {
           path: '',
-          redirect: '/home/list'
+          redirect: '/home/allmovies'
         },
         {
-          name: "build",
-          path: "build",
-          component: PageBuild,
-        },
-        {
-          name: "history",
-          path: "history",
-          component: PageHistory,
-        },
-        {
-          name: "list",
-          path: "list",
-          component: PageList,
+          name: "allmovies",
+          path: "allmovies",
+          component: PageAllMovies,
         },
         {
           name: "config",
@@ -51,9 +42,19 @@ const router = createRouter({
           component: PageTools,
         },
         {
-          name: "movieinfo",
-          path: "movieinfo",
+          name: "movie",
+          path: "movie",
           component: InfoMovie,
+        },
+        {
+          name: "actor",
+          path: "actor",
+          component: InfoActor,
+        },
+        {
+          name: "filter",
+          path: "filter",
+          component: InfoFilter,
         },
       ]
     }

@@ -27,13 +27,21 @@ class MovieManager {
         }
         for (let movie of movies) {
             if (files.indexOf(movie.path) < 0) {
-                logger.info(`文件 : ${movie.path} 已删除`)
+                logger.info(`文件 : ${movie.path} 已删除 : ${movie.id}`)
                 await database.movie.destroy({ where: {id : movie.id}})
             }
         }
     }
-    async GetMovieList() {
-        let values = await database.movie.findAll({attributes: ["id", "title", "path", "thumbUrl", "isInfo"]})
+    async GetMovieList(type, value, page, pageSize) {
+        let values = undefined
+        if (type == null || type == "all") {
+            values = await database.movie.findAll({attributes: ["id", "title", "path", "thumbUrl", "isInfo"]})
+        } else {
+            values = await database.sequelize.query(`select id,title,path,thumbUrl,isInfo from \`movie\` where exists (select 1 from json_each(${type}s) where value = ${value})`, { type: QueryTypes.SELECT })
+        }
+        if (values == null) {
+            values = []
+        }
         for (let value of values) {
             this.CheckRefreshInfo(value)
         }
@@ -59,7 +67,6 @@ class MovieManager {
             this.UpdateMoveInfo(value.id)
         }
     }
-    
     async update() {
         if (this.pendingIds.length > 0) { 
             await this.RefreshInfo(this.pendingIds.pop())
@@ -73,38 +80,31 @@ class MovieManager {
         let movieInfo = await ProviderManager.GetMovieInfo(FileUtil.GetFileNameWithoutExtension(value.path))
         value = value.dataValues
         value.isInfo = true
-        value.title = movieInfo.title
-        value.desc = movieInfo.desc
-        value.thumbUrl = movieInfo.thumbUrl
-        value.imageUrl = movieInfo.imageUrl
-        if (movieInfo.actors.length > 0) {
-            value.actors = []
-            for (let v of movieInfo.actors) {
-                value.actors.push((await ActorManager.GetActorInfoByName(v)).id)
+        if (movieInfo != null) {
+            value.title = movieInfo.title
+            value.desc = movieInfo.desc
+            value.thumbUrl = movieInfo.thumbUrl
+            value.imageUrl = movieInfo.imageUrl
+            if (movieInfo.actors.length > 0) {
+                value.actors = []
+                for (let v of movieInfo.actors) {
+                    value.actors.push((await ActorManager.GetActorInfoByName(v)).id)
+                }
             }
-        }
-        if (movieInfo.tags.length > 0) {
-            value.tags = []
-            for (let v of movieInfo.tags) {
-                value.tags.push(v)
+            if (movieInfo.tags.length > 0) {
+                value.tags = []
+                for (let v of movieInfo.tags) {
+                    value.tags.push(v)
+                }
             }
-        }
-        if (movieInfo.shotscreens.length > 0) {
-            value.shotscreens = []
-            for (let v of movieInfo.shotscreens) {
-                value.shotscreens.push(v)
+            if (movieInfo.shotscreens.length > 0) {
+                value.shotscreens = []
+                for (let v of movieInfo.shotscreens) {
+                    value.shotscreens.push(v)
+                }
             }
         }
         await database.movie.update(value, { where: {id: id}})
-    }
-    async GetAllMovieInfos() {
-        await database.movie.findAll()
-    }
-    async GetAllMovieInfosByActor(id) {
-        return await database.sequelize.query(`select * from \`movie\` where exists (select 1 from json_each(actors) where value = ${id})`, { type: QueryTypes.SELECT })
-    }
-    async GetAllMovieInfosByTag(id) {
-        return await database.sequelize.query(`select * from \`movie\` where exists (select 1 from json_each(tags) where value = ${id})`, { type: QueryTypes.SELECT })
     }
 }
 module.exports = new MovieManager()

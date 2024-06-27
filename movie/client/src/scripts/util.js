@@ -177,20 +177,29 @@ class util {
         await net.execute(RequestCode.DelConfig, { name: name })
         delete this.configs[name]
     }
+    //刷新影片列表
+    async UpdateMovieList() {
+        return await net.execute(RequestCode.UpdateMovieList)
+    }
     //获取影片列表
-    async GetMovieList() {
-        return await net.execute(RequestCode.GetMovieList)
+    async GetMovieList(type, value) {
+        return await net.execute(RequestCode.GetMovieList, { type: type, value: value })
     }
     //获取影片信息
     async GetMovieInfo(id) {
-        return await net.execute(RequestCode.GetMovieInfo, { id: id})
+        return await net.execute(RequestCode.GetMovieInfo, { id: id })
     }
-    //获取影片信息
+    //刷新影片信息
+    async UpdateMoveInfo(id) {
+        return await net.execute(RequestCode.UpdateMoveInfo, { id: id })
+    }
+    //获取演员信息
     async GetPersonInfo(id) {
-        return await net.execute(RequestCode.GetPersonInfo, { id: id})
+        return await net.execute(RequestCode.GetPersonInfo, { id: id })
     }
-    async UpdateMovieList() {
-        return await net.execute(RequestCode.UpdateMovieList)
+    //刷新演员信息
+    async UpdatePersonInfo(id) {
+        return await net.execute(RequestCode.UpdatePersonInfo, { id: id })
     }
     async GetStorage(name) {
         return (await net.execute(RequestCode.GetStorage, { name: name }))?.value

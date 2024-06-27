@@ -6,23 +6,42 @@
             <FormItem label="文件路径">
                 <div>{{ movieInfo.path }}</div>
             </FormItem>
+            <FormItem label="简介">
+                <div>{{ movieInfo.desc }}</div>
+            </FormItem>
             <FormItem label="标签">
                 <Space wrap>
-                    <Button v-for="tag of movieInfo.tags" size="large" type="text">{{ tag }}</Button>
+                    <Button v-for="tag of movieInfo.tags" size="large" type="text" @click="OnClickTag(tag)">{{ tag }}</Button>
+                </Space>
+            </FormItem>
+            <FormItem label="制作">
+                <Space wrap>
+                    <Button v-for="maker of movieInfo.makers" size="large" type="text" @click="OnClickMaker(maker)">{{ maker }}</Button>
+                </Space>
+            </FormItem>
+            <FormItem label="发行">
+                <Space wrap>
+                    <Button v-for="genre of movieInfo.genres" size="large" type="text" @click="OnClickGenre(genre)">{{ genre }}</Button>
+                </Space>
+            </FormItem>
+            <FormItem label="系列">
+                <Space wrap>
+                    <Button v-for="serie of movieInfo.series" size="large" type="text" @click="OnClickSerie(serie)">{{ serie }}</Button>
                 </Space>
             </FormItem>
             <FormItem label="操作">
                 <Space wrap>
-                    <Button size="large" type="text" @click="OnClickPlay(movieInfo)">播放地址</Button>
+                    <Button size="large" type="text" @click="OnClickPlay()">播放地址</Button>
+                    <Button size="large" type="text" @click="OnClickUpdateInfo()">刷新数据</Button>
                 </Space>
             </FormItem>
         </Form>
-        <h2>演职人员</h2>
+        <h2>演员</h2>
         <Row :gutter="20">
-          <Col v-for="actor in movieInfo.actors" :key="actor.id">
+          <Col v-for="actorInfo in movieInfo.actors" :key="actorInfo.id">
             <Card :hoverable="true">
-              <img :src="actor.imageUrl" :alt="actor.name" style="height: 150px; width: 150px" />
-              <Ellipsis :text="actor.name" :length="12" tooltip />
+              <img :src="actorInfo.imageUrl" :alt="actorInfo.name" style="height: 150px; width: 150px" @click="OnClickActor(actorInfo)"/>
+              <Ellipsis :text="actorInfo.name" :length="12" tooltip />
             </Card>
           </Col>
         </Row>
@@ -54,20 +73,39 @@ export default {
             let movieInfo = await util.GetMovieInfo(this.id);
             let actors = []
             if (movieInfo.actors != null) {
-                for (let actor of movieInfo.actors) {
-                    console.log(actor)
-                    actors.push(await util.GetPersonInfo(actor))
+                for (let actorId of movieInfo.actors) {
+                    actors.push(await util.GetPersonInfo(actorId))
                 }
             }
-            if (movieInfo.tags == null) {
-                movieInfo.tags = []
-            }
             movieInfo.actors = actors;
+            movieInfo.tags = movieInfo.tags ?? []
+            movieInfo.makers = movieInfo.makers ?? []
+            movieInfo.genres = movieInfo.genres ?? []
+            movieInfo.series = movieInfo.series ?? []
+            movieInfo.shotscreens = movieInfo.shotscreens ?? []
             this.movieInfo = movieInfo
         },
-        async OnClickPlay(movieInfo) {
-            window.open(`${net.ServerUrl}/assets/media/${movieInfo.path}`, "_blank")
-        }
+        async OnClickPlay() {
+            window.open(`${net.ServerUrl}/assets/media/${this.movieInfo.path}`, "_blank")
+        },
+        async OnClickUpdateInfo() {
+          util.UpdateMoveInfo(this.id)
+        },
+        async OnClickActor(actor) {
+            this.$router.push(`/home/actor?id=${actor.id}`);
+        },
+        async OnClickTag(value) {
+            this.$router.push(`/home/filter?type=tag&value=${value}`);
+        },
+        async OnClickMaker(value) {
+            this.$router.push(`/home/filter?type=maker&value=${value}`);
+        },
+        async OnClickGenre(value) {
+            this.$router.push(`/home/filter?type=genre&value=${value}`);
+        },
+        async OnClickSerie(value) {
+            this.$router.push(`/home/filter?type=serie&value=${value}`);
+        },
     },
 };
 </script>
