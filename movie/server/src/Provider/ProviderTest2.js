@@ -1,6 +1,6 @@
 const utils = require('../utils');
 const cheerio = require('cheerio');
-class ProviderTest {
+class ProviderTest2 {
     async GetMovieInfo(name) {
         var url = `https://jav5.land/ja/id_search.php?keys=${name}`;
         let result = await utils.get(url)
@@ -52,4 +52,4 @@ class ProviderTest {
         // return personInfo
     }
 }
-module.exports = new ProviderTest()
+module.exports = new ProviderTest2()

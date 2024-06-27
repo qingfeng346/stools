@@ -66,11 +66,6 @@ class ProviderTest {
                 movieInfo.tags.push(v.name)
             }
         }
-        if (jsonData.genres != null) {
-            for (var v of jsonData.genres) {
-                movieInfo.tags.push(v.name)
-            }
-        }
         if (product.maker != null) {
             movieInfo.makers.push(product.maker.name)
         }
