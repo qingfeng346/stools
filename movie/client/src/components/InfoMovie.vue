@@ -21,7 +21,7 @@
             </FormItem>
             <FormItem label="发行">
                 <Space wrap>
-                    <Button v-for="genre of movieInfo.genres" size="large" type="text" @click="OnClickGenre(genre)">{{ genre }}</Button>
+                    <Button v-for="label of movieInfo.labels" size="large" type="text" @click="OnClickLabel(label)">{{ label }}</Button>
                 </Space>
             </FormItem>
             <FormItem label="系列">
@@ -100,8 +100,8 @@ export default {
         async OnClickMaker(value) {
             this.$router.push(`/home/filter?type=maker&value=${value}`);
         },
-        async OnClickGenre(value) {
-            this.$router.push(`/home/filter?type=genre&value=${value}`);
+        async OnClickLabel(value) {
+            this.$router.push(`/home/filter?type=label&value=${value}`);
         },
         async OnClickSerie(value) {
             this.$router.push(`/home/filter?type=serie&value=${value}`);

@@ -36,8 +36,10 @@ class ActorManager {
         let personInfo = await ProviderManager.GetPersonInfo(value.name)
         value = value.dataValues
         value.isInfo = true
-        value.desc = personInfo.desc
-        value.imageUrl = personInfo.imageUrl
+        if (personInfo != null) {
+            value.desc = personInfo.desc
+            value.imageUrl = personInfo.imageUrl
+        }
         await database.actor.update(value, { where: {id: id}})
     }
 }

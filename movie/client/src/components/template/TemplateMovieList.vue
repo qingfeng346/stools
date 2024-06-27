@@ -14,7 +14,7 @@
         <Col v-for="movie in movies" :key="movie.id">
           <Card :hoverable="true">
             <img :src="GetThumbUrl(movie)" :alt="movie.title" style="height: 240px; width: 180px" @click="OnClickMovie(movie)" />
-            <Ellipsis :text="movie.title ?? movie.path" :length="22" tooltip style="text-align: center;" />
+            <Ellipsis :text="movie.title ?? movie.path" :length="11" tooltip style="text-align: center;" />
           </Card>
         </Col>
       </Row>

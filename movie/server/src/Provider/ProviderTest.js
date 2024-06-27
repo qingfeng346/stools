@@ -51,6 +51,9 @@ class ProviderTest {
             thumbUrl : product.thumbnail_url,
             actors: [],
             tags: [],
+            makers: [],
+            labels: [],
+            series: [],
             shotscreens: []
         }
         if (jsonData.casts != null) {
@@ -58,15 +61,30 @@ class ProviderTest {
                 movieInfo.actors.push(v.actor.name)
             }
         }
+        if (jsonData.genres != null) {
+            for (var v of jsonData.genres) {
+                movieInfo.tags.push(v.name)
+            }
+        }
+        if (jsonData.genres != null) {
+            for (var v of jsonData.genres) {
+                movieInfo.tags.push(v.name)
+            }
+        }
+        if (product.maker != null) {
+            movieInfo.makers.push(product.maker.name)
+        }
+        if (product.label != null) {
+            movieInfo.labels.push(product.label.name)
+        }
+        if (product.series != null) {
+            movieInfo.series.push(product.series.name)
+        }
         if (product.sample_image_urls != null) {
             for (let v of product.sample_image_urls) {
                 movieInfo.shotscreens.push(v.l)
             }
         }
-        let tagNodes = $("a[class='rounded-lg border border-solid text-sm px-2 py-1']")
-        tagNodes.each((index, element) => {
-            movieInfo.tags.push($(element).text())
-        })
         return movieInfo
     }
 }

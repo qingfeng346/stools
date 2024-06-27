@@ -43,7 +43,7 @@ class database {
                 type: DataTypes.JSON,
                 comment: "制造"
             },
-            genres: {
+            labels: {
                 type: DataTypes.JSON,
                 comment: "发行"
             },
