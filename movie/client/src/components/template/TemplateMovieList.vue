@@ -1,5 +1,14 @@
 <template>
   <Content>
+    <Page
+        class="page"
+          :current="0"
+          :total="GetPageSize()"
+          :page-size="GetPageSize()"
+          show-total
+          show-elevator
+          @on-change="OnChangePage"
+        />
     <div class="movie-wall">
       <Row :gutter="20">
         <Col v-for="movie in movies" :key="movie.id">
@@ -33,7 +42,13 @@ export default {
       this.$router.push(`/home/movie?id=${movie.id}`);
     },
     GetThumbUrl(movie) {
-      return movie.thumbUrl ?? `${net.ServerUrl}/assets/images/180x240.png`
+      return movie.thumbUrl ?? util.GetDefaultImage150x200()
+    },
+    GetPageSize() {
+      return this.movies.length
+    },
+    OnChangePage() {
+
     }
   },
 };

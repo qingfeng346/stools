@@ -210,5 +210,11 @@ class util {
     async DelStorage(name) {
         await net.execute(RequestCode.DelStorage, { name: name })
     }
+    GetDefaultImage150x150() {
+        return `${net.ServerUrl}/assets/images/150x150.png`
+    }
+    GetDefaultImage150x200() {
+        return `${net.ServerUrl}/assets/images/150x200.png`
+    }
 }
 export default new util()

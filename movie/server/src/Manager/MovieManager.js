@@ -37,7 +37,7 @@ class MovieManager {
         if (type == null || type == "all") {
             values = await database.movie.findAll({attributes: ["id", "title", "path", "thumbUrl", "isInfo"]})
         } else {
-            values = await database.sequelize.query(`select id,title,path,thumbUrl,isInfo from \`movie\` where exists (select 1 from json_each(${type}s) where value = ${value})`, { type: QueryTypes.SELECT })
+            values = await database.sequelize.query(`select id,title,path,thumbUrl,isInfo from \`movie\` where exists (select 1 from json_each(${type}s) where value = '${value}')`, { type: QueryTypes.SELECT })
         }
         if (values == null) {
             values = []
@@ -103,6 +103,15 @@ class MovieManager {
                     value.shotscreens.push(v)
                 }
             }
+        } else {
+            value.title = "title"
+            value.desc = "desc"
+            value.actors = []
+            value.actors.push((await ActorManager.GetActorInfoByName("actor1")).id)
+            value.tags = ["tag1"]
+            value.makers = ["maker1"]
+            value.genres = ["genre1"]
+            value.series = ["serie1"]
         }
         await database.movie.update(value, { where: {id: id}})
     }
