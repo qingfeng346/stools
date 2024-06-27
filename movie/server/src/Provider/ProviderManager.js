@@ -1,5 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const { logger } = require('weimingcommons');
+const utils = require('../utils');
 class ProviderManager {
     async GetMovieInfo(name) {
         let results = await this.SearchResult(name)
@@ -37,7 +39,8 @@ class ProviderManager {
     }
     async GetMovieInfoById(id) {
         let url = `https://www.avbase.net/works/${id}`
-        let result  = await axios.get(url)
+        let result = await utils.get(url)
+        if (result == null) return
         let $ = cheerio.load(result.data)
         let jsonStr = $($("script[id='__NEXT_DATA__']").first()).text()
         let jsonData = JSON.parse(jsonStr).props.pageProps.work;
