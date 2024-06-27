@@ -40,7 +40,7 @@
         <Row :gutter="20">
           <Col v-for="actorInfo in movieInfo.actors" :key="actorInfo.id">
             <Card :hoverable="true">
-              <img :src="actorInfo.imageUrl" :alt="actorInfo.name" style="height: 150px; width: 150px" @click="OnClickActor(actorInfo)"/>
+              <img :src="GetActorImageUrl(actorInfo)" :alt="actorInfo.name" style="height: 150px; width: 150px" @click="OnClickActor(actorInfo)"/>
               <Ellipsis :text="actorInfo.name" :length="12" tooltip />
             </Card>
           </Col>
@@ -84,6 +84,9 @@ export default {
             movieInfo.series = movieInfo.series ?? []
             movieInfo.shotscreens = movieInfo.shotscreens ?? []
             this.movieInfo = movieInfo
+        },
+        GetActorImageUrl(actor) {
+            return actor.imageUrl ?? util.GetDefaultImage150x150()
         },
         async OnClickPlay() {
             window.open(`${net.ServerUrl}/assets/media/${this.movieInfo.path}`, "_blank")

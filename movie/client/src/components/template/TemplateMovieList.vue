@@ -23,7 +23,6 @@
 </template>
 <script>
 import util from "../../scripts/util";
-import net from "../../scripts/net";
 export default {
   props: {
     movies: {
