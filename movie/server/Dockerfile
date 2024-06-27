@@ -2,7 +2,7 @@ FROM node:16-alpine
 
 EXPOSE 4200
 
-VOLUME [ "/app/data", "/app/assets" ]
+VOLUME [ "/app/data", "/app/assets/media" ]
 
 RUN apk add openssl
 
