@@ -9,8 +9,10 @@ class RequestManager {
             RequestCode.GetMovieList,
             RequestCode.GetMovieInfo,
             RequestCode.UpdateMoveInfo,
+            RequestCode.ParseMovieInfo,
             RequestCode.GetPersonInfo,
             RequestCode.UpdatePersonInfo,
+            RequestCode.ParsePersonInfo,
         ]
         for (let code of codes) {
             message.register(code, this[code].bind(this))
@@ -28,11 +30,17 @@ class RequestManager {
     async UpdateMoveInfo(data) {
         MovieManager.UpdateMoveInfo(data.id)
     }
+    async ParseMovieInfo(data) {
+        MovieManager.ParseMovieInfo(data.id, data.type, data.content)
+    }
     async GetPersonInfo(data) {
         return await ActorManager.GetActorInfoById(data.id)
     }
     async UpdatePersonInfo(data) {
         ActorManager.UpdatePersonInfo(data.id)
+    }
+    async ParsePersonInfo(data) {
+        ActorManager.ParsePersonInfo(data.id, data.type, data.content)
     }
 }
 module.exports = new RequestManager()

@@ -3,6 +3,7 @@ const database = require("../database")
 class ActorManager {
     constructor() {
         this.pendingIds = []
+        this.pendingParse = []
     }
     async GetActorInfoByName(name) {
         let value = (await database.actor.findOrCreate({ where: { name: name } }))[0].dataValues
@@ -23,17 +24,28 @@ class ActorManager {
             this.pendingIds.push(id)
         }
     }
+    ParseMovieInfo(id, type, content) {
+        this.pendingParse.push({id: id, type: type, content: content})
+    }
     async update() {
         if (this.pendingIds.length > 0) {
             await this.RefreshInfo(this.pendingIds.pop())
+        } else if (this.pendingParse.length > 0) {
+            let data = this.pendingParse.pop()
+            await this.RefreshInfo(data.id, data.type, data.content)
         }
     }
-    async RefreshInfo(id) {
+    async RefreshInfo(id, type, content) {
         let value = await database.actor.findOne({ where: { id: id } })
         if (value == null) {
             throw new Error(`找不到ActorId:${id}`)
         }
-        let personInfo = await ProviderManager.GetPersonInfo(value.name)
+        let personInfo = null
+        if (type == null || content == null) {
+            personInfo = await ProviderManager.GetPersonInfo(value.name)
+        } else {
+            personInfo = await ProviderManager.ParsePersonInfo(value.name, type, content)
+        }
         value = value.dataValues
         value.isInfo = true
         if (personInfo != null) {

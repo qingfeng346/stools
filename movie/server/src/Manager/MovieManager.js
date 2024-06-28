@@ -8,6 +8,7 @@ const { AssetsPath } = require("../config")
 class MovieManager {
     constructor() {
         this.pendingIds = []
+        this.pendingParse = []
         this.mediaRoot = path.resolve(AssetsPath, "media")
     }
     async UpdateMovieList() {
@@ -65,6 +66,9 @@ class MovieManager {
             this.pendingIds.push(id)
         }
     }
+    ParseMovieInfo(id, type, content) {
+        this.pendingParse.push({id: id, type: type, content: content})
+    }
     CheckRefreshInfo(value) {
         if (!value?.isInfo) {
             this.UpdateMoveInfo(value.id)
@@ -73,14 +77,22 @@ class MovieManager {
     async update() {
         if (this.pendingIds.length > 0) { 
             await this.RefreshInfo(this.pendingIds.pop())
+        } else if (this.pendingParse.length > 0) {
+            let data = this.pendingParse.pop()
+            await this.RefreshInfo(data.id, data.type, data.content)
         }
     }
-    async RefreshInfo(id) {
+    async RefreshInfo(id, type, content) {
         let value = await database.movie.findOne({ where: { id: id } })
         if (value == null) {
             throw new Error(`找不到MovieId:${id}`)
         }
-        let movieInfo = await ProviderManager.GetMovieInfo(FileUtil.GetFileNameWithoutExtension(value.path))
+        let movieInfo = null
+        if (type == null || content == null) {
+            movieInfo = await ProviderManager.GetMovieInfo(FileUtil.GetFileNameWithoutExtension(value.path))
+        } else {
+            movieInfo = await ProviderManager.ParseMovieInfo(FileUtil.GetFileNameWithoutExtension(value.path), type, content)
+        }
         value = value.dataValues
         value.isInfo = true
         if (movieInfo != null) {
@@ -109,6 +121,15 @@ class MovieManager {
             if (movieInfo.shotscreens.length > 0) {
                 value.shotscreens = movieInfo.shotscreens
             }
+        } else {
+            value.title = "title"
+            value.desc = "desc"
+            value.actors = []
+            value.actors.push((await ActorManager.GetActorInfoByName("actor1")).id)
+            value.tags = ["tag1"]
+            value.makers = ["maker1"]
+            value.genres = ["genre1"]
+            value.series = ["serie1"]
         }
         await database.movie.update(value, { where: {id: id}})
     }

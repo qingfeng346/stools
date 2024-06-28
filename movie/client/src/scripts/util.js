@@ -193,6 +193,10 @@ class util {
     async UpdateMoveInfo(id) {
         return await net.execute(RequestCode.UpdateMoveInfo, { id: id })
     }
+    //解析影片信息
+    async ParseMoveInfo(id, type, content) {
+        return await net.execute(RequestCode.ParseMovieInfo, { id: id, type: type, content: content })
+    }
     //获取演员信息
     async GetPersonInfo(id) {
         return await net.execute(RequestCode.GetPersonInfo, { id: id })
@@ -200,6 +204,10 @@ class util {
     //刷新演员信息
     async UpdatePersonInfo(id) {
         return await net.execute(RequestCode.UpdatePersonInfo, { id: id })
+    }
+    //解析影片信息
+    async ParsePersonInfo(id, type, content) {
+        return await net.execute(RequestCode.ParsePersonInfo, { id: id, type: type, content: content })
     }
     async GetStorage(name) {
         return (await net.execute(RequestCode.GetStorage, { name: name }))?.value

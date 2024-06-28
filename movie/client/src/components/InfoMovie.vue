@@ -51,6 +51,17 @@
                 <Image :src="url" fit="contain" width="120px" height="80px" preview :preview-list="movieInfo.shotscreens" :initial-index="index" />
             </template>
         </Space>
+        <Form label-position="left" :label-width="150">
+            <FormItem label="解析类型">
+                <Input v-model="parseType" placeholder="解析类型" />
+            </FormItem>
+            <FormItem label="解析内容">
+                <Input v-model="parseContent" type="textarea" :rows="10" placeholder="解析内容" />  
+            </FormItem>
+            <FormItem label="解析内容">
+                <Button @click="OnClickParse">开始解析</Button>
+            </FormItem>
+        </Form>
     </div>
 </template>
 <script>
@@ -59,7 +70,9 @@ import net from "../scripts/net";
 export default {
     data() {
         return {
-            movieInfo : {}
+            movieInfo : {},
+            parseType: "",
+            parseContent: ""
         };
     },
     beforeMount() {
@@ -109,6 +122,9 @@ export default {
         async OnClickSerie(value) {
             this.$router.push(`/home/filter?type=serie&value=${value}`);
         },
+        async OnClickParse() {
+          util.ParseMoveInfo(this.id, this.parseType, this.parseContent)
+        }
     },
 };
 </script>

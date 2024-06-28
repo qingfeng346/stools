@@ -1,30 +1,8 @@
 const utils = require('../utils');
 const cheerio = require('cheerio');
 class ProviderTest {
-    async GetMovieInfo(name) {
-        let results = await this.SearchResult(name)
-        if (results.length > 0)
-            return await this.GetMovieInfoById(results[0])
-    }
-    async GetPersonInfo(name) {
-        var url = `https://www.avbase.net/talents/${name}`;
-        let result  = await utils.get(url)
-        let $ = cheerio.load(result.data)
-        let jsonStr = $($("script[id='__NEXT_DATA__']").first()).text()
-        let jsonData = JSON.parse(jsonStr).props.pageProps.talent;
-        let personInfo = {
-            imageUrl : jsonData.primary.image_url,
-        }
-        if (jsonData?.primary?.meta != null) {
-            let fanza = jsonData?.primary?.meta.fanza
-            personInfo.desc = `出生地:${fanza.prefectures}
-身高:${fanza.height}cm
-罩杯:${fanza.cup}`;
-        }
-        return personInfo
-    }
-    async SearchResult(keyword) {
-        let result = await utils.get(`https://www.avbase.net/works?q=${keyword}`)
+    async GetMovieIdByName(name) {
+        let result = await utils.get(`https://www.avbase.net/works?q=${name}`)
         let $ = cheerio.load(result.data)
         let nodes = $("a[class='text-md font-bold btn-ghost rounded-lg m-1 line-clamp-5']")
         let results = []
@@ -34,13 +12,18 @@ class ProviderTest {
                 results.push(url.substring(url.lastIndexOf("/") + 1))
             })
         }
-        return results
+        if (results.length > 0)
+            return results[0]
     }
-    async GetMovieInfoById(id) {
-        let url = `https://www.avbase.net/works/${id}`
-        let result = await utils.get(url)
-        if (result == null) return
-        let $ = cheerio.load(result.data)
+    async GetMovieInfo(name) {
+        let movieId = await this.GetMovieIdByName(name)
+        if (movieId == null) return
+        let url = `https://www.avbase.net/works/${movieId}`
+        return await this.ParseMovieInfo(name, await utils.get(url))
+    }
+    async ParseMovieInfo(name, content) {
+        if (content == null) return
+        let $ = cheerio.load(content)
         let jsonStr = $($("script[id='__NEXT_DATA__']").first()).text()
         let jsonData = JSON.parse(jsonStr).props.pageProps.work;
         let product = jsonData.products[0];
@@ -81,6 +64,26 @@ class ProviderTest {
             }
         }
         return movieInfo
+    }
+    async GetPersonInfo(name) {
+        var url = `https://www.avbase.net/talents/${name}`;
+        return await this.ParsePersonInfo(name, await utils.get(url))
+    }
+    async ParsePersonInfo(name, content) {
+        if (content == null) return
+        let $ = cheerio.load(content)
+        let jsonStr = $($("script[id='__NEXT_DATA__']").first()).text()
+        let jsonData = JSON.parse(jsonStr).props.pageProps.talent;
+        let personInfo = {
+            imageUrl : jsonData.primary.image_url,
+        }
+        if (jsonData?.primary?.meta != null) {
+            let fanza = jsonData?.primary?.meta.fanza
+            personInfo.desc = `出生地:${fanza.prefectures}
+身高:${fanza.height}cm
+罩杯:${fanza.cup}`;
+        }
+        return personInfo
     }
 }
 module.exports = new ProviderTest()

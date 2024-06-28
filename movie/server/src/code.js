@@ -3,8 +3,10 @@ const RequestCode = {
     GetMovieList: "GetMovieList",
     GetMovieInfo: "GetMovieInfo",
     UpdateMoveInfo: "UpdateMoveInfo",
+    ParseMovieInfo: "ParseMovieInfo",
     GetPersonInfo: "GetPersonInfo",
     UpdatePersonInfo: "UpdatePersonInfo",
+    ParsePersonInfo: "ParsePersonInfo",
 
     GetConfigList: "GetConfigList",     //请求配置列表
     GetConfig: "GetConfig",             //请求配置

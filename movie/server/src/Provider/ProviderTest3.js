@@ -1,18 +1,20 @@
 const utils = require('../utils');
 const cheerio = require('cheerio');
 class ProviderTest3 {
-    async SearchResult(name) {
+    async GetMovieUrlByName(name) {
         let result = await utils.get(`http://avsox.click/ja/search/${name}`)
         let $ = cheerio.load(result.data)
         let first = $($("div[class='item']").first())
         return first.find("a").attr("href")
     }
     async GetMovieInfo(name) {
-        let searchResult = await this.SearchResult(name)
+        let searchResult = await this.GetMovieUrlByName(name)
         var url = `http:${searchResult}`;
-        let result = await utils.get(url)
-        if (result == null) return
-        let $ = cheerio.load(result.data)
+        return await this.ParseMovieInfo(name, await utils.get(url))
+    }
+    async ParseMovieInfo(name, content) {
+        if (content == null) return
+        let $ = cheerio.load(content)
         let title = $("h3").text()
         let imageUrl = $(`a[class='bigImage']`).attr("href")
         let movieInfo = {
@@ -37,7 +39,7 @@ class ProviderTest3 {
         })
         return movieInfo
     }
-    async GetPersonInfo(name) {
-    }
+    async GetPersonInfo(name) { }
+    async ParsePersonInfo(name, content) { }
 }
 module.exports = new ProviderTest3()

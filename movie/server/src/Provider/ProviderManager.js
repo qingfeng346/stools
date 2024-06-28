@@ -6,8 +6,16 @@ class ProviderManager {
     constructor() {
         this.providers = []
         this.providers.push(ProviderTest)
-        this.providers.push(ProviderTest3)
+        // this.providers.push(ProviderTest3)
         // this.providers.push(ProviderTest2)
+    }
+    GetProvider(name) {
+        for (let provider of this.providers) {
+            if (provider.constructor.name == name) {
+                return provider
+            }
+        }
+        return null
     }
     async GetMovieInfo(name) {
         for (let provider of this.providers) {
@@ -20,6 +28,9 @@ class ProviderManager {
             }
         }
     }
+    async ParseMovieInfo(name, type, content) {
+        await this.GetProvider(type).ParseMovieInfo(name, content)
+    }
     async GetPersonInfo(name) {
         for (let provider of this.providers) {
             try {
@@ -30,6 +41,9 @@ class ProviderManager {
 
             }
         }
+    }
+    async ParsePersonInfo(name, type, content) {
+        await this.GetProvider(type).ParsePersonInfo(name, content)
     }
 }
 module.exports = new ProviderManager()
