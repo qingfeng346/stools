@@ -19,7 +19,7 @@ class ProviderTest {
         let movieId = await this.GetMovieIdByName(name)
         if (movieId == null) return
         let url = `https://www.avbase.net/works/${movieId}`
-        return await this.ParseMovieInfo(name, await utils.get(url))
+        return await this.ParseMovieInfo(name, (await utils.get(url)).data)
     }
     async ParseMovieInfo(name, content) {
         if (content == null) return
@@ -30,6 +30,7 @@ class ProviderTest {
         let movieInfo = {
             movieId : jsonData.work_id,
             title: jsonData.title,
+            releaseDate: new Date(jsonData.min_date),
             imageUrl : product.image_url,
             thumbUrl : product.thumbnail_url,
             actors: [],
@@ -67,7 +68,7 @@ class ProviderTest {
     }
     async GetPersonInfo(name) {
         var url = `https://www.avbase.net/talents/${name}`;
-        return await this.ParsePersonInfo(name, await utils.get(url))
+        return await this.ParsePersonInfo(name, (await utils.get(url)).data)
     }
     async ParsePersonInfo(name, content) {
         if (content == null) return

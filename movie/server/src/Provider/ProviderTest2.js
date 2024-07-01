@@ -3,7 +3,7 @@ const cheerio = require('cheerio');
 class ProviderTest2 {
     async GetMovieInfo(name) {
         var url = `https://jav5.land/ja/id_search.php?keys=${name}`;
-        return await this.ParseMovieInfo(name, await utils.get(url))
+        return await this.ParseMovieInfo(name, (await utils.get(url)).data)
     }
     async ParseMovieInfo(name, content) {
         if (content == null) return
@@ -29,6 +29,18 @@ class ProviderTest2 {
         let genreNodes = $("span[class='genre']")
         genreNodes.each(function(index, element) {
             movieInfo.tags.push($(element).find("a").text())
+        })
+        let makerNodes = $("span[class='maker']")
+        makerNodes.each(function(index, element) {
+            movieInfo.makers.push($(element).find("a").text())
+        })
+        let serieNodes = $("span[class='series']")
+        serieNodes.each(function(index, element) {
+            movieInfo.series.push($(element).find("a").text())
+        })
+        let labelNodes = $("span[class='label1']")
+        labelNodes.each(function(index, element) {
+            movieInfo.labels.push($(element).find("a").text())
         })
         let shotscreensNodes = $("span[id='waterfall']").find("a")
         shotscreensNodes.each(function(index, element) {

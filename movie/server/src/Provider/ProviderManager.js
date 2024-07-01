@@ -25,12 +25,12 @@ class ProviderManager {
                     return info
                 }
             } catch (err) {
-                logger.error(`provider is error : ${err.message}`)
+                logger.error(`provider:${provider.constructor.name} GetMovieInfo is error : ${err.message}\n${err.stack}`)
             }
         }
     }
     async ParseMovieInfo(name, type, content) {
-        await this.GetProvider(type).ParseMovieInfo(name, content)
+        return await this.GetProvider(type).ParseMovieInfo(name, content)
     }
     async GetPersonInfo(name) {
         for (let provider of this.providers) {
@@ -41,12 +41,12 @@ class ProviderManager {
                     return info
                 }
             } catch (err) {
-
+                logger.error(`provider:${provider.constructor.name} GetPersonInfo is error : ${err.message}\n${err.stack}`)
             }
         }
     }
     async ParsePersonInfo(name, type, content) {
-        await this.GetProvider(type).ParsePersonInfo(name, content)
+        return await this.GetProvider(type).ParsePersonInfo(name, content)
     }
 }
 module.exports = new ProviderManager()
