@@ -125,15 +125,6 @@ class MovieManager {
             if (movieInfo.shotscreens.length > 0) {
                 value.shotscreens = movieInfo.shotscreens
             }
-        } else {
-            value.title = "title"
-            value.desc = "desc"
-            value.actors = []
-            value.actors.push((await ActorManager.GetActorInfoByName("actor1")).id)
-            value.tags = ["tag1"]
-            value.makers = ["maker1"]
-            value.labels = ["label1"]
-            value.series = ["serie1"]
         }
         await database.movie.update(value, { where: {id: id}})
     }
