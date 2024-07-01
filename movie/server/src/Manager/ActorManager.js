@@ -1,5 +1,6 @@
 const ProviderManager = require("../Provider/ProviderManager")
 const database = require("../database")
+const ImageManager = require("./ImageManager")
 class ActorManager {
     constructor() {
         this.pendingIds = []
@@ -48,9 +49,9 @@ class ActorManager {
         }
         value = value.dataValues
         value.isInfo = true
+        value.imageUrl = (await ImageManager.GetImageInfoByUrl(personInfo?.imageUrl ?? `/assets/images/150x150.png`))?.id
         if (personInfo != null) {
             value.desc = personInfo.desc
-            value.imageUrl = personInfo.imageUrl
         }
         await database.actor.update(value, { where: {id: id}})
     }

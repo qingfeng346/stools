@@ -13,7 +13,7 @@
       <Row :gutter="20">
         <Col v-for="movie in showMovies" :key="movie.id">
           <Card :hoverable="true">
-            <img :src="GetThumbUrl(movie)" :alt="movie.title" style="height: 240px; width: 180px" @click="OnClickMovie(movie)" />
+            <img :src="GetImageUrl(movie.thumbUrl)" :alt="movie.title" style="height: 240px; width: 180px" @click="OnClickMovie(movie)" />
             <Ellipsis :text="movie.title ?? movie.path" :length="11" tooltip style="text-align: center;" />
           </Card>
         </Col>
@@ -45,8 +45,8 @@ export default {
     OnClickMovie(movie) {
       this.$router.push(`/home/movie?id=${movie.id}`);
     },
-    GetThumbUrl(movie) {
-      return movie.thumbUrl ?? util.GetDefaultImage150x200()
+    GetImageUrl(id) {
+      return util.GetImageUrl(id)
     },
     GetPageSize() {
       return this.movies.length
@@ -55,7 +55,6 @@ export default {
       this.OnSearchChanged()
     },
     OnSearchChanged() {
-      console.log("searchchanged " + this.searchValue)
       if (util.isNullOrEmpty(this.searchValue)) {
         this.showMovies = this.movies
       } else {

@@ -8,6 +8,7 @@
 <script>
 import TemplateMovieList from "./template/TemplateMovieList.vue";
 import util from "../scripts/util";
+import net from "../scripts/net";
 export default {
   components : {
     TemplateMovieList,
@@ -22,7 +23,7 @@ export default {
   },
   methods: {
     async RefreshList() {
-      this.movies = await util.GetMovieList()
+      this.movies = await util.GetMovieList() ?? []
     },
   },
 };

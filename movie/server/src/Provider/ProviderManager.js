@@ -21,8 +21,9 @@ class ProviderManager {
         for (let provider of this.providers) {
             try {
                 let info = await provider.GetMovieInfo(name)
-                if (info != null)
+                if (info != null) {
                     return info
+                }
             } catch (err) {
                 logger.error(`provider is error : ${err.message}`)
             }
@@ -35,8 +36,10 @@ class ProviderManager {
         for (let provider of this.providers) {
             try {
                 let info = await provider.GetPersonInfo(name)
-                if (info != null)
+                if (info != null) {
+                    if (info.imageUrl == null) info.imageUrl = `/assets/images/150x150.png`
                     return info
+                }
             } catch (err) {
 
             }

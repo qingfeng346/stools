@@ -187,7 +187,12 @@ class util {
     }
     //获取影片信息
     async GetMovieInfo(id) {
-        return await net.execute(RequestCode.GetMovieInfo, { id: id })
+        let movieInfo = await net.execute(RequestCode.GetMovieInfo, { id: id })
+        if (movieInfo != null) {
+            movieInfo.thumbUrl = this.GetImageUrl(movieInfo.thumbUrl)
+            movieInfo.imageUrl = this.GetImageUrl(movieInfo.imageUrl)
+        }
+        return movieInfo
     }
     //刷新影片信息
     async UpdateMoveInfo(id) {
@@ -199,7 +204,11 @@ class util {
     }
     //获取演员信息
     async GetPersonInfo(id) {
-        return await net.execute(RequestCode.GetPersonInfo, { id: id })
+        let personInfo = await net.execute(RequestCode.GetPersonInfo, { id: id })
+        if (personInfo != null) {
+            personInfo.imageUrl = this.GetImageUrl(personInfo.imageUrl)
+        }
+        return personInfo
     }
     //刷新演员信息
     async UpdatePersonInfo(id) {
@@ -223,6 +232,9 @@ class util {
     }
     GetDefaultImage150x200() {
         return `${net.ServerUrl}/assets/images/150x200.png`
+    }
+    GetImageUrl(id) {
+        return `${net.ServerUrl}/image?id=${id}`
     }
 }
 export default new util()

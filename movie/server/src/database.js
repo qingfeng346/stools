@@ -29,9 +29,10 @@ class database {
                 autoIncrement: true,
             },
             path: DataTypes.STRING(128),
+            movieId: DataTypes.STRING(128),
             title: DataTypes.TEXT,
             desc: DataTypes.TEXT,
-            releaseDate: DataTypes.STRING(128),
+            releaseDate: DataTypes.DATE,
             thumbUrl: DataTypes.STRING(256),
             imageUrl: DataTypes.STRING(256),
             actors: DataTypes.JSON,
@@ -87,6 +88,25 @@ class database {
             ],
         })
         await this.actor.sync()
+        this.image = sequelize.define("image", {
+            id: {
+                type: DataTypes.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
+            url: DataTypes.STRING(256),
+            isInfo: DataTypes.BOOLEAN,
+        }, {
+            tableName: "image",
+            timestamps: false,
+            indexes: [
+                {
+                    unique: true,
+                    fields: ['url']
+                }
+            ],
+        })
+        await this.image.sync()
         await this.sync()
         // await this.config.upsert({ name: "name1", tags: [1,2,3,4,5], }, { where: { name: "name1" } })
         // await this.config.upsert({ name: "name2", tags: [{name: "aaa"}], }, { where: { name: "name2" } })
@@ -121,6 +141,7 @@ class database {
     async sync() {
         await this.movie.sync({alter: true})
         await this.actor.sync({alter: true})
+        await this.image.sync({alter: true})
     }
 }
 module.exports = new database()

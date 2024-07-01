@@ -5,6 +5,7 @@ const ActorManager = require("./ActorManager")
 const { QueryTypes } = require("sequelize")
 const ProviderManager = require("../Provider/ProviderManager")
 const { AssetsPath } = require("../config")
+const ImageManager = require("./ImageManager")
 class MovieManager {
     constructor() {
         this.pendingIds = []
@@ -95,11 +96,12 @@ class MovieManager {
         }
         value = value.dataValues
         value.isInfo = true
+        value.thumbUrl = (await ImageManager.GetImageInfoByUrl(movieInfo?.thumbUrl ?? `/assets/images/150x200.png`))?.id
+        value.imageUrl = (await ImageManager.GetImageInfoByUrl(movieInfo?.imageUrl ?? `/assets/images/400x250.png`))?.id
         if (movieInfo != null) {
+            value.movieId = movieInfo.movieId
             value.title = movieInfo.title
             value.desc = movieInfo.desc
-            value.thumbUrl = movieInfo.thumbUrl
-            value.imageUrl = movieInfo.imageUrl
             if (movieInfo.actors.length > 0) {
                 value.actors = []
                 for (let v of movieInfo.actors) {
@@ -128,7 +130,7 @@ class MovieManager {
             value.actors.push((await ActorManager.GetActorInfoByName("actor1")).id)
             value.tags = ["tag1"]
             value.makers = ["maker1"]
-            value.genres = ["genre1"]
+            value.labels = ["label1"]
             value.series = ["serie1"]
         }
         await database.movie.update(value, { where: {id: id}})

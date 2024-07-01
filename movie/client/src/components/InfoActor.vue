@@ -1,9 +1,12 @@
 <template>
   <Layout>
     <Content>
-      <img :src="actorInfo.imageUrl" :alt="actorInfo.name" style="height: 200px; width: 200px"/>
-      <div>{{ actorInfo.name }}</div>
+      <h1>{{ actorInfo.name }}</h1>
+      <div style="text-align: center;">
+        <img :src="actorInfo.imageUrl" :alt="actorInfo.name" class="Image"/>
+      </div>
       <div>{{ actorInfo.desc }}</div>
+      <Button size="large" type="text" @click="OnClickUpdateInfo()">刷新数据</Button>
       <TemplateMovieList :movies="movies"/>
     </Content>
   </Layout>
@@ -39,3 +42,13 @@ export default {
   },
 };
 </script>
+<style>
+h1 {
+  text-align: center;
+  margin-top: 10px;
+}
+.Image {
+  height: 200px;
+  width: 200px;
+}
+</style>
