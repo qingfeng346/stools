@@ -6,6 +6,7 @@ const { QueryTypes } = require("sequelize")
 const ProviderManager = require("../Provider/ProviderManager")
 const { AssetsPath } = require("../config")
 const ImageManager = require("./ImageManager")
+const utils = require("../utils")
 class MovieManager {
     constructor() {
         this.pendingIds = []
@@ -96,8 +97,8 @@ class MovieManager {
         }
         value = value.dataValues
         value.isInfo = true
-        value.thumbUrl = (await ImageManager.GetImageInfoByUrl(movieInfo?.thumbUrl ?? `/assets/images/150x200.png`))?.id
-        value.imageUrl = (await ImageManager.GetImageInfoByUrl(movieInfo?.imageUrl ?? `/assets/images/400x250.png`))?.id
+        value.thumbUrl = (await ImageManager.GetImageInfoByUrl(movieInfo?.thumbUrl ?? utils.getDefaultImage(150,200)))?.id
+        value.imageUrl = (await ImageManager.GetImageInfoByUrl(movieInfo?.imageUrl ?? utils.getDefaultImage(400,250)))?.id
         if (movieInfo != null) {
             value.movieId = movieInfo.movieId
             value.title = movieInfo.title

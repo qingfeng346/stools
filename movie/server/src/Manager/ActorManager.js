@@ -49,7 +49,7 @@ class ActorManager {
         }
         value = value.dataValues
         value.isInfo = true
-        value.imageUrl = (await ImageManager.GetImageInfoByUrl(personInfo?.imageUrl ?? `/assets/images/150x150.png`))?.id
+        value.imageUrl = (await ImageManager.GetImageInfoByUrl(personInfo?.imageUrl ?? utils.getDefaultImage(150,150)))?.id
         if (personInfo != null) {
             value.desc = personInfo.desc
         }

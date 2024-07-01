@@ -8,5 +8,8 @@ class utils {
             logger.error(`GetUrl ${url} is error : ${error.message}\n${error.stack}`)
         })
     }
+    getDefaultImage(width, height) {
+        return `https://fakeimg.pl/${width}x${height}?text=No%20Image`
+    }
 }
 module.exports = new utils()
