@@ -8,6 +8,8 @@ const { Util } = require('weimingcommons')
 const ActorManager = require('./Manager/ActorManager')
 const MovieManager = require('./Manager/MovieManager')
 const database = require('./database')
+const ImageManager = require('./Manager/ImageManager')
+const utils = require('./utils')
 class net {
     constructor() {
         this.clients = []
@@ -45,18 +47,6 @@ class net {
         logger.error(`[Notice][error] ${str}`)
         this.sendMessage("notice", { type: "error", msg: str })
     }
-    getParam(href, key) {
-        let params = href.substring(href.lastIndexOf("?") + 1).split("&")
-        for (let str of params) {
-            let index = str.indexOf("=")
-            if (index <= 0) { continue }
-            let name = str.substring(0, index);
-            if (name == key) {
-                return str.substring(index + 1)
-            }
-        }
-        return ""
-    }
     async init() {
         let app = express()
         app.all("*", (_req, res, next) => {
@@ -77,9 +67,13 @@ class net {
         })
         app.get("/image", async (req, res) => {
             try {
-                let id = this.getParam(req.url, "id")
+                let id = utils.getParam(req.url, "id")
                 let value = await database.image.findOne({ where: { id: parseInt(id) } })
-                res.writeHead(302, { 'Location': value.url });
+                if (value.isInfo) {
+                    res.writeHead(302, { 'Location': `/assets/cache/images/${id}.png` });
+                } else {
+                    res.writeHead(302, { 'Location': value.url });
+                }
             } catch (e) {
                 logger.error(`image is error, from:${req.ip} : ${e.message}\n${e.stack}`)
             }
@@ -166,6 +160,7 @@ class net {
             try {
                 await MovieManager.update()
                 await ActorManager.update()
+                await ImageManager.update()
             } catch (e) {
                 logger.error(`Update is error : ${e.message}\n${e.stack}`)
             }
