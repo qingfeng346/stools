@@ -1,5 +1,6 @@
 const ProviderManager = require("../Provider/ProviderManager")
 const database = require("../database")
+const utils = require("../utils")
 const ImageManager = require("./ImageManager")
 class ActorManager {
     constructor() {
@@ -25,7 +26,7 @@ class ActorManager {
             this.pendingIds.push(id)
         }
     }
-    ParseMovieInfo(id, type, content) {
+    ParsePersonInfo(id, type, content) {
         this.pendingParse.push({id: id, type: type, content: content})
     }
     async update() {

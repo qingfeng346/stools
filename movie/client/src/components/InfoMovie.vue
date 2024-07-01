@@ -33,8 +33,9 @@
             </FormItem>
             <FormItem label="操作">
                 <Space wrap>
-                    <Button size="large" type="text" @click="OnClickPlay()">播放地址</Button>
-                    <Button size="large" type="text" @click="OnClickUpdateInfo()">刷新数据</Button>
+                    <Button size="large" type="success" ghost @click="OnClickPlay()">播放地址</Button>
+                    <Button size="large" type="success" ghost @click="OnClickUpdateInfo()">刷新数据</Button>
+                    <Button size="large" type="success" ghost @click="OnClickUpdateServerInfo()">刷新服务器数据</Button>
                 </Space>
             </FormItem>
         </Form>
@@ -43,7 +44,7 @@
           <Col v-for="actorInfo in movieInfo.actors" :key="actorInfo.id">
             <Card :hoverable="true">
               <img :src="actorInfo.imageUrl" :alt="actorInfo.name" style="height: 150px; width: 150px" @click="OnClickActor(actorInfo)"/>
-              <Ellipsis :text="actorInfo.name" :length="12" tooltip />
+              <Ellipsis :text="actorInfo.name" :length="12" tooltip style="text-align: center;"/>
             </Card>
           </Col>
         </Row>
@@ -55,13 +56,17 @@
         </Space>
         <Form label-position="left" :label-width="150">
             <FormItem label="解析类型">
-                <Input v-model="parseType" placeholder="解析类型" />
+                <AutoComplete
+                    v-model="parseType"
+                    :data="parseTypeList"
+                    placeholder="解析类型">
+                </AutoComplete>
             </FormItem>
             <FormItem label="解析内容">
                 <Input v-model="parseContent" type="textarea" :rows="10" placeholder="解析内容" />  
             </FormItem>
             <FormItem label="解析内容">
-                <Button @click="OnClickParse">开始解析</Button>
+                <Button type="success" ghost @click="OnClickParse">解析数据</Button>
             </FormItem>
         </Form>
     </div>
@@ -74,6 +79,7 @@ export default {
         return {
             movieInfo : {},
             parseType: "",
+            parseTypeList: ["ProviderTest", "ProviderTest2", "ProviderTest3"],
             parseContent: ""
         };
     },
@@ -104,7 +110,11 @@ export default {
             window.open(`${net.ServerUrl}/assets/media/${this.movieInfo.path}`, "_blank")
         },
         async OnClickUpdateInfo() {
-          util.UpdateMoveInfo(this.id)
+          await this.RefreshInfo();
+          util.noticeSuccess("刷新成功")
+        },
+        async OnClickUpdateServerInfo() {
+            util.UpdateMoveInfo(this.id)
         },
         async OnClickActor(actor) {
             this.$router.push(`/home/actor?id=${actor.id}`);

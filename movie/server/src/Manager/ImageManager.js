@@ -10,14 +10,14 @@ class ImageManager {
         if (Util.isNullOrEmpty(url))
             return null
         var value = (await database.image.findOrCreate({ where: { url: url } }))[0].dataValues
-        this.CheckRefreshInfo(value)
+        if (!value?.isInfo) {
+            this.UpdateImageInfo(value)
+        }
         return value
     }
-    CheckRefreshInfo(value) {
-        if (!value?.isInfo) {
-            if (this.pendingIds.indexOf(value.id) < 0) {
-                this.pendingIds.push(value.id)
-            }
+    UpdateImageInfo(value) {
+        if (this.pendingIds.indexOf(value.id) < 0) {
+            this.pendingIds.push(value.id)
         }
     }
     async update() {

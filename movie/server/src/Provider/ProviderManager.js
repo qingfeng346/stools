@@ -6,8 +6,8 @@ class ProviderManager {
     constructor() {
         this.providers = []
         this.providers.push(ProviderTest)
-        // this.providers.push(ProviderTest3)
-        // this.providers.push(ProviderTest2)
+        this.providers.push(ProviderTest2)
+        this.providers.push(ProviderTest3)
     }
     GetProvider(name) {
         for (let provider of this.providers) {

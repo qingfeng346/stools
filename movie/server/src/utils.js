@@ -1,4 +1,5 @@
 const axios = require('axios')
+const fs = require('fs')
 const { logger, FileUtil } = require('weimingcommons')
 class utils {
     async get(url) {

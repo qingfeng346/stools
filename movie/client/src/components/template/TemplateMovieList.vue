@@ -14,6 +14,7 @@
         <Col v-for="movie in showMovies" :key="movie.id">
           <Card :hoverable="true">
             <img :src="GetImageUrl(movie.thumbUrl)" :alt="movie.title" style="height: 240px; width: 180px" @click="OnClickMovie(movie)" />
+            <h4 style="text-align: center;">{{ movie.movieId }}</h4>
             <Ellipsis :text="movie.title ?? movie.path" :length="11" tooltip style="text-align: center;" />
           </Card>
         </Col>

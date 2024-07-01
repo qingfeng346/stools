@@ -4,7 +4,7 @@ const multipart = require('multer')
 const webSocket = require('ws')
 const message = require('./message')
 const { UploadPath, AssetsPath, ClientPath } = require('./config')
-const { Util } = require('weimingcommons')
+const { Util, FileUtil } = require('weimingcommons')
 const ActorManager = require('./Manager/ActorManager')
 const MovieManager = require('./Manager/MovieManager')
 const database = require('./database')
@@ -68,11 +68,15 @@ class net {
         app.get("/image", async (req, res) => {
             try {
                 let id = utils.getParam(req.url, "id")
-                let value = await database.image.findOne({ where: { id: parseInt(id) } })
-                if (value.isInfo) {
-                    res.writeHead(302, { 'Location': `/assets/cache/images/${id}.png` });
-                } else {
-                    res.writeHead(302, { 'Location': value.url });
+                let intId = parseInt(id)
+                if (!isNaN(intId)) {
+                    let value = await database.image.findOne({ where: { id: intId } })
+                    if (value.isInfo && FileUtil.FileExist(`${AssetsPath}/cache/images/${id}.png`)) {
+                        res.writeHead(302, { 'Location': `/assets/cache/images/${id}.png` });
+                    } else {
+                        ImageManager.UpdateImageInfo(value)
+                        res.writeHead(302, { 'Location': value.url });
+                    }
                 }
             } catch (e) {
                 logger.error(`image is error, from:${req.ip} : ${e.message}\n${e.stack}`)
