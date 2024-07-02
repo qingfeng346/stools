@@ -10,6 +10,4 @@ COPY . .
 
 WORKDIR /app/FileSync
 
-ENV DOTNET_USE_POLLING_FILE_WATCHER=true
-
 CMD [ "dotnet", "run", "sync", "-s", "../source", "-t", "../target" ]
