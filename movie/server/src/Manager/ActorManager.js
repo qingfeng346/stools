@@ -53,6 +53,7 @@ class ActorManager {
         value.imageUrl = (await ImageManager.GetImageInfoByUrl(personInfo?.imageUrl ?? utils.getDefaultImage(150,150)))?.id
         if (personInfo != null) {
             value.desc = personInfo.desc
+            value.info = personInfo.info
         }
         await database.actor.update(value, { where: {id: id}})
     }

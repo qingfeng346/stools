@@ -5,9 +5,10 @@
       <div style="text-align: center;">
         <img :src="actorInfo.imageUrl" :alt="actorInfo.name" class="Image"/>
       </div>
+      <pre style="margin-left: 30px; margin-right: 30px; margin-bottom: 30px;">{{ actorInfo.desc }}</pre>
       <Form label-position="left" :label-width="150">
-        <FormItem label="简介">
-          <pre>{{ actorInfo.desc }}</pre>
+        <FormItem v-for="(value,key) in actorInfo.info" :key="key" :label="key">
+          <pre>{{ value }}</pre>
         </FormItem>
         <FormItem label="操作">
           <Space wrap>
@@ -45,7 +46,7 @@ export default {
       actorInfo: {},
       movies: [],
       parseType: "",
-      parseTypeList: ["ProviderTest", "ProviderTest2", "ProviderTest3"],
+      parseTypeList: ["ProviderTest", "ProviderTest2", "ProviderTest3", "ProviderTest4"],
       parseContent: ""
     };
   },
