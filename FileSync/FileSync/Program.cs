@@ -1,4 +1,5 @@
-﻿using Scorpio.Commons;
+﻿using Microsoft.Extensions.FileProviders;
+using Scorpio.Commons;
 namespace FileSync {
     using static FileUtil;
     internal class Program {
@@ -21,6 +22,8 @@ namespace FileSync {
             target = Path.GetFullPath(target);
             var sync = new object();
             var changeFiles = new LinkedList<(string, string, WatcherChangeTypes)>();
+            var provider = new PhysicalFileProvider(source);
+            Environment.SetEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "1");
             var watcher = new FileSystemWatcher(source);
             watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.Size | NotifyFilters.LastWrite | NotifyFilters.CreationTime;
             watcher.Changed += (sender, args) => {
