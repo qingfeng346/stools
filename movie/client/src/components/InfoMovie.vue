@@ -11,6 +11,9 @@
             <FormItem label="简介">
                 <div>{{ movieInfo.desc }}</div>
             </FormItem>
+            <FormItem label="发行时间">
+                <div>{{ movieInfo.releaseDate }}</div>
+            </FormItem>
             <FormItem label="标签">
                 <Space wrap>
                     <Button v-for="tag of movieInfo.tags" size="large" type="text" @click="OnClickTag(tag)">{{ tag }}</Button>

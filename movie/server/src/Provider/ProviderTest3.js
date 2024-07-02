@@ -10,7 +10,7 @@ class ProviderTest3 {
     async GetMovieInfo(name) {
         let searchResult = await this.GetMovieUrlByName(name)
         var url = `http:${searchResult}`;
-        return await this.ParseMovieInfo(name, await utils.get(url))
+        return await this.ParseMovieInfo(name, (await utils.get(url)).data)
     }
     async ParseMovieInfo(name, content) {
         if (content == null) return

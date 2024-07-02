@@ -56,8 +56,8 @@ class net {
             res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
             next()
         })
-        app.use(express.json())
-        app.use(express.text())
+        app.use(express.json({limit: '10mb'}))
+        app.use(express.text({limit: '10mb'}))
         app.use(multipart({ dest: UploadPath }).any())                              //设置上传文件存放的地址
         app.use("/assets", express.static(AssetsPath))
         app.use("/client", express.static(ClientPath))

@@ -39,11 +39,11 @@ class MovieManager {
         let values = undefined
         value = decodeURI(value)
         if (type == null || type == "all") {
-            values = await database.movie.findAll({attributes: ["id", "title", "path", "thumbUrl", "isInfo"]})
+            values = await database.movie.findAll({attributes: ["id", "movieId", "title", "path", "thumbUrl", "isInfo"]})
         } else if (type == "actor") {
-            values = await database.sequelize.query(`select id,title,path,thumbUrl,isInfo from \`movie\` where exists (select 1 from json_each(${type}s) where value = ${value})`, { type: QueryTypes.SELECT })
+            values = await database.sequelize.query(`select id,movieId,title,path,thumbUrl,isInfo from \`movie\` where exists (select 1 from json_each(${type}s) where value = ${value})`, { type: QueryTypes.SELECT })
         } else {
-            values = await database.sequelize.query(`select id,title,path,thumbUrl,isInfo from \`movie\` where exists (select 1 from json_each(${type}s) where value = '${value}')`, { type: QueryTypes.SELECT })
+            values = await database.sequelize.query(`select id,movieId,title,path,thumbUrl,isInfo from \`movie\` where exists (select 1 from json_each(${type}s) where value = '${value}')`, { type: QueryTypes.SELECT })
         }
         if (values == null) {
             values = []
@@ -103,6 +103,7 @@ class MovieManager {
             value.movieId = movieInfo.movieId
             value.title = movieInfo.title
             value.desc = movieInfo.desc
+            value.releaseDate = movieInfo.releaseDate
             if (movieInfo.actors.length > 0) {
                 value.actors = []
                 for (let v of movieInfo.actors) {
@@ -124,15 +125,6 @@ class MovieManager {
             if (movieInfo.shotscreens.length > 0) {
                 value.shotscreens = movieInfo.shotscreens
             }
-        } else {
-            value.title = "title"
-            value.desc = "desc"
-            value.actors = []
-            value.actors.push((await ActorManager.GetActorInfoByName("actor1")).id)
-            value.tags = ["tag1"]
-            value.makers = ["maker1"]
-            value.labels = ["label1"]
-            value.series = ["serie1"]
         }
         await database.movie.update(value, { where: {id: id}})
     }
