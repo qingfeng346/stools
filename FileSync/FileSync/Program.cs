@@ -52,20 +52,26 @@ namespace FileSync {
             Task.Run(async () => {
                 SyncFolder(source, target, null, true, CompareType.SizeAndModifyTime, NameType.None);
                 while (true) {
-                    await Task.Delay(1000);
+                    await Task.Delay(500);
                     while (changeFiles.Count > 0) {
+                        await Task.Delay(500);
                         if (changeFiles.TryDequeue(out (string filePath, string oldFilePath, WatcherChangeTypes changeType) changeFile)) {
-                            switch (changeFile.changeType) {
-                                case WatcherChangeTypes.Created:
-                                case WatcherChangeTypes.Changed:
-                                    SyncFile(changeFile.filePath, GetTargetFile(changeFile.filePath));
-                                    break;
-                                case WatcherChangeTypes.Deleted:
-                                    DeleteFile(GetTargetFile(changeFile.filePath));
-                                    break;
-                                case WatcherChangeTypes.Renamed:
-                                    MoveFile(GetTargetFile(changeFile.oldFilePath), GetTargetFile(changeFile.filePath));
-                                    break;
+                            try {
+                                switch (changeFile.changeType) {
+                                    case WatcherChangeTypes.Created:
+                                    case WatcherChangeTypes.Changed:
+                                        SyncFile(changeFile.filePath, GetTargetFile(changeFile.filePath));
+                                        break;
+                                    case WatcherChangeTypes.Deleted:
+                                        DeleteFile(GetTargetFile(changeFile.filePath));
+                                        break;
+                                    case WatcherChangeTypes.Renamed:
+                                        MoveFile(GetTargetFile(changeFile.oldFilePath), GetTargetFile(changeFile.filePath));
+                                        break;
+                                }
+                            } catch (Exception e) {
+                                logger.error($"处理文件出错 FilePath:{changeFile.filePath} OldPath:{changeFile.oldFilePath} ChangeType:{changeFile.changeType} : {e}");
+                                changeFiles.Enqueue(changeFile);
                             }
                         }
                     }
