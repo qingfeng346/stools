@@ -44,6 +44,7 @@ namespace Scorpio.stools {
             perform.AddExecute("md5", "获取文件MD5", GetMD5);
             perform.AddExecute("sortmedia", "整理图片和视频", SortMedia);
             perform.AddExecute("sortmusic", "整理音频", SortMusic);
+            perform.AddExecute("sync", "文件夹同步", SyncFolder);
             try {
                 perform.Start(args);
                 Environment.Exit(0);
@@ -275,6 +276,10 @@ namespace Scorpio.stools {
             urls.AddRange(commandLine.Args);
             if (url != null) urls.AddRange(url);
             Task.Run(async () => await MusicUtil.DownloadAlbumUrls(urls.ToArray(), output, MusicPath.Artist)).Wait();
+        }
+        static void SyncFolder([ParamterInfo(Label = "起始目录", Param = ParameterSource)] string source,
+                               [ParamterInfo(Label = "输出目录", Param = ParameterOutput)] string target) {
+            FileUtil.SyncFolder(source, target, null, true, FileUtil.CompareType.SizeAndModifyTime, FileUtil.NameType.None);
         }
     }
 }
