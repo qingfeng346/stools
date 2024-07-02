@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FileSync": {
+      "commandName": "Project",
+      "commandLineArgs": "sync -s C:\\Users\\qingf\\Desktop\\ConsoleApp1\\source -t C:\\Users\\qingf\\Desktop\\ConsoleApp1\\target"
+    }
+  }
+}
