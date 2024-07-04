@@ -49,20 +49,15 @@ class database {
             ],
         });
         await this.music.sync()
-        this.actor = sequelize.define("actor", {
+        this.artist = sequelize.define("artist", {
             id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
                 autoIncrement: true,
             },
             name: DataTypes.STRING(128),
-            desc: DataTypes.TEXT,
-            beginDate: DataTypes.DATE,
-            endDate: DataTypes.DATE,
-            imageUrl: DataTypes.STRING(256),
-            isInfo: DataTypes.BOOLEAN,
         }, {
-            tableName: "actor",
+            tableName: "artist",
             timestamps: false,
             indexes: [
                 {
@@ -71,26 +66,25 @@ class database {
                 }
             ],
         })
-        await this.actor.sync()
-        this.image = sequelize.define("image", {
+        await this.artist.sync()
+        this.album = sequelize.define("album", {
             id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
                 autoIncrement: true,
             },
-            url: DataTypes.STRING(256),
-            isInfo: DataTypes.BOOLEAN,
+            name: DataTypes.STRING(256),
         }, {
-            tableName: "image",
+            tableName: "album",
             timestamps: false,
             indexes: [
                 {
                     unique: true,
-                    fields: ['url']
+                    fields: ['name']
                 }
             ],
         })
-        await this.image.sync()
+        await this.album.sync()
         await this.sync()
         // await this.config.upsert({ name: "name1", tags: [1,2,3,4,5], }, { where: { name: "name1" } })
         // await this.config.upsert({ name: "name2", tags: [{name: "aaa"}], }, { where: { name: "name2" } })
@@ -124,8 +118,8 @@ class database {
     }
     async sync() {
         await this.music.sync({alter: true})
-        await this.actor.sync({alter: true})
-        await this.image.sync({alter: true})
+        await this.artist.sync({alter: true})
+        await this.album.sync({alter: true})
     }
 }
 export default new database()
