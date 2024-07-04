@@ -74,6 +74,7 @@ class database {
                 autoIncrement: true,
             },
             name: DataTypes.STRING(256),
+            artist: DataTypes.JSON,
         }, {
             tableName: "album",
             timestamps: false,
