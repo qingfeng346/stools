@@ -2,12 +2,14 @@ const { logger } = require('weimingcommons');
 const ProviderTest = require('./ProviderTest');
 const ProviderTest2 = require('./ProviderTest2');
 const ProviderTest3 = require('./ProviderTest3');
+const ProviderTest4 = require('./ProviderTest4');
 class ProviderManager {
     constructor() {
         this.providers = []
         this.providers.push(ProviderTest)
         this.providers.push(ProviderTest2)
         this.providers.push(ProviderTest3)
+        this.providers.push(ProviderTest4)
     }
     GetProvider(name) {
         for (let provider of this.providers) {

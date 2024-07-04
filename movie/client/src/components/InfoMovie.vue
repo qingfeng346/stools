@@ -82,7 +82,7 @@ export default {
         return {
             movieInfo : {},
             parseType: "",
-            parseTypeList: ["ProviderTest", "ProviderTest2", "ProviderTest3"],
+            parseTypeList: ["ProviderTest", "ProviderTest2", "ProviderTest3", "ProviderTest4"],
             parseContent: ""
         };
     },

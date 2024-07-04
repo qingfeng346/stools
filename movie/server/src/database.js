@@ -73,8 +73,7 @@ class database {
             },
             name: DataTypes.STRING(128),
             desc: DataTypes.TEXT,
-            beginDate: DataTypes.DATE,
-            endDate: DataTypes.DATE,
+            info: DataTypes.JSON,
             imageUrl: DataTypes.STRING(256),
             isInfo: DataTypes.BOOLEAN,
         }, {
