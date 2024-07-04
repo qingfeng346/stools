@@ -1,7 +1,6 @@
-const ActorManager = require("../Manager/ActorManager")
-const MovieManager = require("../Manager/MusicManager")
-const message = require("../message")
-const { RequestCode } = require("../code")
+import MusicManager from "../Manager/MusicManager.js"
+import message from "../message.js"
+import { RequestCode } from "../code.js"
 class RequestManager {
     async init() {
         let codes = [
@@ -19,19 +18,19 @@ class RequestManager {
         }
     }
     async UpdateMovieList() {
-        await MovieManager.UpdateMovieList()
+        await MusicManager.UpdateMovieList()
     }
     async GetMovieList(data) {
-        return await MovieManager.GetMovieList(data.type, data.value, data.page, data.pageSize)
+        return await MusicManager.GetMovieList(data.type, data.value, data.page, data.pageSize)
     }
     async GetMovieInfo(data) {
-        return await MovieManager.GetMovieInfoById(data.id)
+        return await MusicManager.GetMovieInfoById(data.id)
     }
     async UpdateMoveInfo(data) {
-        MovieManager.UpdateMusicInfo(data.id)
+        MusicManager.UpdateMusicInfo(data.id)
     }
     async ParseMovieInfo(data) {
-        MovieManager.ParseMovieInfo(data.id, data.type, data.content)
+        MusicManager.ParseMovieInfo(data.id, data.type, data.content)
     }
     async GetPersonInfo(data) {
         return await ActorManager.GetActorInfoById(data.id)
@@ -43,4 +42,4 @@ class RequestManager {
         ActorManager.ParsePersonInfo(data.id, data.type, data.content)
     }
 }
-module.exports = new RequestManager()
+export default new RequestManager()

@@ -1,6 +1,6 @@
-const { RequestCode } = require('../code')
-const message = require('../message')
-const database = require('../database')
+import { RequestCode } from '../code.js'
+import message from '../message.js'
+import database from '../database.js'
 class ServerConfig {
     async init() {
         message.register(RequestCode.GetConfigList, this.OnGetConfigList.bind(this))
@@ -56,4 +56,4 @@ class ServerConfig {
         await database.sync()
     }
 }
-module.exports = new ServerConfig()
+export default new ServerConfig()

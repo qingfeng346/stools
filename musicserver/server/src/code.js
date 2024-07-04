@@ -18,7 +18,6 @@ const RequestCode = {
     DelStorage: "DelStorage",
     SyncDatabase: "SyncDatabase",
 }
-const Result = {
+export {
     RequestCode,
 }
-module.exports = Result

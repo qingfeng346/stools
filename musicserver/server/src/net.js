@@ -1,19 +1,18 @@
-const logger = require('log4js').getLogger('net.js')
-const express = require('express')
-const multipart = require('multer')
-const webSocket = require('ws')
-const message = require('./message')
-const { UploadPath, AssetsPath, ClientPath } = require('./config')
-const { Util, FileUtil } = require('weimingcommons')
-const ActorManager = require('./Manager/ActorManager')
-const MusicManager = require('./Manager/MusicManager')
-const database = require('./database')
-const ImageManager = require('./Manager/ImageManager')
-const utils = require('./utils')
+import log4js from 'log4js'
+import express from 'express'
+import multipart from 'multer'
+import { WebSocketServer } from 'ws'
+import { Util, FileUtil, logger as WMLogger } from 'weimingcommons'
+import message from './message.js'
+import { UploadPath, AssetsPath, ClientPath } from './config.js'
+import MusicManager from './Manager/MusicManager.js'
+import database from './database.js'
+import utils from './utils.js'
+const logger = log4js.getLogger('net.js')
 class net {
     constructor() {
         this.clients = []
-        require('weimingcommons').logger.ilog = this
+        WMLogger.ilog = this
     }
     write(str) {
         process.stdout.write(str)
@@ -111,7 +110,7 @@ class net {
         let server = app.listen(port, () => {
             logger.info(`应用正在监听 http://127.0.0.1:${port}`);
         })
-        new webSocket.Server({ server: server }).on("connection", (ws) => {
+        new WebSocketServer({ server: server }).on("connection", (ws) => {
             this.clients.push(ws)
             ws.onclose = () => {
                 let index = this.clients.indexOf(ws)
@@ -163,12 +162,10 @@ class net {
             await Util.sleep(500);
             try {
                 await MusicManager.update()
-                await ActorManager.update()
-                await ImageManager.update()
             } catch (e) {
                 logger.error(`Update is error : ${e.message}\n${e.stack}`)
             }
         }
     }
 }
-module.exports = new net()
+export default new net()

@@ -1,6 +1,6 @@
-const axios = require('axios')
-const fs = require('fs')
-const { logger, FileUtil } = require('weimingcommons')
+import axios from 'axios'
+import fs from 'fs'
+import { logger, FileUtil } from 'weimingcommons'
 class utils {
     async get(url) {
         return await axios.get(url).then(function(res) {
@@ -45,4 +45,4 @@ class utils {
         })
     }
 }
-module.exports = new utils()
+export default new utils()

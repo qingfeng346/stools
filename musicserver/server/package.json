@@ -2,19 +2,20 @@
   "name": "movie",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
+  "type": "module",
   "dependencies": {
     "axios": "^1.6.0",
     "cheerio": "^1.0.0-rc.12",
     "express": "^4.18.2",
     "log4js": "^6.9.1",
-    "mp3tag.js": "^3.10.0",
     "multer": "^1.4.5-lts.1",
+    "music-metadata": "^8.3.0",
     "sequelize": "^6.31.0",
     "sqlite3": "^5.1.6",
     "weimingcommons": "^0.0.26",

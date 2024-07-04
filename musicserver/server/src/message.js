@@ -9,4 +9,4 @@ class message {
         return this.events[code]
     }
 }
-module.exports = new message()
+export default new message()

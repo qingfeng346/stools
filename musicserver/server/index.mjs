@@ -1,8 +1,9 @@
-const log4js = require('log4js')
-const axios = require('axios')
-const RequestManager = require('./src/Request/RequestManager')
-const ServerConfig = require('./src/Request/ServerConfig')
-const MovieManager = require('./src/Manager/MusicManager')
+import log4js from 'log4js'
+import axios from 'axios'
+import RequestManager from './src/Request/RequestManager.js'
+import ServerConfig from './src/Request/ServerConfig.js'
+import database from './src/database.js'
+import net from './src/net.js'
 log4js.configure({
     appenders: {
         console: {
@@ -47,11 +48,10 @@ async function main() {
             logger.error(`未捕获的promise异常 ${err}`)
         })
         axios.defaults.timeout = 6000
-        await require('./src/database').init()
-        await require('./src/net').init()
+        await database.init()
+        await net.init()
         await RequestManager.init()
         await ServerConfig.init()
-        MovieManager.UpdateMovieList()
     } catch (e) {
         logger.error("启动失败 : ", e)
     }

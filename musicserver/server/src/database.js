@@ -1,6 +1,6 @@
-const logger = require('log4js').getLogger('database.js')
-const { Sequelize, DataTypes } = require("sequelize")
-
+import log4js from 'log4js'
+import { Sequelize, DataTypes } from "sequelize"
+const logger = log4js.getLogger('database.js')
 class database {
     async init() {
         let sequelize = new Sequelize({
@@ -29,14 +29,15 @@ class database {
                 autoIncrement: true,
             },
             path: DataTypes.STRING(128),        //路径
+            size: DataTypes.INTEGER,            //文件大小
+            ctime: DataTypes.DATE,              //文件最后修改时间
+            version: DataTypes.INTEGER,         //文件版本号
             title: DataTypes.STRING(128),       //标题
             album: DataTypes.INTEGER,           //专辑
             artist: DataTypes.JSON,             //艺术家
-            genre: DataTypes.JSON,              //流派
             year: DataTypes.INTEGER,            //年份
             track: DataTypes.INTEGER,           //曲目
             lyrics: DataTypes.TEXT,             //歌词
-            isInfo: DataTypes.BOOLEAN,
         }, {
             tableName: "music",
             timestamps: false,
@@ -127,4 +128,4 @@ class database {
         await this.image.sync({alter: true})
     }
 }
-module.exports = new database()
+export default new database()
