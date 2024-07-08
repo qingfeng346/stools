@@ -57,6 +57,7 @@
                 <Image :src="url" fit="contain" width="120px" height="80px" preview :preview-list="movieInfo.shotscreens" :initial-index="index" />
             </template>
         </Space>
+        <div id="dplayer" style="margin: 20px; width: 600px; height: 400px;"></div>
         <Form label-position="left" :label-width="150">
             <FormItem label="解析类型">
                 <AutoComplete
@@ -77,6 +78,7 @@
 <script>
 import util from "../scripts/util";
 import net from "../scripts/net";
+import DPlayer from "dplayer";
 export default {
     data() {
         return {
@@ -108,6 +110,13 @@ export default {
             movieInfo.series = movieInfo.series ?? []
             movieInfo.shotscreens = movieInfo.shotscreens ?? []
             this.movieInfo = movieInfo
+            this.dp = new DPlayer({
+                container: document.getElementById('dplayer'),
+                video: {
+                    // url: `${net.ServerUrl}/assets/media/${this.movieInfo.path}`,
+                    url : "http://192.168.31.59:4200/assets/media/%E4%B8%89%E6%B5%A6%E6%81%B5%E7%90%86%E5%AD%90/FABS-085.mp4"
+                },
+            })
         },
         async OnClickPlay() {
             window.open(`${net.ServerUrl}/assets/media/${this.movieInfo.path}`, "_blank")
