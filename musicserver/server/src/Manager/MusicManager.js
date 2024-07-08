@@ -5,6 +5,8 @@ import database from "../database.js"
 import { QueryTypes } from "sequelize"
 import { AssetsPath } from "../config.js"
 import { parseStream } from "music-metadata"
+import ArtistManager from "./ArtistManager.js"
+import AlbumManager from "./AlbumManager.js"
 class MusicManager {
     constructor() {
         this.pendingIds = []
@@ -41,6 +43,7 @@ class MusicManager {
     }
     async update() {
         if (this.requestRefreshList) {
+            this.requestRefreshList = false
             await this.RefreshMusicList()
         }
         if (this.pendingIds.length > 0) { 
@@ -55,7 +58,7 @@ class MusicManager {
             if (file.endsWith(".mp3")) {
                 let value = (await database.music.findOrCreate({ where: { path: file.substring(this.musicRoot.length + 1) } }))[0].dataValues
                 let fileStat = fs.statSync(file)
-                if (value.size != fileStat.size || value.ctime != fileStat.ctime) {
+                if (value.size != fileStat.size || value.ctime?.valueOf() != fileStat.ctime?.valueOf()) {
                     this.UpdateMusicInfo(value.id)
                 }
                 existIds.add(value.id)
@@ -84,12 +87,33 @@ class MusicManager {
             title: metadata.common.title,
             year: metadata.common.year,
             track: metadata.common.track?.no,
+            duration: parseInt(metadata.format.duration),
         }
-        if (metadata.common.lyrics != null && metadata.common.lyrics.length() > 0) {
+        let artists = []
+        if (metadata.common.artists != null) {
+            for (let artist of metadata.common.artists) {
+                for (let name of artist.split("&")) {
+                    artists.push((await ArtistManager.GetInfoByName(name)).id)
+                }
+            }
+        }
+        musicInfo.artist = artists
+        if (metadata.common.album != null) {
+            musicInfo.album = (await AlbumManager.GetInfoByName(metadata.common.album)).id
+            AlbumManager.UpdateAlbumInfo(musicInfo.album, artists)
+        }
+        if (value.addTime == null) {
+            musicInfo.addTime = new Date()
+        }
+        if (metadata.common.lyrics != null && metadata.common.lyrics.length > 0) {
             musicInfo.lyrics = metadata.common.lyrics[0]
         }
-        if (metadata.common.picture != null && metadata.common.picture.length() > 0) {
-            FileUtil.CreateFile(`${AssetsPath}/cache/music/${id}.jpg`, Buffer.from(metadata.common.picture[0].data))
+        if (metadata.common.picture != null && metadata.common.picture.length > 0) {
+            let buffer =  Buffer.from(metadata.common.picture[0].data)
+            FileUtil.CreateFile(`${AssetsPath}/cache/music/${id}.jpg`, buffer)
+            if (musicInfo.album != null) {
+                FileUtil.CreateFile(`${AssetsPath}/cache/album/${musicInfo.album}.jpg`, buffer)
+            }
         }
         await database.music.update(musicInfo, { where: {id: id}})
     }

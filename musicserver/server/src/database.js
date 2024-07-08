@@ -32,7 +32,9 @@ class database {
             size: DataTypes.INTEGER,            //文件大小
             ctime: DataTypes.DATE,              //文件最后修改时间
             version: DataTypes.INTEGER,         //文件版本号
+            addTime: DataTypes.DATE,            //文件添加时间
             title: DataTypes.STRING(128),       //标题
+            duration: DataTypes.INTEGER,        //时长
             album: DataTypes.INTEGER,           //专辑
             artist: DataTypes.JSON,             //艺术家
             year: DataTypes.INTEGER,            //年份
@@ -40,6 +42,7 @@ class database {
             lyrics: DataTypes.TEXT,             //歌词
         }, {
             tableName: "music",
+            comment: "音乐列表",
             timestamps: false,
             indexes: [
                 {
@@ -58,6 +61,7 @@ class database {
             name: DataTypes.STRING(128),
         }, {
             tableName: "artist",
+            comment: "歌手列表",
             timestamps: false,
             indexes: [
                 {
@@ -77,6 +81,7 @@ class database {
             artist: DataTypes.JSON,
         }, {
             tableName: "album",
+            comment: "专辑列表",
             timestamps: false,
             indexes: [
                 {
@@ -87,35 +92,6 @@ class database {
         })
         await this.album.sync()
         await this.sync()
-        // await this.config.upsert({ name: "name1", tags: [1,2,3,4,5], }, { where: { name: "name1" } })
-        // await this.config.upsert({ name: "name2", tags: [{name: "aaa"}], }, { where: { name: "name2" } })
-        // await this.config.upsert({ name: "name3", tags: {a:'a', b:'b'}, }, { where: { name: "name3" } })
-
-        // // let www = await this.config.findAll()
-        // // console.log(www)
-        // // let resuts = await sequelize.query("select * from `config` where exists (select 1 from json_each(tags) where value->>'name' = 'aaa')", { type: QueryTypes.SELECT })
-        // // console.log(resuts)
-        // // resuts = await sequelize.query("select * from `config` where exists (select 1 from json_each(tags) where value = 1)", { type: QueryTypes.SELECT })
-        // // console.log(resuts)
-        // let resuts = await sequelize.query("select * from `config` where json_extract(tags, '$.a') = '22'", { type: QueryTypes.SELECT })
-        // console.log(resuts)
-        // const tagToSearch = 1;
-        // const users = await this.config.findAll({
-        //   where: sequelize.literal(`JSON_each.value = '${tagToSearch}'`),
-        //   include: [{
-        //     model: this.config, 
-        //     where: sequelize.literal(`JSON_each.key = 'value'`)
-        //   }]
-        // });
-
-        // const records = await this.config.findAll({
-        //     where: {
-        //         value: { [Op.contains]: 1 }
-        //     }
-        // });
-        // await this.sync()
-        // let result = await this.actor.upsert({name:"234"}, { where: { name: "234" } })
-        // console.log(result)
     }
     async sync() {
         await this.music.sync({alter: true})
