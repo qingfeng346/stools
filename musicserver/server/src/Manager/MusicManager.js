@@ -13,27 +13,16 @@ class MusicManager {
         this.requestRefreshList = true
         this.musicRoot = path.resolve(AssetsPath, "music")
     }
-    async GetMovieList(type, value, page, pageSize) {
-        let values = undefined
-        value = decodeURI(value)
-        if (type == null || type == "all") {
-            values = await database.music.findAll({attributes: ["id", "movieId", "title", "path", "thumbUrl", "isInfo"]})
-        } else if (type == "actor") {
-            values = await database.sequelize.query(`select id,movieId,title,path,thumbUrl,isInfo from \`movie\` where exists (select 1 from json_each(${type}s) where value = ${value})`, { type: QueryTypes.SELECT })
-        } else {
-            values = await database.sequelize.query(`select id,movieId,title,path,thumbUrl,isInfo from \`movie\` where exists (select 1 from json_each(${type}s) where value = '${value}')`, { type: QueryTypes.SELECT })
-        }
-        if (values == null) {
-            values = []
-        }
-        for (let value of values) {
-            this.CheckRefreshInfo(value)
-        }
+    UpdateMusicList() {
+        this.requestRefreshList = true
+    }
+    async GetMusicList(page) {
+        let pageSize = 30
+        let values = await database.music.findAndCountAll({ order: ['addTime'], offset: page * pageSize, limit: pageSize })
         return values
     }
-    async GetMovieInfoById(id) {
+    async GetMusicInfoById(id) {
         let value = await database.music.findOne({ where: { id: id } })
-        this.CheckRefreshInfo(value)
         return value
     }
     UpdateMusicInfo(id) {

@@ -4,9 +4,9 @@ import { RequestCode } from "../code.js"
 class RequestManager {
     async init() {
         let codes = [
-            RequestCode.UpdateMovieList,
-            RequestCode.GetMovieList,
-            RequestCode.GetMovieInfo,
+            RequestCode.UpdateMusicList,
+            RequestCode.GetMusicList,
+            RequestCode.GetMusicInfo,
             RequestCode.UpdateMoveInfo,
             RequestCode.ParseMovieInfo,
             RequestCode.GetPersonInfo,
@@ -17,14 +17,14 @@ class RequestManager {
             message.register(code, this[code].bind(this))
         }
     }
-    async UpdateMovieList() {
-        await MusicManager.UpdateMovieList()
+    async UpdateMusicList() {
+        await MusicManager.UpdateMusicList()
     }
-    async GetMovieList(data) {
-        return await MusicManager.GetMovieList(data.type, data.value, data.page, data.pageSize)
+    async GetMusicList(data) {
+        return await MusicManager.GetMusicList(data.page)
     }
-    async GetMovieInfo(data) {
-        return await MusicManager.GetMovieInfoById(data.id)
+    async GetMusicInfo(data) {
+        return await MusicManager.GetMusicInfoById(data.id)
     }
     async UpdateMoveInfo(data) {
         MusicManager.UpdateMusicInfo(data.id)

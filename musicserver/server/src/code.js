@@ -1,7 +1,7 @@
 const RequestCode = {
-    UpdateMovieList: "UpdateMovieList",
-    GetMovieList: "GetMovieList",
-    GetMovieInfo: "GetMovieInfo",
+    UpdateMusicList: "UpdateMusicList",
+    GetMusicList: "GetMusicList",
+    GetMusicInfo: "GetMusicInfo",
     UpdateMoveInfo: "UpdateMoveInfo",
     ParseMovieInfo: "ParseMovieInfo",
     GetPersonInfo: "GetPersonInfo",
